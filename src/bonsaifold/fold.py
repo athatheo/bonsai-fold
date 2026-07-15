@@ -5,13 +5,22 @@ copied as raw bytes (byte-identical) under re-indexed names, and only the
 config metadata changes. The resulting pack must be loaded with
 bonsaifold.loader.load_bonsai — stock mlx-lm assigns block types
 positionally and would mis-type most folded stacks.
+
+Pack writing streams one tensor at a time (peak RAM = largest tensor, not
+pack size). `write_pack` / `rewrite_folded_config` are shared with the
+Phase 3 merge writer, which adds newly-encoded tensors and per-tensor
+quantization overrides on top of the same machinery.
+
+For KL screening of drop candidates, do NOT write packs — use
+bonsaifold.loader.drop_view (zero-copy). Write a pack for winners only.
 """
+import copy
 import json
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .stio import PackReader, block_owner, reindex_name, write_safetensors
+from .stio import PackReader, reindex_name, write_safetensors
 
 SIDECAR_FILES = [
     "tokenizer.json",
@@ -26,54 +35,15 @@ SIDECAR_FILES = [
 ]
 
 
-def drop_blocks(src_pack, dst_pack, drop):
-    """Create a folded pack at dst_pack with the given block indices removed.
-
-    Returns the old->new block map for the surviving blocks.
-    """
-    src = PackReader(src_pack)
-    dst = Path(dst_pack)
-    tcfg = src.config["text_config"]
-    n = tcfg["num_hidden_layers"]
-    drop = sorted(set(drop))
-    if any(i < 0 or i >= n for i in drop):
-        raise ValueError(f"drop indices {drop} out of range 0..{n-1}")
-    keep = [i for i in range(n) if i not in set(drop)]
-    if not keep:
-        raise ValueError("cannot drop every block")
-    block_map = {old: new for new, old in enumerate(keep)}
-
-    dst.mkdir(parents=True, exist_ok=False)
-
-    # ---- tensors: byte-identical raw copy under re-indexed names ----
-    entries = {}
-    weight_map = {}
-    for name in src.header:
-        owner = block_owner(name)
-        if isinstance(owner, int) and owner in set(drop):
-            continue
-        new_name = reindex_name(name, block_map)
-        info = src.header[name]
-        entries[new_name] = {
-            "dtype": info["dtype"],
-            "shape": info["shape"],
-            "raw": src.read_raw(name),
-        }
-        weight_map[new_name] = "model.safetensors"
-    write_safetensors(dst / "model.safetensors", entries)
-    total = sum(len(e["raw"]) for e in entries.values())
-    (dst / "model.safetensors.index.json").write_text(
-        json.dumps({"metadata": {"total_size": total}, "weight_map": weight_map})
-    )
-
-    # ---- config: trimmed layer_types is the folded ground truth ----
-    config = json.loads(json.dumps(src.config))  # deep copy
-    new_tcfg = config["text_config"]
-    new_tcfg["num_hidden_layers"] = len(keep)
-    new_tcfg["layer_types"] = [tcfg["layer_types"][i] for i in keep]
-    # per-tensor quantization overrides (none in the shipped pack, but
-    # folded/merged packs create them) follow the renaming
-    for section in (config, new_tcfg):
+def rewrite_folded_config(config, block_map, op_stamp, extra_quant_overrides=None):
+    """Folded-pack config: trimmed layer_types, renamed per-tensor
+    quantization overrides, provenance stamp. Returns a new dict."""
+    config = copy.deepcopy(config)
+    tcfg = config["text_config"]
+    keep = sorted(block_map)
+    tcfg["num_hidden_layers"] = len(keep)
+    tcfg["layer_types"] = [tcfg["layer_types"][i] for i in keep]
+    for section in (config, tcfg):
         q = section.get("quantization")
         if not isinstance(q, dict):
             continue
@@ -86,54 +56,99 @@ def drop_blocks(src_pack, dst_pack, drop):
             if nk is not None:
                 renamed[nk] = v
         section["quantization"] = renamed
+    if extra_quant_overrides:
+        config.setdefault("quantization", {}).update(extra_quant_overrides)
     config["bonsai_fold"] = {
-        "operation": "drop",
-        "dropped_blocks": drop,
-        "source_pack": str(src.pack_dir),
+        **op_stamp,
         "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "note": "surviving tensors are byte-identical to the source; "
-        "load with bonsaifold.loader.load_bonsai (layer_types-aware)",
+        "note": "load with bonsaifold.loader.load_bonsai (layer_types-aware)",
     }
-    (dst / "config.json").write_text(json.dumps(config, indent=2))
+    return config
 
+
+def write_pack(dst, entries, config, sidecar_src):
+    """Write a model pack: safetensors (streamed), index, config, sidecars."""
+    dst = Path(dst)
+    dst.mkdir(parents=True, exist_ok=False)
+    write_safetensors(dst / "model.safetensors", entries)
+    total = sum(
+        e["nbytes"] if "nbytes" in e else len(e["raw"]) for e in entries.values()
+    )
+    (dst / "model.safetensors.index.json").write_text(
+        json.dumps(
+            {
+                "metadata": {"total_size": total},
+                "weight_map": {name: "model.safetensors" for name in entries},
+            }
+        )
+    )
+    (dst / "config.json").write_text(json.dumps(config, indent=2))
     for fname in SIDECAR_FILES:
-        p = src.pack_dir / fname
+        p = Path(sidecar_src) / fname
         if p.exists():
             shutil.copy2(p, dst / fname)
+
+
+def drop_blocks(src_pack, dst_pack, drop):
+    """Create a folded pack at dst_pack with the given block indices removed.
+
+    Returns the old->new block map for the surviving blocks.
+    """
+    src = PackReader(src_pack)
+    n = src.config["text_config"]["num_hidden_layers"]
+    drop = sorted(set(drop))
+    if any(i < 0 or i >= n for i in drop):
+        raise ValueError(f"drop indices {drop} out of range 0..{n-1}")
+    keep = [i for i in range(n) if i not in set(drop)]
+    if not keep:
+        raise ValueError("cannot drop every block")
+    block_map = {old: new for new, old in enumerate(keep)}
+
+    entries = {}
+    for name in src.header:
+        new_name = reindex_name(name, block_map)
+        if new_name is None:
+            continue
+        begin, end = src.header[name]["data_offsets"]
+        entries[new_name] = {
+            "dtype": src.header[name]["dtype"],
+            "shape": src.header[name]["shape"],
+            "nbytes": end - begin,
+            "raw": (lambda n=name: src.read_raw(n)),  # streamed at write time
+        }
+    config = rewrite_folded_config(
+        src.config,
+        block_map,
+        {
+            "operation": "drop",
+            "dropped_blocks": drop,
+            "source_pack": str(src.pack_dir),
+        },
+    )
+    write_pack(dst_pack, entries, config, src.pack_dir)
     return block_map
 
 
 def verify_byte_identity(src_pack, dst_pack, block_map):
-    """Check every surviving tensor in dst is byte-identical to its source.
-
-    Returns a report dict; report["ok"] is the verdict.
-    """
+    """Check dst holds exactly the mapped tensors, each byte-identical to
+    its source. Returns a report dict; report["ok"] is the verdict."""
     src, dst = PackReader(src_pack), PackReader(dst_pack)
-    inverse = {new: old for old, new in block_map.items()}
-    mismatched, missing = [], []
-    for new_name in dst.header:
-        owner = block_owner(new_name)
-        if isinstance(owner, int) and owner not in inverse:
-            missing.append(new_name)
-            continue
-        old_name = (
-            reindex_name(new_name, inverse) if isinstance(owner, int) else new_name
-        )
-        if old_name not in src.header:
-            missing.append(new_name)
-        elif src.read_raw(old_name) != dst.read_raw(new_name):
-            mismatched.append(new_name)
-    expected = sum(
-        1
-        for name in src.header
-        if not isinstance(block_owner(name), int) or block_owner(name) in block_map
-    )
-    report = {
+    expected = {}  # dst name -> src name
+    for name in src.header:
+        new = reindex_name(name, block_map)
+        if new is not None:
+            expected[new] = name
+    missing = sorted(set(expected) - set(dst.header))
+    extra = sorted(set(dst.header) - set(expected))
+    mismatched = [
+        n
+        for n in sorted(set(dst.header) & set(expected))
+        if src.read_raw(expected[n]) != dst.read_raw(n)
+    ]
+    return {
         "tensors_checked": len(dst.header),
-        "expected_tensors": expected,
-        "count_ok": len(dst.header) == expected,
+        "missing": missing,
+        "extra": extra,
         "mismatched": mismatched,
-        "unmapped_or_missing": missing,
+        "ok": not (missing or extra or mismatched),
     }
-    report["ok"] = report["count_ok"] and not mismatched and not missing
-    return report

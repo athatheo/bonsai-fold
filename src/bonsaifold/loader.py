@@ -9,19 +9,61 @@ list in the pack's config. For unfolded packs the two derivations agree —
 loading through here must be a logit-identical no-op (verified in
 experiments/runtime_validation once per environment; see LAB_NOTEBOOK).
 
+Three public entry points:
+  load_bonsai(pack_dir)          — load a pack (model, tokenizer)
+  layer_subset_view(model, keep) — zero-copy drop-candidate view for sweeps
+                                   (weights shared; no pack written)
+  block taps                     — model.set_block_tap(fn) for per-block
+                                   residual-stream recording without
+                                   touching the module tree
+
 Only model construction is changed; weight loading, quantization wiring,
 sanitize, and cache creation are stock mlx-lm.
 """
-import json
 from pathlib import Path
 
-import mlx.core as mx
 import mlx_lm.models.qwen3_5 as q35
-from mlx_lm.utils import _get_classes, load_model, load_tokenizer
+from mlx_lm.models.cache import ArraysCache, KVCache
+from mlx_lm.utils import _get_classes, load_config, load_model, load_tokenizer
+
+
+def _first_index(layers, linear):
+    return next((i for i, l in enumerate(layers) if l.is_linear == linear), None)
+
+
+def _hybrid_forward(tm_or_view, inputs, cache, input_embeddings=None):
+    """Shared forward over a hybrid layer stack with explicit types.
+
+    `tm_or_view` provides embed_tokens, norm, layers, fa_idx, ssm_idx, and
+    optionally block_tap(i, h_in, h_out). Unlike stock qwen3_5, mask
+    creation guards on type presence (folded stacks may lack one type).
+    """
+    s = tm_or_view
+    if input_embeddings is not None:
+        h = input_embeddings
+    else:
+        h = s.embed_tokens(inputs)
+    if cache is None:
+        cache = [None] * len(s.layers)
+    fa_mask = (
+        q35.create_attention_mask(h, cache[s.fa_idx]) if s.fa_idx is not None else None
+    )
+    ssm_mask = (
+        q35.create_ssm_mask(h, cache[s.ssm_idx]) if s.ssm_idx is not None else None
+    )
+    tap = getattr(s, "block_tap", None)
+    for i, (layer, c) in enumerate(zip(s.layers, cache)):
+        h_out = layer(h, mask=ssm_mask if layer.is_linear else fa_mask, cache=c)
+        if tap is not None:
+            tap(i, h, h_out)
+        h = h_out
+    return s.norm(h)
 
 
 class TypedQwen3_5TextModel(q35.Qwen3_5TextModel):
     """Stock text model with block types taken from an explicit list."""
+
+    block_tap = None  # optional fn(i, h_in, h_out); see set_block_tap
 
     def __init__(self, targs, layer_types):
         if len(layer_types) != targs.num_hidden_layers:
@@ -39,52 +81,32 @@ class TypedQwen3_5TextModel(q35.Qwen3_5TextModel):
         self.layers = [
             q35.DecoderLayer(args=targs, layer_idx=force_idx[t]) for t in layer_types
         ]
-        full = [i for i, t in enumerate(layer_types) if t == "full_attention"]
-        linear = [i for i, t in enumerate(layer_types) if t == "linear_attention"]
-        # Stock fa_idx/ssm_idx assume both types exist at fixed positions;
-        # folded stacks may lack one type entirely, so mask creation below
-        # guards on presence instead.
-        self.fa_idx = full[0] if full else None
-        self.ssm_idx = linear[0] if linear else None
+        self.fa_idx = _first_index(self.layers, linear=False)
+        self.ssm_idx = _first_index(self.layers, linear=True)
 
     def __call__(self, inputs, cache=None, input_embeddings=None):
-        if input_embeddings is not None:
-            hidden_states = input_embeddings
-        else:
-            hidden_states = self.embed_tokens(inputs)
-        if cache is None:
-            cache = [None] * len(self.layers)
-        fa_mask = (
-            q35.create_attention_mask(hidden_states, cache[self.fa_idx])
-            if self.fa_idx is not None
-            else None
+        return _hybrid_forward(self, inputs, cache, input_embeddings)
+
+
+class TypedModel(q35.Model):
+    def __init__(self, args):
+        super().__init__(args)
+        targs = q35.TextModelArgs.from_dict(args.text_config)
+        self.language_model.model = TypedQwen3_5TextModel(
+            targs, args.text_config["layer_types"]
         )
-        ssm_mask = (
-            q35.create_ssm_mask(hidden_states, cache[self.ssm_idx])
-            if self.ssm_idx is not None
-            else None
-        )
-        for layer, c in zip(self.layers, cache):
-            mask = ssm_mask if layer.is_linear else fa_mask
-            hidden_states = layer(hidden_states, mask=mask, cache=c)
-        return self.norm(hidden_states)
+
+    def set_block_tap(self, fn):
+        """Install fn(i, h_in, h_out), called on every block's residual
+        stream during forward. Pass None to remove."""
+        self.language_model.model.block_tap = fn
 
 
 def _typed_classes(config):
     Model, ModelArgs = _get_classes(config=config)
-    if config.get("model_type") != "qwen3_5":
-        return Model, ModelArgs
     tcfg = config.get("text_config", config)
-    layer_types = tcfg.get("layer_types")
-    if not layer_types:
+    if config.get("model_type") != "qwen3_5" or not tcfg.get("layer_types"):
         return Model, ModelArgs
-
-    class TypedModel(Model):
-        def __init__(self, args):
-            super().__init__(args)
-            targs = q35.TextModelArgs.from_dict(args.text_config)
-            self.language_model.model = TypedQwen3_5TextModel(targs, layer_types)
-
     return TypedModel, ModelArgs
 
 
@@ -97,6 +119,55 @@ def load_bonsai(pack_dir, lazy=False):
     return model, tokenizer
 
 
+class LayerSubsetView:
+    """Zero-copy drop-candidate view over a loaded model.
+
+    Shares the source model's weight arrays; only the layer list and
+    type-index bookkeeping are new. The source model is never mutated, so
+    it stays valid as the sweep's reference. For KL screening only — to
+    ship a candidate, write a real pack with fold.drop_blocks.
+    """
+
+    block_tap = None
+
+    def __init__(self, model, keep):
+        tm = model.language_model.model
+        n = len(tm.layers)
+        if not keep or any(i < 0 or i >= n for i in keep) or len(set(keep)) != len(keep):
+            raise ValueError(f"invalid keep list for {n}-layer model: {keep}")
+        self._lm = model.language_model
+        self.embed_tokens = tm.embed_tokens
+        self.norm = tm.norm
+        self.layers = [tm.layers[i] for i in keep]
+        self.fa_idx = _first_index(self.layers, linear=False)
+        self.ssm_idx = _first_index(self.layers, linear=True)
+
+    def make_cache(self):
+        return [ArraysCache(size=2) if l.is_linear else KVCache() for l in self.layers]
+
+    def __call__(self, inputs, cache=None, input_embeddings=None):
+        """Token ids -> logits (mirrors Model.__call__ through the head)."""
+        h = _hybrid_forward(self, inputs, cache, input_embeddings)
+        if self._lm.args.tie_word_embeddings:
+            return self.embed_tokens.as_linear(h)
+        return self._lm.lm_head(h)
+
+
+def layer_subset_view(model, keep):
+    return LayerSubsetView(model, keep)
+
+
+def drop_view(model, drop):
+    """Convenience: view of `model` with the given block indices removed."""
+    n = len(model.language_model.model.layers)
+    dropped = set(drop)
+    if not dropped or not dropped <= set(range(n)):
+        # a silently-ignored typo here would screen the unmodified reference
+        # and report KL ~ 0 for a nonexistent block
+        raise ValueError(f"drop indices {sorted(dropped)} not all in 0..{n-1}")
+    return LayerSubsetView(model, [i for i in range(n) if i not in dropped])
+
+
 def layer_types_of(pack_dir):
-    config = json.loads((Path(pack_dir) / "config.json").read_text())
+    config = load_config(Path(pack_dir))
     return config.get("text_config", config)["layer_types"]

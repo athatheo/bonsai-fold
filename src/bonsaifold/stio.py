@@ -138,27 +138,35 @@ def reindex_name(name, block_map):
 def write_safetensors(path, entries):
     """Write a safetensors file from raw buffers.
 
-    entries: name -> {"dtype": st_dtype, "shape": [...], "raw": bytes}.
-    Buffers are written verbatim (byte-identical pass-through for surgery).
+    entries: name -> {"dtype": st_dtype, "shape": [...], "nbytes": int,
+    "raw": bytes | () -> bytes}. Buffers are written verbatim
+    (byte-identical pass-through for surgery). A callable `raw` is invoked
+    one tensor at a time, so a whole pack never sits in memory; "nbytes"
+    may be omitted when `raw` is bytes.
     """
     header = {}
     offset = 0
     names = list(entries)
     for name in names:
         e = entries[name]
+        size = e["nbytes"] if "nbytes" in e else len(e["raw"])
         header[name] = {
             "dtype": e["dtype"],
             "shape": list(e["shape"]),
-            "data_offsets": [offset, offset + len(e["raw"])],
+            "data_offsets": [offset, offset + size],
         }
-        offset += len(e["raw"])
+        offset += size
     blob = json.dumps(header).encode()
     blob += b" " * (-len(blob) % 8)  # 8-byte alignment, spec-conventional
     with open(path, "wb") as f:
         f.write(struct.pack("<Q", len(blob)))
         f.write(blob)
         for name in names:
-            f.write(entries[name]["raw"])
+            raw = entries[name]["raw"]
+            data = raw() if callable(raw) else raw
+            if len(data) != header[name]["data_offsets"][1] - header[name]["data_offsets"][0]:
+                raise ValueError(f"{name}: payload size != declared nbytes")
+            f.write(data)
 
 
 def unpack_codes(packed_u32, bits):

@@ -38,18 +38,13 @@ N_CALIB_REASONING, N_CALIB_PROSE, N_CALIB_CODE, N_CALIB_CHAT = 24, 16, 12, 12
 N_PROBE_ONPOLICY, N_PROBE_OFFPOLICY = 100, 100
 
 
-def get_tokenizer(pack):
-    from mlx_lm.utils import load_tokenizer
-
-    return load_tokenizer(Path(pack))
-
-
 def build_prompts(pack):
     from datasets import load_dataset
+    from mlx_lm.utils import load_tokenizer
 
     from bonsaifold import bonsai_prompt
 
-    tok = get_tokenizer(pack)
+    tok = load_tokenizer(Path(pack))
     rng = np.random.default_rng(SEED)
 
     # ---- MATH-500: disjoint calibration/probe prompt draws ----
@@ -74,8 +69,11 @@ def build_prompts(pack):
     # ---- wikitext-103: prose calibration + off-policy probes, disjoint ----
     wiki = load_dataset("Salesforce/wikitext", "wikitext-103-raw-v1", split="train")
     # ~40K rows ≈ 4M tokens: two orders of magnitude more than the 116
-    # disjoint chunks need, cheap to tokenize once
-    text = "\n".join(wiki[i]["text"] for i in range(40_000))
+    # disjoint chunks need, cheap to tokenize once. (Selection below is
+    # deliberately left byte-for-byte as first run: the frozen committed
+    # sets were produced by it with SEED, so no "simplifications" that
+    # change rng draws.)
+    text = "\n".join(wiki[:40_000]["text"])
     all_ids = tok.encode(text)
     n_chunks = N_CALIB_PROSE + N_PROBE_OFFPOLICY
     lengths = rng.integers(2048, 4097, size=n_chunks)
@@ -126,9 +124,8 @@ def build_prompts(pack):
 
     # ---- chat: dolly-15k, longest-response items, chat-templated ----
     dolly = load_dataset("databricks/databricks-dolly-15k", split="train")
-    order = sorted(
-        range(len(dolly)), key=lambda i: -len(dolly[i]["response"])
-    )[:400]
+    responses = dolly["response"]  # one columnar fetch, not 15K row fetches
+    order = sorted(range(len(dolly)), key=lambda i: -len(responses[i]))[:400]
     picks = rng.choice(order, size=N_CALIB_CHAT, replace=False)
     for k, di in enumerate(sorted(picks)):
         row = dolly[int(di)]
@@ -185,7 +182,51 @@ def build_completions(pack, max_tokens, seed):
         ("calibration_set.json", "calibration_set.json"),
         ("probes_onpolicy_prompts.json", "probes_onpolicy.json"),
     ]:
-        data = json.loads((OUTDIR / fname).read_text())
+        # resume from the output file when it exists (it carries any
+        # already-generated token_ids); otherwise start from the prompts file
+        src = out_name if (OUTDIR / out_name).exists() else fname
+        data = json.loads((OUTDIR / src).read_text())
+        if src == out_name:
+            # refuse to mix provenance: a resumed file must have been
+            # started with the same pack/sampling/seed, and must match the
+            # current prompts file (else --stage prompts was re-run)
+            meta = data["meta"]
+            current = {
+                "completion_pack": str(pack),
+                "completion_max_tokens": max_tokens,
+                "completion_seed": seed,
+            }
+            stale = {
+                k: (meta[k], v)
+                for k, v in current.items()
+                if k in meta and meta[k] != v
+            }
+            if stale:
+                raise SystemExit(
+                    f"{out_name} was started with different settings {stale}; "
+                    "delete it to regenerate from scratch"
+                )
+            prompts = {
+                it["id"]: it.get("prompt_token_ids")
+                for it in json.loads((OUTDIR / fname).read_text())["items"]
+            }
+            drifted = [
+                it["id"]
+                for it in data["items"]
+                if "prompt_token_ids" in it
+                and prompts.get(it["id"]) != it["prompt_token_ids"]
+            ]
+            if drifted:
+                raise SystemExit(
+                    f"{out_name} prompts diverge from {fname} (e.g. {drifted[:3]}); "
+                    "--stage prompts was re-run — delete the output to regenerate"
+                )
+        data["meta"].update(
+            completion_pack=str(pack),
+            completion_max_tokens=max_tokens,
+            completion_seed=seed,
+        )
+        data["meta"].pop("note", None)
         for k, item in enumerate(data["items"]):
             if item.get("token_ids") is not None or "prompt_token_ids" not in item:
                 continue
@@ -193,11 +234,9 @@ def build_completions(pack, max_tokens, seed):
             item["token_ids"] = list(item["prompt_token_ids"]) + gen
             (OUTDIR / out_name).write_text(json.dumps(data))  # checkpoint
             print(f"{item['id']}: +{len(gen)} tokens")
-        data["meta"]["completion_pack"] = str(pack)
-        data["meta"]["completion_max_tokens"] = max_tokens
-        data["meta"]["completion_seed"] = seed
+        data["meta"]["complete"] = all(it.get("token_ids") for it in data["items"])
         (OUTDIR / out_name).write_text(json.dumps(data))
-        print(f"wrote {OUTDIR / out_name}")
+        print(f"wrote {OUTDIR / out_name} (complete={data['meta']['complete']})")
 
 
 if __name__ == "__main__":

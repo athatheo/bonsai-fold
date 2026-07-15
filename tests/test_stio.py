@@ -1,7 +1,7 @@
 import json
 
 import numpy as np
-import pytest
+from conftest import st_entry
 
 from bonsaifold.stio import (
     PackReader,
@@ -45,7 +45,7 @@ def test_unpack_and_dequant_1bit():
     codes = unpack_codes(packed, 1)
     assert codes.shape == (1, 64)
     assert codes[0, 0] == 1 and codes[0, 1] == 0 and codes[0, 32] == 1 and codes[0, 33] == 0
-    s = np.array([[2.0]], dtype=np.float16)  # one group of 64? group_size=64
+    s = np.array([[2.0]], dtype=np.float16)  # one group covering all 64 codes
     b = np.array([[-1.0]], dtype=np.float16)
     w = manual_dequant(packed, s, b, bits=1, group_size=64)
     assert set(np.unique(w)) == {-1.0, 1.0}
@@ -68,8 +68,14 @@ def test_write_read_roundtrip(tmp_path):
     a = rng.standard_normal((4, 8)).astype(np.float16)
     b = rng.integers(0, 2**32, size=(2, 3), dtype=np.uint32)
     entries = {
-        "t.a": {"dtype": "F16", "shape": a.shape, "raw": a.tobytes()},
-        "t.b.weight": {"dtype": "U32", "shape": b.shape, "raw": b.tobytes()},
+        "t.a": st_entry(a),
+        # streamed form: callable payload with declared size
+        "t.b.weight": {
+            "dtype": "U32",
+            "shape": b.shape,
+            "nbytes": b.nbytes,
+            "raw": lambda: b.tobytes(),
+        },
     }
     p = tmp_path / "model.safetensors"
     write_safetensors(p, entries)

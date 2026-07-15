@@ -1,67 +1,13 @@
-import json
-
-import numpy as np
 import pytest
+from conftest import LAYER_TYPES, N_BLOCKS
 
 from bonsaifold.fold import drop_blocks, verify_byte_identity
-from bonsaifold.stio import PackReader, write_safetensors
-
-N_BLOCKS = 8
-LAYER_TYPES = [
-    "linear_attention",
-    "linear_attention",
-    "linear_attention",
-    "full_attention",
-] * 2
+from bonsaifold.stio import PackReader
 
 
-def make_pack(tmp_path, name="src"):
-    rng = np.random.default_rng(7)
-    d = tmp_path / name
-    d.mkdir()
-    entries = {}
-    for i in range(N_BLOCKS):
-        w = rng.integers(0, 2**32, size=(8, 4), dtype=np.uint32)
-        s = rng.standard_normal((8, 1)).astype(np.float16)
-        base = f"language_model.model.layers.{i}.mlp.up_proj"
-        entries[f"{base}.weight"] = {"dtype": "U32", "shape": w.shape, "raw": w.tobytes()}
-        entries[f"{base}.scales"] = {"dtype": "F16", "shape": s.shape, "raw": s.tobytes()}
-    tail = rng.standard_normal((4, 4)).astype(np.float16)
-    entries["language_model.lm_head.weight"] = {
-        "dtype": "F16",
-        "shape": tail.shape,
-        "raw": tail.tobytes(),
-    }
-    vis = rng.standard_normal((2, 2)).astype(np.float16)
-    entries["vision_tower.blocks.0.attn.qkv.weight"] = {
-        "dtype": "F16",
-        "shape": vis.shape,
-        "raw": vis.tobytes(),
-    }
-    write_safetensors(d / "model.safetensors", entries)
-    config = {
-        "model_type": "qwen3_5",
-        "quantization": {
-            "group_size": 128,
-            "bits": 1,
-            "language_model.model.layers.5.mlp.up_proj": {"bits": 2},
-        },
-        "text_config": {
-            "model_type": "qwen3_5_text",
-            "num_hidden_layers": N_BLOCKS,
-            "layer_types": LAYER_TYPES,
-            "full_attention_interval": 4,
-        },
-    }
-    (d / "config.json").write_text(json.dumps(config))
-    (d / "tokenizer_config.json").write_text("{}")
-    return d
-
-
-def test_drop_blocks_basic(tmp_path):
-    src = make_pack(tmp_path)
+def test_drop_blocks_basic(tmp_path, mini_pack):
     dst = tmp_path / "dst"
-    block_map = drop_blocks(src, dst, drop=[1, 3])
+    block_map = drop_blocks(mini_pack, dst, drop=[1, 3])
     assert block_map == {0: 0, 2: 1, 4: 2, 5: 3, 6: 4, 7: 5}
 
     pack = PackReader(dst)
@@ -76,11 +22,11 @@ def test_drop_blocks_basic(tmp_path):
     assert (dst / "tokenizer_config.json").exists()
     assert (dst / "model.safetensors.index.json").exists()
 
-    report = verify_byte_identity(src, dst, block_map)
+    report = verify_byte_identity(mini_pack, dst, block_map)
     assert report["ok"], report
 
     # kept tensor bytes are identical to the source under the new name
-    src_pack = PackReader(src)
+    src_pack = PackReader(mini_pack)
     assert pack.read_raw(
         "language_model.model.layers.1.mlp.up_proj.weight"
     ) == src_pack.read_raw("language_model.model.layers.2.mlp.up_proj.weight")
@@ -91,25 +37,36 @@ def test_drop_blocks_basic(tmp_path):
     assert "vision_tower.blocks.0.attn.qkv.weight" in pack.header
 
 
-def test_drop_blocks_validation(tmp_path):
-    src = make_pack(tmp_path)
+def test_drop_blocks_validation(tmp_path, mini_pack):
     with pytest.raises(ValueError):
-        drop_blocks(src, tmp_path / "bad1", drop=[99])
+        drop_blocks(mini_pack, tmp_path / "bad1", drop=[99])
     with pytest.raises(ValueError):
-        drop_blocks(src, tmp_path / "bad2", drop=list(range(N_BLOCKS)))
-    drop_blocks(src, tmp_path / "once", drop=[0])
+        drop_blocks(mini_pack, tmp_path / "bad2", drop=list(range(N_BLOCKS)))
+    drop_blocks(mini_pack, tmp_path / "once", drop=[0])
     with pytest.raises(FileExistsError):
-        drop_blocks(src, tmp_path / "once", drop=[0])
+        drop_blocks(mini_pack, tmp_path / "once", drop=[0])
 
 
-def test_verify_catches_corruption(tmp_path):
-    src = make_pack(tmp_path)
+def test_verify_catches_corruption(tmp_path, mini_pack):
     dst = tmp_path / "dst"
-    block_map = drop_blocks(src, dst, drop=[6])
+    block_map = drop_blocks(mini_pack, dst, drop=[6])
     st = dst / "model.safetensors"
     data = bytearray(st.read_bytes())
     data[-1] ^= 0xFF  # flip a byte in the last tensor's payload
     st.write_bytes(bytes(data))
-    report = verify_byte_identity(src, dst, block_map)
+    report = verify_byte_identity(mini_pack, dst, block_map)
     assert not report["ok"]
     assert report["mismatched"]
+
+
+def test_verify_catches_missing_and_extra(tmp_path, mini_pack):
+    dst = tmp_path / "dst"
+    block_map = drop_blocks(mini_pack, dst, drop=[0])
+    # claim block 7 also survived: its dst name is absent -> missing
+    bad_map = dict(block_map)
+    report = verify_byte_identity(mini_pack, dst, {**bad_map, 7: 99})
+    assert not report["ok"] and report["missing"]
+    # claim block 2 was dropped: its dst tensors become extra
+    del bad_map[2]
+    report = verify_byte_identity(mini_pack, dst, bad_map)
+    assert not report["ok"] and report["extra"]
