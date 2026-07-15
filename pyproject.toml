@@ -20,6 +20,7 @@ packages = ["src/bonsaifold"]
 [dependency-groups]
 dev = [
     "cmake>=3.25",
+    "pytest>=9.1.1",
     "setuptools>=80",
     "typing-extensions>=4.16.0",
 ]

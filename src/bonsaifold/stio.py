@@ -118,6 +118,49 @@ def block_owner(name):
     return "tail"
 
 
+def reindex_name(name, block_map):
+    """Rewrite a tensor (or config-key) name under a block renumbering.
+
+    block_map: old block index -> new block index. Non-layer names pass
+    through unchanged; a name whose block is not in the map (a dropped
+    block) returns None.
+    """
+    parts = name.split(".")
+    if "layers" not in parts or name.startswith("vision_tower."):
+        return name
+    i = parts.index("layers") + 1
+    new = block_map.get(int(parts[i]))
+    if new is None:
+        return None
+    return ".".join(parts[:i] + [str(new)] + parts[i + 1 :])
+
+
+def write_safetensors(path, entries):
+    """Write a safetensors file from raw buffers.
+
+    entries: name -> {"dtype": st_dtype, "shape": [...], "raw": bytes}.
+    Buffers are written verbatim (byte-identical pass-through for surgery).
+    """
+    header = {}
+    offset = 0
+    names = list(entries)
+    for name in names:
+        e = entries[name]
+        header[name] = {
+            "dtype": e["dtype"],
+            "shape": list(e["shape"]),
+            "data_offsets": [offset, offset + len(e["raw"])],
+        }
+        offset += len(e["raw"])
+    blob = json.dumps(header).encode()
+    blob += b" " * (-len(blob) % 8)  # 8-byte alignment, spec-conventional
+    with open(path, "wb") as f:
+        f.write(struct.pack("<Q", len(blob)))
+        f.write(blob)
+        for name in names:
+            f.write(entries[name]["raw"])
+
+
 def unpack_codes(packed_u32, bits):
     """Unpack MLX-packed quantization codes (LSB-first within each u32)."""
     per_word = 32 // bits
