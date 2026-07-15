@@ -1,0 +1,105 @@
+{
+ "mlx_version": "0.31.2.dev20260715+10b5fe4",
+ "checks": [
+  {
+   "name": "random.uniform gpu==cpu",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rms_norm gpu~cpu",
+   "ok": true,
+   "detail": "max|d|=9.54e-07"
+  },
+  {
+   "name": "layer_norm gpu~cpu",
+   "ok": true,
+   "detail": "max|d|=1.43e-06"
+  },
+  {
+   "name": "rope gpu~cpu",
+   "ok": true,
+   "detail": "max|d|=2.62e-06"
+  },
+  {
+   "name": "sdpa(vector) gpu~cpu",
+   "ok": true,
+   "detail": "max|d|=1.19e-07"
+  },
+  {
+   "name": "gemv gpu~cpu",
+   "ok": true,
+   "detail": "max|d|=7.63e-06"
+  },
+  {
+   "name": "arg_reduce gpu==cpu",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "conv1d gpu~cpu",
+   "ok": true,
+   "detail": "max|d|=1.91e-06"
+  },
+  {
+   "name": "1-bit dequantize == manual unpack (gpu)",
+   "ok": true,
+   "detail": "max|d|=0.00e+00"
+  },
+  {
+   "name": "1-bit dequantize == manual unpack (cpu)",
+   "ok": true,
+   "detail": "max|d|=0.00e+00"
+  },
+  {
+   "name": "1-bit quantize gpu~cpu (same scales/biases, same recon error)",
+   "ok": true,
+   "detail": "recon err cpu=1.772750 gpu=1.772750"
+  },
+  {
+   "name": "1-bit quantized_matmul ~ dequant matmul (gpu)",
+   "ok": true,
+   "detail": "max|d|=1.60e-04"
+  },
+  {
+   "name": "1-bit quantized_matmul ~ dequant matmul (cpu)",
+   "ok": true,
+   "detail": "max|d|=0.00e+00"
+  },
+  {
+   "name": "2-bit dequantize == manual unpack (gpu)",
+   "ok": true,
+   "detail": "max|d|=2.38e-07"
+  },
+  {
+   "name": "2-bit dequantize == manual unpack (cpu)",
+   "ok": true,
+   "detail": "max|d|=0.00e+00"
+  },
+  {
+   "name": "2-bit quantize gpu~cpu (same scales/biases, same recon error)",
+   "ok": true,
+   "detail": "recon err cpu=0.359650 gpu=0.359650"
+  },
+  {
+   "name": "2-bit quantized_matmul ~ dequant matmul (gpu)",
+   "ok": true,
+   "detail": "max|d|=4.20e-05"
+  },
+  {
+   "name": "2-bit quantized_matmul ~ dequant matmul (cpu)",
+   "ok": true,
+   "detail": "max|d|=1.53e-05"
+  },
+  {
+   "name": "pack 11.self_attn.q_proj.weight (1-bit): mx.dequantize == numpy unpack",
+   "ok": true,
+   "detail": "max|d|=0.00e+00"
+  },
+  {
+   "name": "pack tensor (1-bit): dequant values are +/- s_g (up to f16-subnormal ulp)",
+   "ok": true,
+   "detail": ""
+  }
+ ]
+}

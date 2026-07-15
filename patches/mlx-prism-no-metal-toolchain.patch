@@ -1,0 +1,134 @@
+diff --git a/mlx/backend/metal/kernels/CMakeLists.txt b/mlx/backend/metal/kernels/CMakeLists.txt
+index 500e7de..6ae9c60 100644
+--- a/mlx/backend/metal/kernels/CMakeLists.txt
++++ b/mlx/backend/metal/kernels/CMakeLists.txt
+@@ -46,17 +46,19 @@ function(build_kernel KERNEL)
+       PARENT_SCOPE)
+ endfunction(build_kernel)
+ 
+-build_kernel(arg_reduce)
+-build_kernel(conv steel/conv/params.h)
+-build_kernel(gemv steel/utils.h)
+-build_kernel(layer_norm)
+-build_kernel(random)
+-build_kernel(rms_norm)
+-build_kernel(rope)
+-build_kernel(scaled_dot_product_attention sdpa_vector.h)
+-build_kernel(spec_decode)
+-if(MLX_METAL_VERSION GREATER_EQUAL 320)
+-  build_kernel(fence)
++if(NOT MLX_PREBUILT_METALLIB)
++  build_kernel(arg_reduce)
++  build_kernel(conv steel/conv/params.h)
++  build_kernel(gemv steel/utils.h)
++  build_kernel(layer_norm)
++  build_kernel(random)
++  build_kernel(rms_norm)
++  build_kernel(rope)
++  build_kernel(scaled_dot_product_attention sdpa_vector.h)
++  build_kernel(spec_decode)
++  if(MLX_METAL_VERSION GREATER_EQUAL 320)
++    build_kernel(fence)
++  endif()
+ endif()
+ 
+ set(STEEL_HEADERS
+@@ -175,13 +177,28 @@ if(NOT MLX_METAL_JIT)
+ 
+ endif()
+ 
+-add_custom_command(
+-  OUTPUT ${MLX_METAL_PATH}/mlx.metallib
+-  COMMAND xcrun -sdk macosx metallib ${KERNEL_AIR} -o
+-          ${MLX_METAL_PATH}/mlx.metallib
+-  DEPENDS ${KERNEL_AIR}
+-  COMMENT "Building mlx.metallib"
+-  VERBATIM)
++if(MLX_PREBUILT_METALLIB)
++  # bonsai-fold patch: no Metal offline compiler available; use a metallib
++  # extracted from the stock mlx wheel of the same base version. Only the
++  # always-offline base kernels are looked up in it under MLX_METAL_JIT=ON;
++  # all fork-modified kernels (quantized 1-bit etc.) are JIT-compiled from
++  # this tree's sources.
++  add_custom_command(
++    OUTPUT ${MLX_METAL_PATH}/mlx.metallib
++    COMMAND ${CMAKE_COMMAND} -E copy ${MLX_PREBUILT_METALLIB}
++            ${MLX_METAL_PATH}/mlx.metallib
++    DEPENDS ${MLX_PREBUILT_METALLIB}
++    COMMENT "Copying prebuilt mlx.metallib"
++    VERBATIM)
++else()
++  add_custom_command(
++    OUTPUT ${MLX_METAL_PATH}/mlx.metallib
++    COMMAND xcrun -sdk macosx metallib ${KERNEL_AIR} -o
++            ${MLX_METAL_PATH}/mlx.metallib
++    DEPENDS ${KERNEL_AIR}
++    COMMENT "Building mlx.metallib"
++    VERBATIM)
++endif()
+ 
+ add_custom_target(mlx-metallib DEPENDS ${MLX_METAL_PATH}/mlx.metallib)
+ 
+diff --git a/mlx/backend/metal/make_compiled_preamble.sh b/mlx/backend/metal/make_compiled_preamble.sh
+index bb55ed3..aaade01 100644
+--- a/mlx/backend/metal/make_compiled_preamble.sh
++++ b/mlx/backend/metal/make_compiled_preamble.sh
+@@ -30,53 +30,11 @@ OUTPUT_FILE=${OUTPUT_DIR}/${SRC_NAME}.cpp
+ # Prepare output
+ mkdir -p "$OUTPUT_DIR"
+ 
+-# Use the metal compiler to get a list of headers (with depth)
+-CCC="xcrun -sdk macosx metal -x metal"
+-HDRS=$( $CCC -I"$SRC_DIR" -I"$JIT_INCLUDES" -DMLX_METAL_JIT -E -P -CC -C -H "$INPUT_FILE" $CFLAGS -w 2>&1 1>/dev/null )
+-
+-# Remove any included system frameworks (for MetalPerformancePrimitive headers)
+-HDRS=$(echo "$HDRS" | grep -v "Xcode")
+-
+-# Use the header depth to sort the files in order of inclusion
+-declare -a HDRS_LIST=($HDRS)
+-declare -a HDRS_STACK=()
+-declare -a HDRS_SORTED=()
+-
+-length=${#HDRS_LIST[@]}
+-
+-HDRS_LIST+=(".")
+-
+-for ((i=0; i<${length}; i+=2));
+-do 
+-
+-  header="${HDRS_LIST[$i+1]#$SRC_DIR/}"
+-
+-  str_this="${HDRS_LIST[$i]}"
+-  str_next="${HDRS_LIST[$i + 2]}"
+-
+-  depth_this=${#str_this}
+-  depth_next=${#str_next}
+-
+-  # If we have a dependency then we stack it
+-  if [ $depth_next -gt $depth_this ]; then 
+-    HDRS_STACK=($header ${HDRS_STACK[@]})
+-
+-  # If we are done with this level 
+-  else 
+-    # We add the header to out list
+-    HDRS_SORTED+=($header) 
+-
+-    # Pop the stacked up dependencies
+-    pop_len=$((depth_this - depth_next))
+-    for popped_header in "${HDRS_STACK[@]:0:$pop_len}"
+-    do 
+-      HDRS_SORTED+=($popped_header)
+-    done 
+-
+-    HDRS_STACK=(${HDRS_STACK[@]:$pop_len})
+-  fi  
+-
+-done
++# bonsai-fold patch: enumerate quote-includes in inclusion order with a
++# python walker instead of `xcrun metal -E -H` (no Metal offline compiler
++# on this machine; angle includes stay for the runtime compiler anyway).
++# The walker emits SRC_DIR-relative paths itself (symlink-safe).
++declare -a HDRS_SORTED=($(python3 "$(dirname "$0")/jit_preamble_deps.py" "$SRC_DIR" "$JIT_INCLUDES" "$INPUT_FILE"))
+ 
+ # Make sure the given metal header is also expanded in the source content
+ HDRS_SORTED+=("${INPUT_FILE#$SRC_DIR/}")

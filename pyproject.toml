@@ -1,0 +1,36 @@
+[project]
+name = "bonsai-fold"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "datasets>=5.0.0",
+    "huggingface-hub>=1.23.0",
+    "mlx>=0.31.2",
+    "mlx-lm==0.31.2",
+    "numpy>=2.5.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/bonsaifold"]
+
+[dependency-groups]
+dev = [
+    "cmake>=3.25",
+    "setuptools>=80",
+    "typing-extensions>=4.16.0",
+]
+
+# mlx comes from PrismML's fork (1-bit kernels; pending upstream mlx#3161),
+# patched to build without the Metal offline compiler — see
+# scripts/setup_env.sh. Building it requires:
+#   CMAKE_ARGS="-DMLX_METAL_JIT=ON -DMLX_PREBUILT_METALLIB=$PWD/vendor/prebuilt/mlx.metallib"
+# in the environment of `uv sync` (setup_env.sh exports it).
+[tool.uv.sources]
+mlx = { path = "vendor/mlx", editable = true }
+
+[tool.uv]
+no-build-isolation-package = ["mlx"]

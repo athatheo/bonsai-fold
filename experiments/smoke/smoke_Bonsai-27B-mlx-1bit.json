@@ -1,0 +1,11 @@
+{
+ "pack": "models/Bonsai-27B-mlx-1bit",
+ "prompt_tokens": 53,
+ "prompt_tps": 145.42,
+ "generation_tokens": 100,
+ "generation_tps": 70.89,
+ "wall_seconds": 1.88,
+ "peak_memory_gb": 4.66,
+ "mlx_version": "0.31.2.dev20260715+10b5fe4",
+ "output": "Here's a thinking process:\n\n1.  **Analyze User Input:**\n   - Initial number of branches: 64\n   - Final number of branches: 48\n   - Rate of pruning: exactly 1 branch removed per day\n   - Question: How many days does pruning take?\n   - Request: Briefly explain.\n\n2.  **Identify Key Mathematical Operation:**\n   - This is a simple subtraction problem: Initial - Final = Number removed"
+}
