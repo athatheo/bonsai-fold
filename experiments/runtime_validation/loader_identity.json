@@ -1,0 +1,21 @@
+{
+ "pack": "models/Bonsai-27B-mlx-1bit",
+ "sequences": [
+  {
+   "tokens": 10,
+   "bit_identical": true,
+   "max_abs_diff": 0.0
+  },
+  {
+   "tokens": 128,
+   "bit_identical": true,
+   "max_abs_diff": 0.0
+  },
+  {
+   "tokens": 128,
+   "bit_identical": true,
+   "max_abs_diff": 0.0
+  }
+ ],
+ "ok": true
+}
