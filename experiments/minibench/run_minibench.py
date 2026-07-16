@@ -1,0 +1,122 @@
+"""Run the frozen mini-bench on a pack or on a drop-candidate view.
+
+Thinking mode with the mandated sampling; rule-first scoring via
+bonsaifold.minibench (answers after the thinking block only). Checkpoints
+per item; resume by id. One JSON per config under results/.
+
+DO NOT run casually: loads the 27B and generates up to --max-tokens per
+item (~500 items x ~1.5K tokens avg ~= 3h per config at ~66 tok/s).
+
+Usage:
+  uv run python experiments/minibench/run_minibench.py \
+      --pack models/Bonsai-27B-mlx-1bit [--drop 12,8] \
+      --out experiments/minibench/results/reference.json
+"""
+import argparse
+import json
+from pathlib import Path
+
+import mlx.core as mx
+from mlx_lm import stream_generate
+
+from bonsaifold import bonsai_prompt, make_bonsai_sampler
+from bonsaifold.loader import drop_view, load_bonsai
+from bonsaifold.minibench import answers, ifeval
+
+ITEMS = Path(__file__).parent / "minibench_items.json"
+
+
+def score(item, response):
+    body = answers.strip_thinking(response)
+    if item["task"] == "gsm8k":
+        pred = answers.extract_boxed(body) or answers.extract_gsm8k(body)
+        return answers.math_equal(pred, answers.gsm8k_gold(item["gold"])) if pred else False
+    if item["task"] == "math500":
+        pred = answers.extract_boxed(body)
+        return answers.math_equal(pred, item["gold"]) if pred else False
+    if item["task"] == "mmlu":
+        return answers.extract_mmlu_choice(body) == item["gold"]
+    if item["task"] == "ifeval":
+        return all(
+            ifeval.verify(iid, kw or {}, body)
+            for iid, kw in zip(item["instruction_id_list"], item["kwargs"])
+        )
+    raise ValueError(item["task"])
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--pack", required=True)
+    ap.add_argument("--drop", default=None, help="comma-separated block indices")
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--max-tokens", type=int, default=16384)  # short tier
+    ap.add_argument("--seed", type=int, default=0)
+    args = ap.parse_args()
+
+    data = json.loads(ITEMS.read_text())
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    done = {}
+    if out.exists():
+        done = {r["id"]: r for r in json.loads(out.read_text())["items"]}
+
+    model, tokenizer = load_bonsai(args.pack)
+    target = model
+    if args.drop:
+        target = drop_view(model, [int(i) for i in args.drop.split(",")])
+
+    results = []
+
+    def write():
+        by_task = {}
+        for r in results:
+            by_task.setdefault(r["task"], []).append(r["correct"])
+        scores = {t: sum(v) / len(v) for t, v in by_task.items()}
+        out.write_text(
+            json.dumps(
+                {
+                    "pack": args.pack,
+                    "drop": args.drop,
+                    "max_tokens": args.max_tokens,
+                    "seed": args.seed,
+                    "task_accuracy": scores,
+                    "macro_avg": sum(scores.values()) / len(scores),
+                    "items": results,
+                },
+                indent=1,
+            )
+        )
+
+    for k, item in enumerate(data["items"]):
+        if item["id"] in done:
+            results.append(done[item["id"]])
+            continue
+        mx.random.seed(args.seed * 1_000_003 + k)  # per-item reproducibility
+        prompt = bonsai_prompt(tokenizer, [{"role": "user", "content": item["prompt"]}])
+        text = []
+        last = None
+        for resp in stream_generate(
+            target, tokenizer, prompt, max_tokens=args.max_tokens,
+            sampler=make_bonsai_sampler(),
+        ):
+            text.append(resp.text)
+            last = resp
+        response = "".join(text)
+        rec = {
+            "id": item["id"],
+            "task": item["task"],
+            "correct": bool(score(item, response)),
+            "gen_tokens": last.generation_tokens,
+            "finish_reason": last.finish_reason,
+        }
+        results.append(rec)
+        write()
+        acc = sum(r["correct"] for r in results) / len(results)
+        print(f"{item['id']}: {'ok' if rec['correct'] else 'MISS'} "
+              f"({rec['gen_tokens']} tok) running acc {acc:.3f}")
+    write()
+    print(f"wrote {out}")
+
+
+if __name__ == "__main__":
+    main()
