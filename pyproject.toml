@@ -35,3 +35,6 @@ mlx = { path = "vendor/mlx", editable = true }
 
 [tool.uv]
 no-build-isolation-package = ["mlx"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

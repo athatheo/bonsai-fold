@@ -3,6 +3,7 @@
 import pytest
 
 from bonsaifold.minibench.answers import (
+    _normalize,
     extract_boxed,
     extract_gsm8k,
     extract_mmlu_choice,
@@ -72,6 +73,11 @@ class TestExtractGsm8k:
         # "3, 4" is a list, not the number 34
         assert extract_gsm8k("we have 3, 4 and then 72 eggs") == "72"
 
+    def test_range_hyphen_is_not_a_sign(self):
+        assert extract_gsm8k("She read pages 10-25") == "25"
+        assert extract_gsm8k("it takes between 3-4 hours") == "4"
+        assert extract_gsm8k("during 2019-2020") == "2020"
+
     def test_no_number_returns_none(self):
         assert extract_gsm8k("no digits here at all") is None
 
@@ -94,6 +100,14 @@ class TestGsm8kGold:
 
     def test_last_marker_wins(self):
         assert gsm8k_gold("#### 1\nmore work\n#### 2") == "2"
+
+    def test_marker_capture_stays_on_its_line(self):
+        # a bare "####" line must not swallow the next line's marker
+        assert gsm8k_gold("#### \n#### 72") == "72"
+
+    def test_interior_hyphen_not_relocated(self):
+        # a range-like gold stays as-is instead of becoming "-34"
+        assert gsm8k_gold("#### 3-4") == "3-4"
 
     def test_missing_marker_raises(self):
         with pytest.raises(ValueError):
@@ -135,6 +149,22 @@ class TestExtractBoxed:
 
     def test_fallback_answer_is_takes_last(self):
         assert extract_boxed("The answer is 3. Wait, the answer is 4.") == "4"
+
+    def test_fallback_answer_is_colon(self):
+        assert extract_boxed("The answer is: 42.") == "42"
+
+    def test_fallback_clause_trimmed(self):
+        assert extract_boxed("The answer is 7, so we are done.") == "7"
+
+    def test_fallback_unit_words_stripped(self):
+        assert extract_boxed("The answer is 18 eggs.") == "18"
+        assert extract_boxed(r"The answer is \frac{1}{2} dollars.") == r"\frac{1}{2}"
+
+    def test_fallback_tuple_commas_survive_clause_trim(self):
+        assert extract_boxed("The answer is (1, 2).") == "(1, 2)"
+
+    def test_isnt_does_not_trigger_answer_is(self):
+        assert extract_boxed("The answer isn't 42. The result equals 43.") == "43"
 
     def test_fallback_last_number(self):
         assert extract_boxed("we compute 12 then 15") == "15"
@@ -188,7 +218,12 @@ EQUAL_PAIRS = [
     (r"\frac{\sqrt{3}}{2}", r"\sqrt{3}/2"),
     # units
     (r"5\text{ cm}", "5"),
+    (r"5\text {cm}", "5"),  # space before the brace must behave the same
     (r"\text{even}", "even"),
+    (r"(\text{a}, \text{b})", "(a,b)"),  # standalone unwrap per tuple element
+    # scientific notation
+    ("1e3", "1000"),
+    ("5e-1", "1/2"),
     # tuples and intervals (elementwise)
     ("(1, 2)", "(1,2)"),
     ("[0, 1)", "[0,1)"),
@@ -220,6 +255,17 @@ UNEQUAL_PAIRS = [
     ("2+3", "5"),
     ("", "5"),
     ("", ""),
+    # grouping must not be lost when flattening \frac
+    (r"\frac{1+2}{3}", "1+2/3"),
+    # mid-string \text blocks must not splice tokens together
+    (r"2\text{ or }3", "23"),
+    (r"1\text{ and }2", "12"),
+    # token-aware \left/\right removal
+    (r"\leftarrow", r"\rightarrow"),
+    # whitespace between digits is meaningful
+    ("1 2", "12"),
+    # a trailing ellipsis is not a sentence period
+    ("0.999...", "0.999"),
 ]
 
 
@@ -255,6 +301,25 @@ class TestMathEqual:
     def test_frac_with_trailing_factor_not_collapsed(self):
         # \frac{1}{2}x is not the scalar 1/2
         assert not math_equal(r"\frac{1}{2}x", "1/2")
+
+    @pytest.mark.parametrize("s", [a for a, _ in EQUAL_PAIRS + UNEQUAL_PAIRS])
+    def test_normalize_idempotent(self, s):
+        once = _normalize(s)
+        assert _normalize(once) == once
+
+    def test_deep_nesting_never_raises(self):
+        deep_sqrt_a = "\\sqrt{" * 100 + "2" + "}" * 100
+        deep_sqrt_b = "\\sqrt{" * 100 + "3" + "}" * 100
+        assert math_equal(deep_sqrt_a, deep_sqrt_a)  # exact match still works
+        assert not math_equal(deep_sqrt_a, deep_sqrt_b)
+        deep_paren_a = "(" * 60 + "1" + ")" * 60
+        deep_paren_b = "(" * 60 + "2" + ")" * 60
+        assert not math_equal(deep_paren_a, deep_paren_b)
+
+    def test_huge_exponents_rejected_fast(self):
+        # would otherwise materialize a 10^10000000-digit integer
+        assert not math_equal("1e10000000", "3")
+        assert not math_equal("1e50", "1" + "0" * 50)  # beyond the 1e40 cap
 
 
 # ---------------------------------------------------------------------------
@@ -303,6 +368,16 @@ class TestExtractMmluChoice:
 
     def test_word_letters_not_matched(self):
         assert extract_mmlu_choice("the answer is Considered unknown") is None
+
+    def test_answer_is_colon_variant(self):
+        assert extract_mmlu_choice("The answer is: B because of the second law.") == "B"
+
+    def test_letter_digit_words_not_matched(self):
+        assert extract_mmlu_choice("The answer is B12 deficiency, a common cause.") is None
+
+    def test_function_notation_not_matched_as_paren_choice(self):
+        text = "We know P(A)=0.5 and P(B)=0.2, so the union is 0.6.\n\nD"
+        assert extract_mmlu_choice(text) == "D"
 
     def test_letter_out_of_range(self):
         assert extract_mmlu_choice("The answer is (E)") is None

@@ -27,21 +27,29 @@ ITEMS = Path(__file__).parent / "minibench_items.json"
 
 
 def score(item, response):
+    # a response that never closes its thinking block gave no answer —
+    # scoring the raw chain-of-thought would fish stray numbers out of it
+    if "</think>" not in response:
+        return False
     body = answers.strip_thinking(response)
-    if item["task"] == "gsm8k":
-        pred = answers.extract_boxed(body) or answers.extract_gsm8k(body)
-        return answers.math_equal(pred, answers.gsm8k_gold(item["gold"])) if pred else False
-    if item["task"] == "math500":
-        pred = answers.extract_boxed(body)
-        return answers.math_equal(pred, item["gold"]) if pred else False
-    if item["task"] == "mmlu":
-        return answers.extract_mmlu_choice(body) == item["gold"]
-    if item["task"] == "ifeval":
-        return all(
-            ifeval.verify(iid, kw or {}, body)
-            for iid, kw in zip(item["instruction_id_list"], item["kwargs"])
-        )
-    raise ValueError(item["task"])
+    try:
+        if item["task"] == "gsm8k":
+            pred = answers.extract_boxed(body)  # falls back to last number
+            return answers.math_equal(pred, answers.gsm8k_gold(item["gold"])) if pred else False
+        if item["task"] == "math500":
+            pred = answers.extract_boxed(body)
+            return answers.math_equal(pred, item["gold"]) if pred else False
+        if item["task"] == "mmlu":
+            return answers.extract_mmlu_choice(body) == item["gold"]
+        if item["task"] == "ifeval":
+            return all(
+                ifeval.verify(iid, kw or {}, body)
+                for iid, kw in zip(item["instruction_id_list"], item["kwargs"])
+            )
+        raise ValueError(f"unknown task {item['task']}")
+    except ValueError:
+        # malformed item/gold must not wedge the resume loop; scored wrong
+        return False
 
 
 def main():
