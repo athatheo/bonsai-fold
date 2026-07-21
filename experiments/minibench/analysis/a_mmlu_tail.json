@@ -1,0 +1,1286 @@
+{
+  "meta": {
+    "task": "a_mmlu_tail",
+    "n_mmlu": 200,
+    "seed": 0,
+    "n_permutations": 20000,
+    "kl_anchors_mean_kl_nats": {
+      "onpolicy": {
+        "k2": 0.007554768374456167,
+        "k6": 0.03111115261509143,
+        "k8": 0.06426152843219171
+      },
+      "offpolicy": {
+        "k2": 0.033044363180810506,
+        "k6": 0.204609790459549,
+        "k8": 0.3914830479536029
+      }
+    },
+    "mmlu_accuracy": {
+      "ref": {
+        "acc": 0.805,
+        "n_correct": 161,
+        "wilson95": [
+          0.7446,
+          0.8539
+        ]
+      },
+      "k2": {
+        "acc": 0.79,
+        "n_correct": 158,
+        "wilson95": [
+          0.7284,
+          0.8407
+        ]
+      },
+      "k6": {
+        "acc": 0.725,
+        "n_correct": 145,
+        "wilson95": [
+          0.6593,
+          0.7822
+        ]
+      },
+      "k8": {
+        "acc": 0.62,
+        "n_correct": 124,
+        "wilson95": [
+          0.5511,
+          0.6844
+        ]
+      }
+    }
+  },
+  "per_subject": [
+    {
+      "subject": "high_school_statistics",
+      "group": "STEM",
+      "n": 1,
+      "index_range": [
+        98,
+        98
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 0.0,
+      "acc_k8": 0.0,
+      "delta_k8_ref": -1.0,
+      "underpowered": true
+    },
+    {
+      "subject": "medical_genetics",
+      "group": "other",
+      "n": 1,
+      "index_range": [
+        146,
+        146
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 0.0,
+      "acc_k8": 0.0,
+      "delta_k8_ref": -1.0,
+      "underpowered": true
+    },
+    {
+      "subject": "miscellaneous",
+      "group": "other",
+      "n": 3,
+      "index_range": [
+        147,
+        149
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 0.6667,
+      "acc_k8": 0.0,
+      "delta_k8_ref": -1.0,
+      "underpowered": true
+    },
+    {
+      "subject": "prehistory",
+      "group": "humanities",
+      "n": 3,
+      "index_range": [
+        166,
+        168
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 0.6667,
+      "acc_k8": 0.0,
+      "delta_k8_ref": -1.0,
+      "underpowered": true
+    },
+    {
+      "subject": "professional_law",
+      "group": "humanities",
+      "n": 1,
+      "index_range": [
+        172,
+        172
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 0.0,
+      "acc_k6": 0.0,
+      "acc_k8": 0.0,
+      "delta_k8_ref": -1.0,
+      "underpowered": true
+    },
+    {
+      "subject": "professional_medicine",
+      "group": "other",
+      "n": 4,
+      "index_range": [
+        173,
+        176
+      ],
+      "acc_ref": 0.75,
+      "acc_k2": 1.0,
+      "acc_k6": 1.0,
+      "acc_k8": 0.0,
+      "delta_k8_ref": -0.75,
+      "underpowered": true
+    },
+    {
+      "subject": "logical_fallacies",
+      "group": "humanities",
+      "n": 3,
+      "index_range": [
+        126,
+        128
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 0.6667,
+      "acc_k8": 0.3333,
+      "delta_k8_ref": -0.6667,
+      "underpowered": true
+    },
+    {
+      "subject": "world_religions",
+      "group": "humanities",
+      "n": 3,
+      "index_range": [
+        197,
+        199
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 1.0,
+      "acc_k8": 0.3333,
+      "delta_k8_ref": -0.6667,
+      "underpowered": true
+    },
+    {
+      "subject": "electrical_engineering",
+      "group": "STEM",
+      "n": 5,
+      "index_range": [
+        44,
+        48
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 0.6,
+      "acc_k8": 0.4,
+      "delta_k8_ref": -0.6,
+      "underpowered": true
+    },
+    {
+      "subject": "high_school_government_and_politics",
+      "group": "social_sciences",
+      "n": 2,
+      "index_range": [
+        68,
+        69
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 1.0,
+      "acc_k8": 0.5,
+      "delta_k8_ref": -0.5,
+      "underpowered": true
+    },
+    {
+      "subject": "high_school_macroeconomics",
+      "group": "social_sciences",
+      "n": 4,
+      "index_range": [
+        70,
+        73
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 0.75,
+      "acc_k8": 0.5,
+      "delta_k8_ref": -0.5,
+      "underpowered": true
+    },
+    {
+      "subject": "moral_disputes",
+      "group": "humanities",
+      "n": 6,
+      "index_range": [
+        150,
+        155
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 0.8333,
+      "acc_k8": 0.5,
+      "delta_k8_ref": -0.5,
+      "underpowered": true
+    },
+    {
+      "subject": "business_ethics",
+      "group": "other",
+      "n": 5,
+      "index_range": [
+        7,
+        11
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 0.8,
+      "acc_k8": 0.6,
+      "delta_k8_ref": -0.4,
+      "underpowered": true
+    },
+    {
+      "subject": "machine_learning",
+      "group": "STEM",
+      "n": 5,
+      "index_range": [
+        129,
+        133
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 0.6,
+      "acc_k6": 0.8,
+      "acc_k8": 0.6,
+      "delta_k8_ref": -0.4,
+      "underpowered": true
+    },
+    {
+      "subject": "college_biology",
+      "group": "STEM",
+      "n": 3,
+      "index_range": [
+        17,
+        19
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 1.0,
+      "acc_k8": 0.6667,
+      "delta_k8_ref": -0.3333,
+      "underpowered": true
+    },
+    {
+      "subject": "conceptual_physics",
+      "group": "STEM",
+      "n": 3,
+      "index_range": [
+        38,
+        40
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 1.0,
+      "acc_k8": 0.6667,
+      "delta_k8_ref": -0.3333,
+      "underpowered": true
+    },
+    {
+      "subject": "formal_logic",
+      "group": "humanities",
+      "n": 3,
+      "index_range": [
+        50,
+        52
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 0.6667,
+      "acc_k8": 0.6667,
+      "delta_k8_ref": -0.3333,
+      "underpowered": true
+    },
+    {
+      "subject": "global_facts",
+      "group": "other",
+      "n": 3,
+      "index_range": [
+        53,
+        55
+      ],
+      "acc_ref": 0.3333,
+      "acc_k2": 0.3333,
+      "acc_k6": 0.3333,
+      "acc_k8": 0.0,
+      "delta_k8_ref": -0.3333,
+      "underpowered": true
+    },
+    {
+      "subject": "jurisprudence",
+      "group": "humanities",
+      "n": 3,
+      "index_range": [
+        123,
+        125
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 1.0,
+      "acc_k8": 0.6667,
+      "delta_k8_ref": -0.3333,
+      "underpowered": true
+    },
+    {
+      "subject": "marketing",
+      "group": "other",
+      "n": 3,
+      "index_range": [
+        143,
+        145
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 1.0,
+      "acc_k8": 0.6667,
+      "delta_k8_ref": -0.3333,
+      "underpowered": true
+    },
+    {
+      "subject": "high_school_psychology",
+      "group": "social_sciences",
+      "n": 4,
+      "index_range": [
+        94,
+        97
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 0.75,
+      "acc_k8": 0.75,
+      "delta_k8_ref": -0.25,
+      "underpowered": true
+    },
+    {
+      "subject": "nutrition",
+      "group": "other",
+      "n": 4,
+      "index_range": [
+        159,
+        162
+      ],
+      "acc_ref": 0.25,
+      "acc_k2": 1.0,
+      "acc_k6": 0.25,
+      "acc_k8": 0.0,
+      "delta_k8_ref": -0.25,
+      "underpowered": true
+    },
+    {
+      "subject": "professional_psychology",
+      "group": "social_sciences",
+      "n": 4,
+      "index_range": [
+        177,
+        180
+      ],
+      "acc_ref": 0.5,
+      "acc_k2": 0.75,
+      "acc_k6": 0.25,
+      "acc_k8": 0.25,
+      "delta_k8_ref": -0.25,
+      "underpowered": true
+    },
+    {
+      "subject": "clinical_knowledge",
+      "group": "other",
+      "n": 5,
+      "index_range": [
+        12,
+        16
+      ],
+      "acc_ref": 0.8,
+      "acc_k2": 0.8,
+      "acc_k6": 0.8,
+      "acc_k8": 0.6,
+      "delta_k8_ref": -0.2,
+      "underpowered": true
+    },
+    {
+      "subject": "college_chemistry",
+      "group": "STEM",
+      "n": 5,
+      "index_range": [
+        20,
+        24
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 0.8,
+      "acc_k8": 0.8,
+      "delta_k8_ref": -0.2,
+      "underpowered": true
+    },
+    {
+      "subject": "college_mathematics",
+      "group": "STEM",
+      "n": 5,
+      "index_range": [
+        27,
+        31
+      ],
+      "acc_ref": 0.8,
+      "acc_k2": 0.6,
+      "acc_k6": 0.6,
+      "acc_k8": 0.6,
+      "delta_k8_ref": -0.2,
+      "underpowered": true
+    },
+    {
+      "subject": "high_school_european_history",
+      "group": "humanities",
+      "n": 5,
+      "index_range": [
+        61,
+        65
+      ],
+      "acc_ref": 0.8,
+      "acc_k2": 0.8,
+      "acc_k6": 0.8,
+      "acc_k8": 0.6,
+      "delta_k8_ref": -0.2,
+      "underpowered": true
+    },
+    {
+      "subject": "high_school_world_history",
+      "group": "humanities",
+      "n": 5,
+      "index_range": [
+        102,
+        106
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 1.0,
+      "acc_k8": 0.8,
+      "delta_k8_ref": -0.2,
+      "underpowered": true
+    },
+    {
+      "subject": "us_foreign_policy",
+      "group": "social_sciences",
+      "n": 5,
+      "index_range": [
+        190,
+        194
+      ],
+      "acc_ref": 0.8,
+      "acc_k2": 0.6,
+      "acc_k6": 0.8,
+      "acc_k8": 0.6,
+      "delta_k8_ref": -0.2,
+      "underpowered": true
+    },
+    {
+      "subject": "international_law",
+      "group": "humanities",
+      "n": 8,
+      "index_range": [
+        115,
+        122
+      ],
+      "acc_ref": 0.75,
+      "acc_k2": 0.75,
+      "acc_k6": 0.875,
+      "acc_k8": 0.625,
+      "delta_k8_ref": -0.125,
+      "underpowered": true
+    },
+    {
+      "subject": "abstract_algebra",
+      "group": "STEM",
+      "n": 2,
+      "index_range": [
+        0,
+        1
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 1.0,
+      "acc_k8": 1.0,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "anatomy",
+      "group": "other",
+      "n": 3,
+      "index_range": [
+        2,
+        4
+      ],
+      "acc_ref": 0.6667,
+      "acc_k2": 0.6667,
+      "acc_k6": 0.6667,
+      "acc_k8": 0.6667,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "astronomy",
+      "group": "STEM",
+      "n": 2,
+      "index_range": [
+        5,
+        6
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 1.0,
+      "acc_k8": 1.0,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "college_medicine",
+      "group": "other",
+      "n": 3,
+      "index_range": [
+        32,
+        34
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 1.0,
+      "acc_k8": 1.0,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "college_physics",
+      "group": "STEM",
+      "n": 2,
+      "index_range": [
+        35,
+        36
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 0.5,
+      "acc_k6": 0.5,
+      "acc_k8": 1.0,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "computer_security",
+      "group": "STEM",
+      "n": 1,
+      "index_range": [
+        37,
+        37
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 1.0,
+      "acc_k8": 1.0,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "econometrics",
+      "group": "social_sciences",
+      "n": 3,
+      "index_range": [
+        41,
+        43
+      ],
+      "acc_ref": 0.3333,
+      "acc_k2": 0.3333,
+      "acc_k6": 0.6667,
+      "acc_k8": 0.3333,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "elementary_mathematics",
+      "group": "STEM",
+      "n": 1,
+      "index_range": [
+        49,
+        49
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 1.0,
+      "acc_k8": 1.0,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "high_school_biology",
+      "group": "STEM",
+      "n": 1,
+      "index_range": [
+        56,
+        56
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 0.0,
+      "acc_k6": 1.0,
+      "acc_k8": 1.0,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "high_school_chemistry",
+      "group": "STEM",
+      "n": 1,
+      "index_range": [
+        57,
+        57
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 1.0,
+      "acc_k8": 1.0,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "high_school_computer_science",
+      "group": "STEM",
+      "n": 3,
+      "index_range": [
+        58,
+        60
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 1.0,
+      "acc_k6": 1.0,
+      "acc_k8": 1.0,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "high_school_mathematics",
+      "group": "STEM",
+      "n": 7,
+      "index_range": [
+        74,
+        80
+      ],
+      "acc_ref": 0.8571,
+      "acc_k2": 0.7143,
+      "acc_k6": 0.8571,
+      "acc_k8": 0.8571,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "high_school_microeconomics",
+      "group": "social_sciences",
+      "n": 6,
+      "index_range": [
+        81,
+        86
+      ],
+      "acc_ref": 0.8333,
+      "acc_k2": 0.8333,
+      "acc_k6": 0.8333,
+      "acc_k8": 0.8333,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "high_school_us_history",
+      "group": "humanities",
+      "n": 3,
+      "index_range": [
+        99,
+        101
+      ],
+      "acc_ref": 0.3333,
+      "acc_k2": 0.6667,
+      "acc_k6": 0.3333,
+      "acc_k8": 0.3333,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "human_aging",
+      "group": "other",
+      "n": 3,
+      "index_range": [
+        107,
+        109
+      ],
+      "acc_ref": 0.6667,
+      "acc_k2": 0.0,
+      "acc_k6": 0.3333,
+      "acc_k8": 0.6667,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "human_sexuality",
+      "group": "social_sciences",
+      "n": 5,
+      "index_range": [
+        110,
+        114
+      ],
+      "acc_ref": 0.8,
+      "acc_k2": 1.0,
+      "acc_k6": 1.0,
+      "acc_k8": 0.8,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "moral_scenarios",
+      "group": "humanities",
+      "n": 3,
+      "index_range": [
+        156,
+        158
+      ],
+      "acc_ref": 0.6667,
+      "acc_k2": 0.6667,
+      "acc_k6": 0.3333,
+      "acc_k8": 0.6667,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "philosophy",
+      "group": "humanities",
+      "n": 3,
+      "index_range": [
+        163,
+        165
+      ],
+      "acc_ref": 0.6667,
+      "acc_k2": 0.3333,
+      "acc_k6": 0.6667,
+      "acc_k8": 0.6667,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "public_relations",
+      "group": "social_sciences",
+      "n": 1,
+      "index_range": [
+        181,
+        181
+      ],
+      "acc_ref": 0.0,
+      "acc_k2": 0.0,
+      "acc_k6": 0.0,
+      "acc_k8": 0.0,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "security_studies",
+      "group": "social_sciences",
+      "n": 3,
+      "index_range": [
+        182,
+        184
+      ],
+      "acc_ref": 0.3333,
+      "acc_k2": 0.3333,
+      "acc_k6": 0.0,
+      "acc_k8": 0.3333,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "sociology",
+      "group": "social_sciences",
+      "n": 5,
+      "index_range": [
+        185,
+        189
+      ],
+      "acc_ref": 0.8,
+      "acc_k2": 0.8,
+      "acc_k6": 0.8,
+      "acc_k8": 0.8,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "virology",
+      "group": "other",
+      "n": 2,
+      "index_range": [
+        195,
+        196
+      ],
+      "acc_ref": 1.0,
+      "acc_k2": 0.5,
+      "acc_k6": 0.5,
+      "acc_k8": 1.0,
+      "delta_k8_ref": 0.0,
+      "underpowered": true
+    },
+    {
+      "subject": "high_school_physics",
+      "group": "STEM",
+      "n": 7,
+      "index_range": [
+        87,
+        93
+      ],
+      "acc_ref": 0.8571,
+      "acc_k2": 0.8571,
+      "acc_k6": 0.8571,
+      "acc_k8": 1.0,
+      "delta_k8_ref": 0.1429,
+      "underpowered": true
+    },
+    {
+      "subject": "management",
+      "group": "other",
+      "n": 9,
+      "index_range": [
+        134,
+        142
+      ],
+      "acc_ref": 0.4444,
+      "acc_k2": 0.4444,
+      "acc_k6": 0.6667,
+      "acc_k8": 0.7778,
+      "delta_k8_ref": 0.3334,
+      "underpowered": true
+    },
+    {
+      "subject": "college_computer_science",
+      "group": "STEM",
+      "n": 2,
+      "index_range": [
+        25,
+        26
+      ],
+      "acc_ref": 0.5,
+      "acc_k2": 1.0,
+      "acc_k6": 1.0,
+      "acc_k8": 1.0,
+      "delta_k8_ref": 0.5,
+      "underpowered": true
+    },
+    {
+      "subject": "high_school_geography",
+      "group": "social_sciences",
+      "n": 2,
+      "index_range": [
+        66,
+        67
+      ],
+      "acc_ref": 0.5,
+      "acc_k2": 1.0,
+      "acc_k6": 0.5,
+      "acc_k8": 1.0,
+      "delta_k8_ref": 0.5,
+      "underpowered": true
+    },
+    {
+      "subject": "professional_accounting",
+      "group": "other",
+      "n": 3,
+      "index_range": [
+        169,
+        171
+      ],
+      "acc_ref": 0.3333,
+      "acc_k2": 0.3333,
+      "acc_k6": 0.0,
+      "acc_k8": 1.0,
+      "delta_k8_ref": 0.6667,
+      "underpowered": true
+    }
+  ],
+  "per_group": [
+    {
+      "group": "STEM",
+      "n": 56,
+      "acc_ref": 0.9286,
+      "wilson95_ref": [
+        0.8302,
+        0.9719
+      ],
+      "acc_k2": 0.8393,
+      "wilson95_k2": [
+        0.7219,
+        0.9131
+      ],
+      "acc_k6": 0.8214,
+      "wilson95_k6": [
+        0.7016,
+        0.9
+      ],
+      "acc_k8": 0.7857,
+      "wilson95_k8": [
+        0.6618,
+        0.8729
+      ],
+      "delta_k8_ref": -0.1429,
+      "mcnemar_k8_ref": {
+        "b": 10,
+        "c": 2,
+        "n_discordant": 12,
+        "p_exact_two_sided": 0.03857421875
+      },
+      "underpowered": true
+    },
+    {
+      "group": "humanities",
+      "n": 49,
+      "acc_ref": 0.8571,
+      "wilson95_ref": [
+        0.7333,
+        0.929
+      ],
+      "acc_k2": 0.8367,
+      "wilson95_k2": [
+        0.7096,
+        0.9149
+      ],
+      "acc_k6": 0.7551,
+      "wilson95_k6": [
+        0.6191,
+        0.854
+      ],
+      "acc_k8": 0.5306,
+      "wilson95_k8": [
+        0.3938,
+        0.663
+      ],
+      "delta_k8_ref": -0.3265,
+      "mcnemar_k8_ref": {
+        "b": 16,
+        "c": 0,
+        "n_discordant": 16,
+        "p_exact_two_sided": 3.0517578125e-05
+      },
+      "underpowered": true
+    },
+    {
+      "group": "social_sciences",
+      "n": 44,
+      "acc_ref": 0.7273,
+      "wilson95_ref": [
+        0.5815,
+        0.8365
+      ],
+      "acc_k2": 0.7727,
+      "wilson95_k2": [
+        0.6301,
+        0.8716
+      ],
+      "acc_k6": 0.6818,
+      "wilson95_k6": [
+        0.5344,
+        0.8
+      ],
+      "acc_k8": 0.6136,
+      "wilson95_k8": [
+        0.4662,
+        0.7428
+      ],
+      "delta_k8_ref": -0.1137,
+      "mcnemar_k8_ref": {
+        "b": 10,
+        "c": 5,
+        "n_discordant": 15,
+        "p_exact_two_sided": 0.3017578125
+      },
+      "underpowered": true
+    },
+    {
+      "group": "other",
+      "n": 51,
+      "acc_ref": 0.6863,
+      "wilson95_ref": [
+        0.5497,
+        0.7967
+      ],
+      "acc_k2": 0.7059,
+      "wilson95_k2": [
+        0.57,
+        0.8129
+      ],
+      "acc_k6": 0.6275,
+      "wilson95_k6": [
+        0.4903,
+        0.7468
+      ],
+      "acc_k8": 0.5294,
+      "wilson95_k8": [
+        0.3952,
+        0.6595
+      ],
+      "delta_k8_ref": -0.1569,
+      "mcnemar_k8_ref": {
+        "b": 14,
+        "c": 6,
+        "n_discordant": 20,
+        "p_exact_two_sided": 0.11531829833984375
+      },
+      "underpowered": true
+    }
+  ],
+  "positional": {
+    "k2": {
+      "head_acc_ref": 0.86,
+      "tail_acc_ref": 0.75,
+      "head_acc": 0.84,
+      "tail_acc": 0.74,
+      "head_paired_delta": -0.02,
+      "tail_paired_delta": -0.01,
+      "diff_in_diffs_tail_minus_head": 0.01
+    },
+    "k6": {
+      "head_acc_ref": 0.86,
+      "tail_acc_ref": 0.75,
+      "head_acc": 0.78,
+      "tail_acc": 0.67,
+      "head_paired_delta": -0.08,
+      "tail_paired_delta": -0.08,
+      "diff_in_diffs_tail_minus_head": 0.0
+    },
+    "k8": {
+      "head_acc_ref": 0.86,
+      "tail_acc_ref": 0.75,
+      "head_acc": 0.71,
+      "tail_acc": 0.53,
+      "head_paired_delta": -0.15,
+      "tail_paired_delta": -0.22,
+      "diff_in_diffs_tail_minus_head": -0.07,
+      "permutation_p_two_sided": 0.42128
+    },
+    "head_tail_group_composition": {
+      "head": {
+        "STEM": 51,
+        "other": 19,
+        "social_sciences": 21,
+        "humanities": 9
+      },
+      "tail": {
+        "humanities": 40,
+        "other": 32,
+        "social_sciences": 23,
+        "STEM": 5
+      }
+    }
+  },
+  "mcnemar_k8_vs_ref_mmlu": {
+    "b": 50,
+    "c": 13,
+    "n_discordant": 63,
+    "p_exact_two_sided": 3.015952084642337e-06,
+    "both_right": 111,
+    "both_wrong": 26,
+    "net_flips": 37,
+    "delta_acc": -0.185,
+    "flip_rate_ref_correct_to_k8_wrong": 0.3106
+  },
+  "truncation_screen": {
+    "ref": {
+      "finish_reason_counts": {
+        "stop": 192,
+        "length": 8,
+        "other": 0
+      },
+      "length_head": 5,
+      "length_tail": 3,
+      "acc_on_length_items": 0.0,
+      "gen_tokens": {
+        "n": 200,
+        "mean": 2754.7,
+        "median": 1361,
+        "p90": 6525,
+        "min": 188,
+        "max": 16384
+      },
+      "n_gen_tokens_zero": 0,
+      "n_gen_tokens_at_budget": 8
+    },
+    "k2": {
+      "finish_reason_counts": {
+        "stop": 191,
+        "length": 9,
+        "other": 0
+      },
+      "length_head": 6,
+      "length_tail": 3,
+      "acc_on_length_items": 0.0,
+      "gen_tokens": {
+        "n": 200,
+        "mean": 2711.3,
+        "median": 1203,
+        "p90": 6222,
+        "min": 154,
+        "max": 16384
+      },
+      "n_gen_tokens_zero": 0,
+      "n_gen_tokens_at_budget": 9
+    },
+    "k6": {
+      "finish_reason_counts": {
+        "stop": 187,
+        "length": 13,
+        "other": 0
+      },
+      "length_head": 8,
+      "length_tail": 5,
+      "acc_on_length_items": 0.0,
+      "gen_tokens": {
+        "n": 200,
+        "mean": 3018.1,
+        "median": 1320,
+        "p90": 9364,
+        "min": 213,
+        "max": 16384
+      },
+      "n_gen_tokens_zero": 0,
+      "n_gen_tokens_at_budget": 13
+    },
+    "k8": {
+      "finish_reason_counts": {
+        "stop": 188,
+        "length": 12,
+        "other": 0
+      },
+      "length_head": 4,
+      "length_tail": 8,
+      "acc_on_length_items": 0.0,
+      "gen_tokens": {
+        "n": 200,
+        "mean": 3023.4,
+        "median": 1469,
+        "p90": 7921,
+        "min": 192,
+        "max": 16384
+      },
+      "n_gen_tokens_zero": 0,
+      "n_gen_tokens_at_budget": 12
+    },
+    "k8_only_errors": {
+      "n": 50,
+      "n_length_truncated_in_k8": 6,
+      "indices_length_truncated": [
+        18,
+        24,
+        114,
+        119,
+        132,
+        167
+      ],
+      "n_in_tail": 30
+    },
+    "note": "results JSON stores no answer text; missing/empty-answer screen uses gen_tokens==0 and finish_reason proxies only",
+    "ref_only_errors_recovered_by_k8": {
+      "n": 13,
+      "n_ref_length_truncated": 4
+    }
+  },
+  "breakpoint_scan": {
+    "window_w": 20,
+    "worst_window": {
+      "start": 141,
+      "end": 160,
+      "paired_delta": -0.45,
+      "subjects_in_window": [
+        "management",
+        "marketing",
+        "medical_genetics",
+        "miscellaneous",
+        "moral_disputes",
+        "moral_scenarios",
+        "nutrition"
+      ]
+    },
+    "best_windows_sorted": [
+      {
+        "start": 141,
+        "end": 160,
+        "paired_delta": -0.45
+      },
+      {
+        "start": 142,
+        "end": 161,
+        "paired_delta": -0.45
+      },
+      {
+        "start": 143,
+        "end": 162,
+        "paired_delta": -0.45
+      },
+      {
+        "start": 144,
+        "end": 163,
+        "paired_delta": -0.4
+      },
+      {
+        "start": 145,
+        "end": 164,
+        "paired_delta": -0.4
+      }
+    ],
+    "n_subject_boundaries": 57,
+    "best_two_segment_split": {
+      "t": 143,
+      "mean_paired_delta_before": -0.1329,
+      "mean_paired_delta_after": -0.3158,
+      "gap": 0.1829,
+      "subject_at_t": "marketing",
+      "subject_before_t": "management",
+      "distance_to_nearest_subject_boundary": 0,
+      "fraction_of_indices_at_least_this_close_to_a_boundary": 0.2818,
+      "max_gap_permutation_p": 0.73651
+    }
+  },
+  "paired_delta_by_index_quartile": {
+    "k2": [
+      -0.02,
+      -0.02,
+      -0.04,
+      0.02
+    ],
+    "k6": [
+      -0.08,
+      -0.08,
+      -0.02,
+      -0.14
+    ],
+    "k8": [
+      -0.18,
+      -0.12,
+      -0.18,
+      -0.26
+    ]
+  },
+  "composition_decomposition": {
+    "observed_did_tail_minus_head": -0.07,
+    "did_expected_from_group_composition_alone": -0.0582,
+    "residual_positional_did": -0.0118
+  },
+  "humanities_vs_rest_k8": {
+    "n_humanities": 49,
+    "paired_delta_humanities": -0.3265,
+    "paired_delta_rest": -0.1391,
+    "difference": -0.1875,
+    "permutation_p_two_sided": 0.04465,
+    "humanities_in_tail": 40,
+    "humanities_in_head": 9
+  }
+}

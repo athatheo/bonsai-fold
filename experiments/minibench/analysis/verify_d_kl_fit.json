@@ -1,0 +1,606 @@
+{
+  "meta": {
+    "analysis": "verify_d_kl_fit",
+    "date": "2026-07-21",
+    "seed_item_bootstrap": 20260721,
+    "seed_cluster_bootstrap": 20260722,
+    "B": 10000
+  },
+  "n_checks": 56,
+  "n_ok": 56,
+  "all_ok": true,
+  "checks": [
+    {
+      "check": "500 unique ids in reference",
+      "ok": true,
+      "detail": "500"
+    },
+    {
+      "check": "identical id sets across 4 configs",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "task Ns 100/100/100/200",
+      "ok": true,
+      "detail": "{'gsm8k': 100, 'math500': 100, 'ifeval': 100, 'mmlu': 200}"
+    },
+    {
+      "check": "stored task_accuracy matches recomputed: reference/gsm8k",
+      "ok": true,
+      "detail": "recomputed 0.910000 stored 0.91"
+    },
+    {
+      "check": "stored task_accuracy matches recomputed: reference/math500",
+      "ok": true,
+      "detail": "recomputed 0.720000 stored 0.72"
+    },
+    {
+      "check": "stored task_accuracy matches recomputed: reference/ifeval",
+      "ok": true,
+      "detail": "recomputed 0.930000 stored 0.93"
+    },
+    {
+      "check": "stored task_accuracy matches recomputed: reference/mmlu",
+      "ok": true,
+      "detail": "recomputed 0.805000 stored 0.805"
+    },
+    {
+      "check": "stored macro_avg matches recomputed: reference",
+      "ok": true,
+      "detail": "recomputed 0.841250 stored 0.84125"
+    },
+    {
+      "check": "stored task_accuracy matches recomputed: k2/gsm8k",
+      "ok": true,
+      "detail": "recomputed 0.920000 stored 0.92"
+    },
+    {
+      "check": "stored task_accuracy matches recomputed: k2/math500",
+      "ok": true,
+      "detail": "recomputed 0.660000 stored 0.66"
+    },
+    {
+      "check": "stored task_accuracy matches recomputed: k2/ifeval",
+      "ok": true,
+      "detail": "recomputed 0.880000 stored 0.88"
+    },
+    {
+      "check": "stored task_accuracy matches recomputed: k2/mmlu",
+      "ok": true,
+      "detail": "recomputed 0.790000 stored 0.79"
+    },
+    {
+      "check": "stored macro_avg matches recomputed: k2",
+      "ok": true,
+      "detail": "recomputed 0.812500 stored 0.8125"
+    },
+    {
+      "check": "stored task_accuracy matches recomputed: k6/gsm8k",
+      "ok": true,
+      "detail": "recomputed 0.880000 stored 0.88"
+    },
+    {
+      "check": "stored task_accuracy matches recomputed: k6/math500",
+      "ok": true,
+      "detail": "recomputed 0.640000 stored 0.64"
+    },
+    {
+      "check": "stored task_accuracy matches recomputed: k6/ifeval",
+      "ok": true,
+      "detail": "recomputed 0.860000 stored 0.86"
+    },
+    {
+      "check": "stored task_accuracy matches recomputed: k6/mmlu",
+      "ok": true,
+      "detail": "recomputed 0.725000 stored 0.725"
+    },
+    {
+      "check": "stored macro_avg matches recomputed: k6",
+      "ok": true,
+      "detail": "recomputed 0.776250 stored 0.77625"
+    },
+    {
+      "check": "stored task_accuracy matches recomputed: k8/gsm8k",
+      "ok": true,
+      "detail": "recomputed 0.870000 stored 0.87"
+    },
+    {
+      "check": "stored task_accuracy matches recomputed: k8/math500",
+      "ok": true,
+      "detail": "recomputed 0.720000 stored 0.72"
+    },
+    {
+      "check": "stored task_accuracy matches recomputed: k8/ifeval",
+      "ok": true,
+      "detail": "recomputed 0.790000 stored 0.79"
+    },
+    {
+      "check": "stored task_accuracy matches recomputed: k8/mmlu",
+      "ok": true,
+      "detail": "recomputed 0.620000 stored 0.62"
+    },
+    {
+      "check": "stored macro_avg matches recomputed: k8",
+      "ok": true,
+      "detail": "recomputed 0.750000 stored 0.75"
+    },
+    {
+      "check": "macro drops 0/2.875/6.5/9.125",
+      "ok": true,
+      "detail": "{'reference': 0.0, 'k2': 2.875, 'k6': 6.5, 'k8': 9.125}"
+    },
+    {
+      "check": "claimed KL_on anchors",
+      "ok": true,
+      "detail": "{'reference': '0.000000', 'k2': '0.007555', 'k6': '0.031111', 'k8': '0.064262'}"
+    },
+    {
+      "check": "claimed KL_off anchors",
+      "ok": true,
+      "detail": "{'k2': '0.033044', 'k6': '0.204610', 'k8': '0.391483'}"
+    },
+    {
+      "check": "sqrt coef ~36.04, RMSE ~0.15, R2 ~0.998",
+      "ok": true,
+      "detail": "c=36.0405 rmse=0.1474 r2=0.99820"
+    },
+    {
+      "check": "sqrt residuals <0.3 pts at all anchors",
+      "ok": true,
+      "detail": "[0.0, -0.2576, 0.143, -0.0112]"
+    },
+    {
+      "check": "linear-origin slope ~157.2, RMSE ~1.26, R2 ~0.867",
+      "ok": true,
+      "detail": "b=157.207 rmse=1.2641 r2=0.86745"
+    },
+    {
+      "check": "linear-origin misses k2 by +1.7 pts",
+      "ok": true,
+      "detail": "resid k2 = +1.6873"
+    },
+    {
+      "check": "linear+intercept: intercept ~1.19, R2 ~0.925",
+      "ok": true,
+      "detail": "a=1.1925 b=133.395 r2=0.92480"
+    },
+    {
+      "check": "concavity: drop/KL falls ~380 -> ~209 -> ~142 pts/nat",
+      "ok": true,
+      "detail": "[380.6, 208.9, 142.0]"
+    },
+    {
+      "check": "boot linear slope 1.57 pts/0.01nats, CI ~[1.00, 2.14]",
+      "ok": true,
+      "detail": "point 1.5721 CI [0.9954, 2.1445]"
+    },
+    {
+      "check": "boot sqrt coef CI ~[22.8, 49.1]",
+      "ok": true,
+      "detail": "CI [22.781, 49.053]"
+    },
+    {
+      "check": "macro-drop CIs k2/k6/k8",
+      "ok": true,
+      "detail": "{'k2': [0.117, 5.673], 'k6': [3.725, 9.38], 'k8': [5.391, 12.794]}"
+    },
+    {
+      "check": "tax(2..8) = 1.000/1.175/1.334/1.878",
+      "ok": true,
+      "detail": "{'k2': 0.9999, 'k4': 1.175, 'k6': 1.3345, 'k8': 1.8778}"
+    },
+    {
+      "check": "off/on ratios 4.37/4.88/6.58/6.09 mean 5.48 pooled 5.93",
+      "ok": true,
+      "detail": "{'k2': 4.374, 'k4': 4.882, 'k6': 6.577, 'k8': 6.092, 'mean': 5.4813, 'pooled': 5.9319}"
+    },
+    {
+      "check": "1.5pt budget 0.00173 CI [0.00093,0.00434], off 0.00949, blk 1.15e-4",
+      "ok": true,
+      "detail": "{'sqrt_set_nats': '0.001732', 'sqrt_ci': ['0.000935', '0.004336'], 'off_ceiling_nats': '0.009495', 'per_block_k8_nats': '0.000115', 'lin_set_nats': '0.009542', 'lin_per_block_nats': '0.000635'}"
+    },
+    {
+      "check": "3.0pt budget 0.00693 CI [0.00374,0.01734], off 0.0380, blk 4.61e-4; lin 0.0191/1.27e-3",
+      "ok": true,
+      "detail": "{'sqrt_set_nats': '0.006929', 'sqrt_ci': ['0.003740', '0.017342'], 'off_ceiling_nats': '0.037979', 'per_block_k8_nats': '0.000461', 'lin_set_nats': '0.019083', 'lin_per_block_nats': '0.001270'}"
+    },
+    {
+      "check": "old 0.05-nats gate -> ~8.06 (sqrt) / 7.86 (linear) pts",
+      "ok": true,
+      "detail": "sqrt 8.059 lin 7.860"
+    },
+    {
+      "check": "30x tighter: 0.05 / 0.00173 ~ 29",
+      "ok": true,
+      "detail": "28.9x"
+    },
+    {
+      "check": "best single block = drop[12] @ 0.00330 nats > both per-block thresholds",
+      "ok": true,
+      "detail": "drop[12] 0.003303"
+    },
+    {
+      "check": "k~8 infeasible even before tax (8 cheapest singles sum >> budgets)",
+      "ok": true,
+      "detail": "sum(8 cheapest singles)=0.03422 vs budgets 0.00693(sqrt)/0.01908(lin)"
+    },
+    {
+      "check": "McNemar k2 all: (34,21) p=0.105",
+      "ok": true,
+      "detail": "(34,21) p=0.1048"
+    },
+    {
+      "check": "McNemar k6 all: (49,15) p=2.4e-5",
+      "ok": true,
+      "detail": "p=2.44e-05"
+    },
+    {
+      "check": "McNemar k8 all: (81,26) p=9.4e-8",
+      "ok": true,
+      "detail": "p=9.37e-08"
+    },
+    {
+      "check": "k8 mmlu -18.5 pts p~3e-6; k8 ifeval -14 pts p=0.0043",
+      "ok": true,
+      "detail": "mmlu p=3.02e-06 ifeval p=0.00434"
+    },
+    {
+      "check": "math500 k8 vs ref: delta 0.0, (6,6), p=1.0",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "math500 k8 vs k6: +8 pts, (3,11), p=0.0574",
+      "ok": true,
+      "detail": "(3,11) p=0.0574"
+    },
+    {
+      "check": "per-task lin slopes mmlu 2.81 > ifeval 2.24 >> gsm8k 0.67 ~ math500 0.57",
+      "ok": true,
+      "detail": "{'gsm8k': 0.665, 'math500': 0.571, 'ifeval': 2.241, 'mmlu': 2.811}"
+    },
+    {
+      "check": "math500 sqrt residuals +-4.4..4.8 pts",
+      "ok": true,
+      "detail": "[0.0, 4.368, 4.688, -4.76]"
+    },
+    {
+      "check": "frozen ids match bench ids",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "57 MMLU subjects",
+      "ok": true,
+      "detail": "57"
+    },
+    {
+      "check": "k8 mmlu drop cluster CI ~[9.7, 27.4] vs iid ~[11.1, 25.7]",
+      "ok": true,
+      "detail": "cluster [9.722, 27.369] iid [11.111, 25.743]"
+    },
+    {
+      "check": "k4 KL_on 0.0177; predicted 4.8 (sqrt) vs 2.8 (lin) pts",
+      "ok": true,
+      "detail": "KL 0.01770 sqrt 4.795 lin 2.783"
+    },
+    {
+      "check": "k2 measured 2.875 pts: passes 3.0-pt tolerance, fails 1.5-pt",
+      "ok": true,
+      "detail": "2.875"
+    }
+  ],
+  "rederived": {
+    "kl_on_anchors": {
+      "reference": 0.0,
+      "k2": 0.007554768374456167,
+      "k6": 0.03111115261509143,
+      "k8": 0.06426152843219171
+    },
+    "kl_off_anchors": {
+      "reference": 0.0,
+      "k2": 0.033044363180810506,
+      "k6": 0.204609790459549,
+      "k8": 0.3914830479536029
+    },
+    "macro_drops_pts": {
+      "reference": 0.0,
+      "k2": 2.8750000000000053,
+      "k6": 6.500000000000005,
+      "k8": 9.125000000000005
+    },
+    "fits": {
+      "sqrt_origin": {
+        "coef": 36.04050497627204,
+        "rmse": 0.14742231906489214,
+        "r2": 0.9981971046401269,
+        "residuals": [
+          0.0,
+          -0.2575747587949433,
+          0.1430482069110086,
+          -0.011216718109833934
+        ]
+      },
+      "linear_origin": {
+        "slope": 157.20736830462386,
+        "rmse": 1.2640783679563448,
+        "r2": 0.8674462427719363,
+        "residuals": [
+          0.0,
+          1.6873347457007501,
+          1.6090975724579657,
+          -0.9773857680576139
+        ]
+      },
+      "linear_intercept": {
+        "intercept": 1.192492214501847,
+        "slope": 133.39523343024476,
+        "r2": 0.9247983092618998
+      }
+    },
+    "bootstrap": {
+      "lin_slope_per_0.01nats_ci": [
+        0.995395929184027,
+        2.1444681436542763
+      ],
+      "sqrt_coef_ci": [
+        22.780693216692946,
+        49.05277404713154
+      ],
+      "macro_drop_ci": {
+        "k2": [
+          0.11723006415885755,
+          5.673379267620472
+        ],
+        "k6": [
+          3.725060259639495,
+          9.380268612737956
+        ],
+        "k8": [
+          5.39097541238812,
+          12.79442562554859
+        ]
+      }
+    },
+    "budgets": {
+      "1.5": {
+        "sqrt_set_nats": 0.001732210964686008,
+        "sqrt_ci": [
+          0.0009350942203196848,
+          0.004335594878243238
+        ],
+        "off_ceiling_nats": 0.009494706710805267,
+        "per_block_k8_nats": 0.00011530723631024162,
+        "lin_set_nats": 0.009541537500287009,
+        "lin_per_block_nats": 0.000635146839350516
+      },
+      "3.0": {
+        "sqrt_set_nats": 0.006928843858744032,
+        "sqrt_ci": [
+          0.0037403768812787393,
+          0.01734237951297295
+        ],
+        "off_ceiling_nats": 0.03797882684322107,
+        "per_block_k8_nats": 0.0004612289452409665,
+        "lin_set_nats": 0.019083075000574018,
+        "lin_per_block_nats": 0.001270293678701032
+      }
+    },
+    "tax": {
+      "k2": 0.9998560080043903,
+      "k4": 1.1749552753962205,
+      "k6": 1.3344577899769496,
+      "k8": 1.8778211803045275
+    },
+    "off_on_ratios": {
+      "k2": 4.373974362012021,
+      "k4": 4.882321438271227,
+      "k6": 6.576734491035754,
+      "k8": 6.0920282711092515
+    },
+    "ratio_mean": 5.481264640607064,
+    "ratio_pooled": 5.931914776695967,
+    "min_single_block": {
+      "drop[12]": 0.003302676708683492
+    },
+    "mcnemar": {
+      "k2|all": {
+        "b_ref_right_cfg_wrong": 34,
+        "c_ref_wrong_cfg_right": 21,
+        "delta_pts": -2.599999999999991,
+        "p": 0.10478948242660335
+      },
+      "k2|gsm8k": {
+        "b_ref_right_cfg_wrong": 2,
+        "c_ref_wrong_cfg_right": 3,
+        "delta_pts": 1.0000000000000009,
+        "p": 1.0
+      },
+      "k2|math500": {
+        "b_ref_right_cfg_wrong": 8,
+        "c_ref_wrong_cfg_right": 2,
+        "delta_pts": -5.999999999999995,
+        "p": 0.109375
+      },
+      "k2|ifeval": {
+        "b_ref_right_cfg_wrong": 8,
+        "c_ref_wrong_cfg_right": 3,
+        "delta_pts": -5.000000000000004,
+        "p": 0.2265625
+      },
+      "k2|mmlu": {
+        "b_ref_right_cfg_wrong": 16,
+        "c_ref_wrong_cfg_right": 13,
+        "delta_pts": -1.5000000000000013,
+        "p": 0.711071103811264
+      },
+      "k6|all": {
+        "b_ref_right_cfg_wrong": 49,
+        "c_ref_wrong_cfg_right": 15,
+        "delta_pts": -6.799999999999995,
+        "p": 2.436457216293327e-05
+      },
+      "k6|gsm8k": {
+        "b_ref_right_cfg_wrong": 5,
+        "c_ref_wrong_cfg_right": 2,
+        "delta_pts": -3.0000000000000027,
+        "p": 0.453125
+      },
+      "k6|math500": {
+        "b_ref_right_cfg_wrong": 8,
+        "c_ref_wrong_cfg_right": 0,
+        "delta_pts": -7.9999999999999964,
+        "p": 0.0078125
+      },
+      "k6|ifeval": {
+        "b_ref_right_cfg_wrong": 9,
+        "c_ref_wrong_cfg_right": 2,
+        "delta_pts": -7.000000000000006,
+        "p": 0.0654296875
+      },
+      "k6|mmlu": {
+        "b_ref_right_cfg_wrong": 27,
+        "c_ref_wrong_cfg_right": 11,
+        "delta_pts": -8.000000000000007,
+        "p": 0.013852965261321515
+      },
+      "k8|all": {
+        "b_ref_right_cfg_wrong": 81,
+        "c_ref_wrong_cfg_right": 26,
+        "delta_pts": -10.999999999999998,
+        "p": 9.374509128245465e-08
+      },
+      "k8|gsm8k": {
+        "b_ref_right_cfg_wrong": 7,
+        "c_ref_wrong_cfg_right": 3,
+        "delta_pts": -4.0000000000000036,
+        "p": 0.34375
+      },
+      "k8|math500": {
+        "b_ref_right_cfg_wrong": 6,
+        "c_ref_wrong_cfg_right": 6,
+        "delta_pts": 0.0,
+        "p": 1.0
+      },
+      "k8|ifeval": {
+        "b_ref_right_cfg_wrong": 18,
+        "c_ref_wrong_cfg_right": 4,
+        "delta_pts": -14.000000000000002,
+        "p": 0.004343509674072266
+      },
+      "k8|mmlu": {
+        "b_ref_right_cfg_wrong": 50,
+        "c_ref_wrong_cfg_right": 13,
+        "delta_pts": -18.500000000000007,
+        "p": 3.015952084642337e-06
+      }
+    },
+    "math500_k8_vs_k6": {
+      "b": 3,
+      "c": 11,
+      "p": 0.057373046875
+    },
+    "per_task": {
+      "gsm8k": {
+        "drops": [
+          0.0,
+          -1.0000000000000009,
+          3.0000000000000027,
+          4.0000000000000036
+        ],
+        "sqrt_coef": 14.148089357388102,
+        "lin_slope_per_0.01": 0.6650951882914736,
+        "sqrt_resid": [
+          0.0,
+          -2.2297260439416244,
+          0.5045099376813829,
+          0.41347948367033815
+        ],
+        "sqrt_rmse": 1.161590912463068
+      },
+      "math500": {
+        "drops": [
+          0.0,
+          5.999999999999995,
+          7.9999999999999964,
+          0.0
+        ],
+        "sqrt_coef": 18.776112119489873,
+        "lin_slope_per_0.01": 0.5707955258567273,
+        "sqrt_resid": [
+          0.0,
+          4.368014684240918,
+          4.688202907150899,
+          -4.759717699852612
+        ],
+        "sqrt_rmse": 3.991043452615264
+      },
+      "ifeval": {
+        "drops": [
+          0.0,
+          5.000000000000004,
+          7.000000000000006,
+          14.000000000000002
+        ],
+        "sqrt_coef": 50.69838731914055,
+        "lin_slope_per_0.01": 2.2411645994756593,
+        "sqrt_resid": [
+          0.0,
+          0.5933889235983418,
+          -1.9423609460332125,
+          1.148030969286065
+        ],
+        "sqrt_rmse": 1.1664959886090627
+      },
+      "mmlu": {
+        "drops": [
+          0.0,
+          1.5000000000000013,
+          8.000000000000007,
+          18.500000000000007
+        ],
+        "sqrt_coef": 60.53943110906955,
+        "lin_slope_per_0.01": 2.811239418561091,
+        "sqrt_resid": [
+          0.0,
+          -3.7619765990774234,
+          -2.6781590711550276,
+          3.153340374456885
+        ],
+        "sqrt_rmse": 2.795914852941519
+      }
+    },
+    "mmlu_cluster_ci": [
+      9.721782700421942,
+      27.368568068215232
+    ],
+    "mmlu_iid_ci": [
+      11.11111111111111,
+      25.742574257425744
+    ],
+    "k4_pred": {
+      "kl_on": 0.01770242127241983,
+      "sqrt_pts": 4.795205273567282,
+      "lin_pts": 2.782951060856912
+    },
+    "wilson_k8_per_task": {
+      "gsm8k": [
+        0.7901964855992357,
+        0.9224283257275948
+      ],
+      "math500": [
+        0.6251197129007884,
+        0.7986031478881379
+      ],
+      "ifeval": [
+        0.7002003116591013,
+        0.858343459380847
+      ],
+      "mmlu": [
+        0.5510671801561923,
+        0.6844099415132637
+      ]
+    }
+  }
+}

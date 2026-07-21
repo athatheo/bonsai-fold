@@ -1,0 +1,943 @@
+{
+  "meta": {
+    "analysis": "d_kl_fit",
+    "date": "2026-07-21",
+    "seed": 20260721,
+    "bootstrap_B": 10000,
+    "note": "KL x-values held fixed in bootstrap (probe-set noise not propagated)"
+  },
+  "anchors": {
+    "reference": {
+      "kl_onpolicy_nats": 0.0,
+      "kl_offpolicy_nats": 0.0,
+      "task_accuracy": {
+        "gsm8k": 0.91,
+        "math500": 0.72,
+        "ifeval": 0.93,
+        "mmlu": 0.805
+      },
+      "macro": 0.84125,
+      "macro_drop_points": 0.0
+    },
+    "k2": {
+      "kl_onpolicy_nats": 0.007555,
+      "kl_offpolicy_nats": 0.033044,
+      "task_accuracy": {
+        "gsm8k": 0.92,
+        "math500": 0.66,
+        "ifeval": 0.88,
+        "mmlu": 0.79
+      },
+      "macro": 0.8125,
+      "macro_drop_points": 2.875
+    },
+    "k6": {
+      "kl_onpolicy_nats": 0.031111,
+      "kl_offpolicy_nats": 0.20461,
+      "task_accuracy": {
+        "gsm8k": 0.88,
+        "math500": 0.64,
+        "ifeval": 0.86,
+        "mmlu": 0.725
+      },
+      "macro": 0.77625,
+      "macro_drop_points": 6.5
+    },
+    "k8": {
+      "kl_onpolicy_nats": 0.064262,
+      "kl_offpolicy_nats": 0.391483,
+      "task_accuracy": {
+        "gsm8k": 0.87,
+        "math500": 0.72,
+        "ifeval": 0.79,
+        "mmlu": 0.62
+      },
+      "macro": 0.75,
+      "macro_drop_points": 9.125
+    }
+  },
+  "fits_macro": {
+    "linear_origin": {
+      "form": "drop = b*KL",
+      "params": {
+        "slope_pts_per_nat": 157.207
+      },
+      "pred_points": [
+        0.0,
+        1.1877,
+        4.8909,
+        10.1024
+      ],
+      "residuals_points": [
+        0.0,
+        1.6873,
+        1.6091,
+        -0.9774
+      ],
+      "rmse_points": 1.2641,
+      "r2_centered": 0.86745
+    },
+    "linear_intercept": {
+      "form": "drop = a + b*KL",
+      "params": {
+        "intercept_pts": 1.1925,
+        "slope_pts_per_nat": 133.395
+      },
+      "pred_points": [
+        1.1925,
+        2.2003,
+        5.3426,
+        9.7647
+      ],
+      "residuals_points": [
+        -1.1925,
+        0.6747,
+        1.1574,
+        -0.6397
+      ],
+      "rmse_points": 0.9521,
+      "r2_centered": 0.9248
+    },
+    "sqrt_origin": {
+      "form": "drop = c*sqrt(KL)",
+      "params": {
+        "coef_pts_per_sqrtnat": 36.041
+      },
+      "pred_points": [
+        0.0,
+        3.1326,
+        6.357,
+        9.1362
+      ],
+      "residuals_points": [
+        0.0,
+        -0.2576,
+        0.143,
+        -0.0112
+      ],
+      "rmse_points": 0.1474,
+      "r2_centered": 0.9982
+    },
+    "sqrt_intercept": {
+      "form": "drop = a + c*sqrt(KL)",
+      "params": {
+        "intercept_pts": -0.0895,
+        "coef_pts_per_sqrtnat": 36.49
+      },
+      "pred_points": [
+        -0.0895,
+        3.0821,
+        6.3467,
+        9.1606
+      ],
+      "residuals_points": [
+        0.0895,
+        -0.2071,
+        0.1533,
+        -0.0356
+      ],
+      "rmse_points": 0.1376,
+      "r2_centered": 0.99843
+    }
+  },
+  "fits_per_task": {
+    "gsm8k": {
+      "drops_points": [
+        0.0,
+        -1.0,
+        3.0,
+        4.0
+      ],
+      "linear_origin": {
+        "form": "drop = b*KL",
+        "params": {
+          "slope_pts_per_nat": 66.51
+        },
+        "pred_points": [
+          0.0,
+          0.5025,
+          2.0692,
+          4.274
+        ],
+        "residuals_points": [
+          0.0,
+          -1.5025,
+          0.9308,
+          -0.274
+        ],
+        "rmse_points": 0.8943,
+        "r2_centered": 0.81183
+      },
+      "linear_intercept": {
+        "form": "drop = a + b*KL",
+        "params": {
+          "intercept_pts": -0.4348,
+          "slope_pts_per_nat": 75.193
+        },
+        "pred_points": [
+          -0.4348,
+          0.1332,
+          1.9045,
+          4.3972
+        ],
+        "residuals_points": [
+          0.4348,
+          -1.1332,
+          1.0955,
+          -0.3972
+        ],
+        "rmse_points": 0.8413,
+        "r2_centered": 0.83346
+      },
+      "sqrt_origin": {
+        "form": "drop = c*sqrt(KL)",
+        "params": {
+          "coef_pts_per_sqrtnat": 14.148
+        },
+        "pred_points": [
+          0.0,
+          1.2297,
+          2.4955,
+          3.5865
+        ],
+        "residuals_points": [
+          0.0,
+          -2.2297,
+          0.5045,
+          0.4135
+        ],
+        "rmse_points": 1.1616,
+        "r2_centered": 0.68252
+      },
+      "sqrt_intercept": {
+        "form": "drop = a + c*sqrt(KL)",
+        "params": {
+          "intercept_pts": -0.9335,
+          "coef_pts_per_sqrtnat": 18.835
+        },
+        "pred_points": [
+          -0.9335,
+          0.7036,
+          2.3887,
+          3.8412
+        ],
+        "residuals_points": [
+          0.9335,
+          -1.7036,
+          0.6113,
+          0.1588
+        ],
+        "rmse_points": 1.0214,
+        "r2_centered": 0.75455
+      }
+    },
+    "math500": {
+      "drops_points": [
+        0.0,
+        6.0,
+        8.0,
+        0.0
+      ],
+      "linear_origin": {
+        "form": "drop = b*KL",
+        "params": {
+          "slope_pts_per_nat": 57.08
+        },
+        "pred_points": [
+          0.0,
+          0.4312,
+          1.7758,
+          3.668
+        ],
+        "residuals_points": [
+          0.0,
+          5.5688,
+          6.2242,
+          -3.668
+        ],
+        "rmse_points": 4.5609,
+        "r2_centered": -0.63149
+      },
+      "linear_intercept": {
+        "form": "drop = a + b*KL",
+        "params": {
+          "intercept_pts": 4.178,
+          "slope_pts_per_nat": -26.348
+        },
+        "pred_points": [
+          4.178,
+          3.9789,
+          3.3583,
+          2.4848
+        ],
+        "residuals_points": [
+          -4.178,
+          2.0211,
+          4.6417,
+          -2.4848
+        ],
+        "rmse_points": 3.5093,
+        "r2_centered": 0.03411
+      },
+      "sqrt_origin": {
+        "form": "drop = c*sqrt(KL)",
+        "params": {
+          "coef_pts_per_sqrtnat": 18.776
+        },
+        "pred_points": [
+          0.0,
+          1.632,
+          3.3118,
+          4.7597
+        ],
+        "residuals_points": [
+          0.0,
+          4.368,
+          4.6882,
+          -4.7597
+        ],
+        "rmse_points": 3.991,
+        "r2_centered": -0.24929
+      },
+      "sqrt_intercept": {
+        "form": "drop = a + c*sqrt(KL)",
+        "params": {
+          "intercept_pts": 3.0577,
+          "coef_pts_per_sqrtnat": 3.423
+        },
+        "pred_points": [
+          3.0577,
+          3.3553,
+          3.6615,
+          3.9255
+        ],
+        "residuals_points": [
+          -3.0577,
+          2.6447,
+          4.3385,
+          -3.9255
+        ],
+        "rmse_points": 3.5558,
+        "r2_centered": 0.00831
+      }
+    },
+    "ifeval": {
+      "drops_points": [
+        0.0,
+        5.0,
+        7.0,
+        14.0
+      ],
+      "linear_origin": {
+        "form": "drop = b*KL",
+        "params": {
+          "slope_pts_per_nat": 224.116
+        },
+        "pred_points": [
+          0.0,
+          1.6931,
+          6.9725,
+          14.4021
+        ],
+        "residuals_points": [
+          0.0,
+          3.3069,
+          0.0275,
+          -0.4021
+        ],
+        "rmse_points": 1.6657,
+        "r2_centered": 0.89012
+      },
+      "linear_intercept": {
+        "form": "drop = a + b*KL",
+        "params": {
+          "intercept_pts": 1.5078,
+          "slope_pts_per_nat": 194.008
+        },
+        "pred_points": [
+          1.5078,
+          2.9735,
+          7.5436,
+          13.9751
+        ],
+        "residuals_points": [
+          -1.5078,
+          2.0265,
+          -0.5436,
+          0.0249
+        ],
+        "rmse_points": 1.2919,
+        "r2_centered": 0.9339
+      },
+      "sqrt_origin": {
+        "form": "drop = c*sqrt(KL)",
+        "params": {
+          "coef_pts_per_sqrtnat": 50.698
+        },
+        "pred_points": [
+          0.0,
+          4.4066,
+          8.9424,
+          12.852
+        ],
+        "residuals_points": [
+          0.0,
+          0.5934,
+          -1.9424,
+          1.148
+        ],
+        "rmse_points": 1.1665,
+        "r2_centered": 0.94611
+      },
+      "sqrt_intercept": {
+        "form": "drop = a + c*sqrt(KL)",
+        "params": {
+          "intercept_pts": -0.143,
+          "coef_pts_per_sqrtnat": 51.416
+        },
+        "pred_points": [
+          -0.143,
+          4.326,
+          8.926,
+          12.891
+        ],
+        "residuals_points": [
+          0.143,
+          0.674,
+          -1.926,
+          1.109
+        ],
+        "rmse_points": 1.1634,
+        "r2_centered": 0.94639
+      }
+    },
+    "mmlu": {
+      "drops_points": [
+        0.0,
+        1.5,
+        8.0,
+        18.5
+      ],
+      "linear_origin": {
+        "form": "drop = b*KL",
+        "params": {
+          "slope_pts_per_nat": 281.124
+        },
+        "pred_points": [
+          0.0,
+          2.1238,
+          8.7461,
+          18.0655
+        ],
+        "residuals_points": [
+          0.0,
+          -0.6238,
+          -0.7461,
+          0.4345
+        ],
+        "rmse_points": 0.5326,
+        "r2_centered": 0.99466
+      },
+      "linear_intercept": {
+        "form": "drop = a + b*KL",
+        "params": {
+          "intercept_pts": -0.481,
+          "slope_pts_per_nat": 290.728
+        },
+        "pred_points": [
+          -0.481,
+          1.7154,
+          8.5639,
+          18.2017
+        ],
+        "residuals_points": [
+          0.481,
+          -0.2154,
+          -0.5639,
+          0.2983
+        ],
+        "rmse_points": 0.4137,
+        "r2_centered": 0.99678
+      },
+      "sqrt_origin": {
+        "form": "drop = c*sqrt(KL)",
+        "params": {
+          "coef_pts_per_sqrtnat": 60.539
+        },
+        "pred_points": [
+          0.0,
+          5.262,
+          10.6782,
+          15.3467
+        ],
+        "residuals_points": [
+          0.0,
+          -3.762,
+          -2.6782,
+          3.1533
+        ],
+        "rmse_points": 2.7959,
+        "r2_centered": 0.85285
+      },
+      "sqrt_intercept": {
+        "form": "drop = a + c*sqrt(KL)",
+        "params": {
+          "intercept_pts": -2.3391,
+          "coef_pts_per_sqrtnat": 72.284
+        },
+        "pred_points": [
+          -2.3391,
+          3.9437,
+          10.4106,
+          15.9848
+        ],
+        "residuals_points": [
+          2.3391,
+          -2.4437,
+          -2.4106,
+          2.5152
+        ],
+        "rmse_points": 2.428,
+        "r2_centered": 0.88903
+      }
+    }
+  },
+  "bootstrap": {
+    "B": 10000,
+    "seed": 20260721,
+    "linear_origin_slope_pts_per_0.01nats": {
+      "point": 1.5721,
+      "ci95": [
+        0.9954,
+        2.1445
+      ]
+    },
+    "sqrt_origin_coef_pts_per_sqrtnat": {
+      "point": 36.041,
+      "ci95": [
+        22.781,
+        49.053
+      ]
+    },
+    "macro_drop_points_ci95": {
+      "k2": [
+        0.117,
+        5.673
+      ],
+      "k6": [
+        3.725,
+        9.38
+      ],
+      "k8": [
+        5.391,
+        12.794
+      ]
+    }
+  },
+  "budgets_inverted": {
+    "1.5pts": {
+      "sqrt_origin_nats": {
+        "point": 0.001732,
+        "ci95": [
+          0.000935,
+          0.004336
+        ]
+      },
+      "linear_origin_nats": {
+        "point": 0.009542,
+        "ci95": [
+          0.006995,
+          0.015069
+        ]
+      }
+    },
+    "3.0pts": {
+      "sqrt_origin_nats": {
+        "point": 0.006929,
+        "ci95": [
+          0.00374,
+          0.017342
+        ]
+      },
+      "linear_origin_nats": {
+        "point": 0.019083,
+        "ci95": [
+          0.013989,
+          0.030139
+        ]
+      }
+    }
+  },
+  "mcnemar_exact": {
+    "k2_vs_reference": {
+      "all": {
+        "n": 500,
+        "delta_acc_points": -2.6,
+        "discordant_ref_right_cfg_wrong": 34,
+        "discordant_ref_wrong_cfg_right": 21,
+        "p_exact_two_sided": 0.105
+      },
+      "gsm8k": {
+        "n": 100,
+        "delta_acc_points": 1.0,
+        "discordant_ref_right_cfg_wrong": 2,
+        "discordant_ref_wrong_cfg_right": 3,
+        "p_exact_two_sided": 1.0
+      },
+      "math500": {
+        "n": 100,
+        "delta_acc_points": -6.0,
+        "discordant_ref_right_cfg_wrong": 8,
+        "discordant_ref_wrong_cfg_right": 2,
+        "p_exact_two_sided": 0.109
+      },
+      "ifeval": {
+        "n": 100,
+        "delta_acc_points": -5.0,
+        "discordant_ref_right_cfg_wrong": 8,
+        "discordant_ref_wrong_cfg_right": 3,
+        "p_exact_two_sided": 0.227
+      },
+      "mmlu": {
+        "n": 200,
+        "delta_acc_points": -1.5,
+        "discordant_ref_right_cfg_wrong": 16,
+        "discordant_ref_wrong_cfg_right": 13,
+        "p_exact_two_sided": 0.711
+      }
+    },
+    "k6_vs_reference": {
+      "all": {
+        "n": 500,
+        "delta_acc_points": -6.8,
+        "discordant_ref_right_cfg_wrong": 49,
+        "discordant_ref_wrong_cfg_right": 15,
+        "p_exact_two_sided": 2.44e-05
+      },
+      "gsm8k": {
+        "n": 100,
+        "delta_acc_points": -3.0,
+        "discordant_ref_right_cfg_wrong": 5,
+        "discordant_ref_wrong_cfg_right": 2,
+        "p_exact_two_sided": 0.453
+      },
+      "math500": {
+        "n": 100,
+        "delta_acc_points": -8.0,
+        "discordant_ref_right_cfg_wrong": 8,
+        "discordant_ref_wrong_cfg_right": 0,
+        "p_exact_two_sided": 0.00781
+      },
+      "ifeval": {
+        "n": 100,
+        "delta_acc_points": -7.0,
+        "discordant_ref_right_cfg_wrong": 9,
+        "discordant_ref_wrong_cfg_right": 2,
+        "p_exact_two_sided": 0.0654
+      },
+      "mmlu": {
+        "n": 200,
+        "delta_acc_points": -8.0,
+        "discordant_ref_right_cfg_wrong": 27,
+        "discordant_ref_wrong_cfg_right": 11,
+        "p_exact_two_sided": 0.0139
+      }
+    },
+    "k8_vs_reference": {
+      "all": {
+        "n": 500,
+        "delta_acc_points": -11.0,
+        "discordant_ref_right_cfg_wrong": 81,
+        "discordant_ref_wrong_cfg_right": 26,
+        "p_exact_two_sided": 9.37e-08
+      },
+      "gsm8k": {
+        "n": 100,
+        "delta_acc_points": -4.0,
+        "discordant_ref_right_cfg_wrong": 7,
+        "discordant_ref_wrong_cfg_right": 3,
+        "p_exact_two_sided": 0.344
+      },
+      "math500": {
+        "n": 100,
+        "delta_acc_points": 0.0,
+        "discordant_ref_right_cfg_wrong": 6,
+        "discordant_ref_wrong_cfg_right": 6,
+        "p_exact_two_sided": 1.0
+      },
+      "ifeval": {
+        "n": 100,
+        "delta_acc_points": -14.0,
+        "discordant_ref_right_cfg_wrong": 18,
+        "discordant_ref_wrong_cfg_right": 4,
+        "p_exact_two_sided": 0.00434
+      },
+      "mmlu": {
+        "n": 200,
+        "delta_acc_points": -18.5,
+        "discordant_ref_right_cfg_wrong": 50,
+        "discordant_ref_wrong_cfg_right": 13,
+        "p_exact_two_sided": 3.02e-06
+      }
+    },
+    "math500_k8_vs_k6": {
+      "n": 100,
+      "delta_acc_points": 8.0,
+      "discordant_a_right_b_wrong": 3,
+      "discordant_a_wrong_b_right": 11,
+      "p_exact_two_sided": 0.0574
+    },
+    "math500_k8_vs_reference": {
+      "n": 100,
+      "delta_acc_points": 0.0,
+      "discordant_a_right_b_wrong": 6,
+      "discordant_a_wrong_b_right": 6,
+      "p_exact_two_sided": 1.0
+    }
+  },
+  "wilson_ci_per_task": {
+    "reference": {
+      "gsm8k": {
+        "acc": 0.91,
+        "n": 100,
+        "wilson95": [
+          0.8377,
+          0.9519
+        ]
+      },
+      "math500": {
+        "acc": 0.72,
+        "n": 100,
+        "wilson95": [
+          0.6251,
+          0.7986
+        ]
+      },
+      "ifeval": {
+        "acc": 0.93,
+        "n": 100,
+        "wilson95": [
+          0.8625,
+          0.9657
+        ]
+      },
+      "mmlu": {
+        "acc": 0.805,
+        "n": 200,
+        "wilson95": [
+          0.7446,
+          0.8539
+        ]
+      }
+    },
+    "k2": {
+      "gsm8k": {
+        "acc": 0.92,
+        "n": 100,
+        "wilson95": [
+          0.85,
+          0.9589
+        ]
+      },
+      "math500": {
+        "acc": 0.66,
+        "n": 100,
+        "wilson95": [
+          0.5628,
+          0.7454
+        ]
+      },
+      "ifeval": {
+        "acc": 0.88,
+        "n": 100,
+        "wilson95": [
+          0.8019,
+          0.93
+        ]
+      },
+      "mmlu": {
+        "acc": 0.79,
+        "n": 200,
+        "wilson95": [
+          0.7284,
+          0.8407
+        ]
+      }
+    },
+    "k6": {
+      "gsm8k": {
+        "acc": 0.88,
+        "n": 100,
+        "wilson95": [
+          0.8019,
+          0.93
+        ]
+      },
+      "math500": {
+        "acc": 0.64,
+        "n": 100,
+        "wilson95": [
+          0.5424,
+          0.7273
+        ]
+      },
+      "ifeval": {
+        "acc": 0.86,
+        "n": 100,
+        "wilson95": [
+          0.7786,
+          0.9147
+        ]
+      },
+      "mmlu": {
+        "acc": 0.725,
+        "n": 200,
+        "wilson95": [
+          0.6593,
+          0.7822
+        ]
+      }
+    },
+    "k8": {
+      "gsm8k": {
+        "acc": 0.87,
+        "n": 100,
+        "wilson95": [
+          0.7902,
+          0.9224
+        ]
+      },
+      "math500": {
+        "acc": 0.72,
+        "n": 100,
+        "wilson95": [
+          0.6251,
+          0.7986
+        ]
+      },
+      "ifeval": {
+        "acc": 0.79,
+        "n": 100,
+        "wilson95": [
+          0.7002,
+          0.8583
+        ]
+      },
+      "mmlu": {
+        "acc": 0.62,
+        "n": 200,
+        "wilson95": [
+          0.5511,
+          0.6844
+        ]
+      }
+    }
+  },
+  "mmlu_cluster_sensitivity": {
+    "quantity": "k8 vs reference MMLU drop (points)",
+    "point": 18.5,
+    "iid_item_bootstrap_ci95": [
+      11.111,
+      25.743
+    ],
+    "subject_cluster_bootstrap_ci95": [
+      9.722,
+      27.369
+    ],
+    "n_subjects": 57
+  },
+  "gate_recalibration": {
+    "provisional_gate_nats_onpolicy": 0.05,
+    "provisional_gate_predicted_drop_points": {
+      "sqrt_origin": 8.059,
+      "linear_origin": 7.86
+    },
+    "off_over_on_ratio": {
+      "per_set": {
+        "k2": 4.374,
+        "k4": 4.8823,
+        "k6": 6.5767,
+        "k8": 6.092
+      },
+      "mean": 5.4813,
+      "pooled": 5.9319
+    },
+    "interaction_tax": {
+      "k2": 0.9999,
+      "k4": 1.175,
+      "k6": 1.3345,
+      "k8": 1.8778
+    },
+    "recommended_form": "sqrt_origin (conservative near zero; see md)",
+    "budgets": {
+      "1.5pts": {
+        "a_onpolicy_set_budget_nats": 0.001732,
+        "a_ci95": [
+          0.000935,
+          0.004336
+        ],
+        "b_offpolicy_companion_ceiling_nats": 0.009494,
+        "c_single_block_screen_for_k8_nats": 0.00011529,
+        "linear_sensitivity_set_budget_nats": 0.009542,
+        "linear_sensitivity_single_block_k8_nats": 0.00063518,
+        "k8_feasible_with_current_inventory": false
+      },
+      "3.0pts": {
+        "a_onpolicy_set_budget_nats": 0.006929,
+        "a_ci95": [
+          0.00374,
+          0.017342
+        ],
+        "b_offpolicy_companion_ceiling_nats": 0.03798,
+        "c_single_block_screen_for_k8_nats": 0.00046124,
+        "linear_sensitivity_set_budget_nats": 0.019083,
+        "linear_sensitivity_single_block_k8_nats": 0.00127029,
+        "k8_feasible_with_current_inventory": false
+      }
+    },
+    "min_measured_single_block_kl_on": 0.003303
+  },
+  "generation_context": {
+    "reference": {
+      "n_finish_length": 45,
+      "mean_gen_tokens": 4018.5
+    },
+    "k2": {
+      "n_finish_length": 53,
+      "mean_gen_tokens": 4179.0
+    },
+    "k6": {
+      "n_finish_length": 65,
+      "mean_gen_tokens": 4536.3
+    },
+    "k8": {
+      "n_finish_length": 66,
+      "mean_gen_tokens": 4901.8
+    }
+  },
+  "kl_raw": {
+    "topk_onpolicy": {
+      "drop[16,12]": 0.007554768374456167,
+      "drop[16,12,13,9]": 0.01770242127241983,
+      "drop[16,12,13,9,8,4]": 0.03111115261509143,
+      "drop[16,12,13,9,8,4,5,15]": 0.06426152843219171
+    },
+    "topk_offpolicy": {
+      "drop[16,12]": 0.033044363180810506,
+      "drop[16,12,13,9]": 0.08642891088764396,
+      "drop[16,12,13,9,8,4]": 0.204609790459549,
+      "drop[16,12,13,9,8,4,5,15]": 0.3914830479536029
+    },
+    "singles_onpolicy": {
+      "drop[4]": 0.004702241941430593,
+      "drop[12]": 0.003302676708683492,
+      "drop[5]": 0.003853751046507019,
+      "drop[8]": 0.0035449971568470725,
+      "drop[9]": 0.0038287226620923364,
+      "drop[13]": 0.0036818849074665505,
+      "drop[16]": 0.004253179648608101,
+      "drop[1]": 0.0076228993696089865,
+      "drop[15]": 0.0070538706775991455
+    }
+  }
+}

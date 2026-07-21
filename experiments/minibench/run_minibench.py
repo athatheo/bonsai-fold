@@ -11,6 +11,13 @@ Usage:
   uv run python experiments/minibench/run_minibench.py \
       --pack models/Bonsai-27B-mlx-1bit [--drop 12,8] \
       --out experiments/minibench/results/reference.json
+
+External (non-Bonsai) comparator packs load via stock mlx-lm instead of the
+layer_types shim (--stock-loader); sampling, thinking mode, budget, items,
+and scoring stay identical so the comparison is protocol-matched:
+  uv run python experiments/minibench/run_minibench.py \
+      --pack models/<external-mlx-pack> --stock-loader \
+      --out experiments/minibench/results/external_<name>.json
 """
 import argparse
 import json
@@ -59,7 +66,14 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--max-tokens", type=int, default=16384)  # short tier
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument(
+        "--stock-loader",
+        action="store_true",
+        help="load via stock mlx_lm.load (external comparator packs)",
+    )
     args = ap.parse_args()
+    if args.stock_loader and args.drop:
+        ap.error("--drop requires the Bonsai layer_types loader")
 
     data = json.loads(ITEMS.read_text())
     out = Path(args.out)
@@ -68,7 +82,12 @@ def main():
     if out.exists():
         done = {r["id"]: r for r in json.loads(out.read_text())["items"]}
 
-    model, tokenizer = load_bonsai(args.pack)
+    if args.stock_loader:
+        from mlx_lm import load
+
+        model, tokenizer = load(args.pack)
+    else:
+        model, tokenizer = load_bonsai(args.pack)
     target = model
     if args.drop:
         target = drop_view(model, [int(i) for i in args.drop.split(",")])
