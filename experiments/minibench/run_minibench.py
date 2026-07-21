@@ -21,6 +21,7 @@ and scoring stay identical so the comparison is protocol-matched:
 """
 import argparse
 import json
+import os
 from pathlib import Path
 
 import mlx.core as mx
@@ -80,7 +81,22 @@ def main():
     out.parent.mkdir(parents=True, exist_ok=True)
     done = {}
     if out.exists():
-        done = {r["id"]: r for r in json.loads(out.read_text())["items"]}
+        prev = json.loads(out.read_text())
+        prev_config = {k: prev.get(k) for k in ("pack", "drop", "max_tokens", "seed")}
+        prev_config["stock_loader"] = bool(prev.get("stock_loader"))
+        now_config = {
+            "pack": args.pack,
+            "drop": args.drop,
+            "max_tokens": args.max_tokens,
+            "seed": args.seed,
+            "stock_loader": args.stock_loader,
+        }
+        if prev_config != now_config:
+            raise SystemExit(
+                f"{out} was produced with different config "
+                f"({prev_config} != {now_config}); move it aside or pick a new --out"
+            )
+        done = {r["id"]: r for r in prev["items"]}
     if all(item["id"] in done for item in data["items"]):
         print(f"{out} already complete")  # skip the multi-minute model load
         return
@@ -102,7 +118,9 @@ def main():
         for r in results:
             by_task.setdefault(r["task"], []).append(r["correct"])
         scores = {t: sum(v) / len(v) for t, v in by_task.items()}
-        out.write_text(
+        # atomic replace: crash-safe against battery death mid-write
+        tmp = out.with_suffix(".json.tmp")
+        tmp.write_text(
             json.dumps(
                 {
                     "pack": args.pack,
@@ -117,6 +135,7 @@ def main():
                 indent=1,
             )
         )
+        os.replace(tmp, out)
 
     for k, item in enumerate(data["items"]):
         if item["id"] in done:

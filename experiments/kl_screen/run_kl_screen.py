@@ -25,6 +25,7 @@ Usage (candidate sweep, no packs written):
 """
 import argparse
 import json
+import os
 from pathlib import Path
 
 import mlx.core as mx
@@ -111,7 +112,10 @@ def main():
     results = {**prev_results, **{name: [] for name, _ in candidates}}
 
     def write():
-        out.write_text(
+        # atomic replace: a battery death mid-write must never leave a
+        # truncated checkpoint that aborts the resume it exists to enable
+        tmp = out.with_suffix(".json.tmp")
+        tmp.write_text(
             json.dumps(
                 {
                     "reference": args.reference,
@@ -132,6 +136,7 @@ def main():
                 indent=1,
             )
         )
+        os.replace(tmp, out)
 
     for item in probes["items"]:
         pending = [
