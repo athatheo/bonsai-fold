@@ -107,6 +107,7 @@ def main():
                 {
                     "pack": args.pack,
                     "drop": args.drop,
+                    "stock_loader": args.stock_loader,
                     "max_tokens": args.max_tokens,
                     "seed": args.seed,
                     "task_accuracy": scores,

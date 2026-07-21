@@ -28,14 +28,9 @@ OFFPOLICY_SCREEN = 0.05  # provisional gate, used only to veto k4_full compositi
 
 
 def load_singles(path):
-    data = json.loads(path.read_text())
-    kl = {}
-    for cand in data["candidates"]:
-        spec = cand["name"].removeprefix("drop[").removesuffix("]")
-        blocks = tuple(int(b) for b in spec.split(","))
-        if len(blocks) == 1:
-            kl[blocks[0]] = cand["mean_kl_nats"]
-    return kl
+    # look up by the screen's own name format rather than reverse-parsing it
+    by_name = {c["name"]: c["mean_kl_nats"] for c in json.loads(path.read_text())["candidates"]}
+    return {b: by_name[f"drop[{b}]"] for b in LINEAR_POOL + FULL_POOL if f"drop[{b}]" in by_name}
 
 
 def main():
@@ -45,9 +40,9 @@ def main():
     if missing:
         sys.exit(f"singles incomplete, missing blocks {missing}; rerun stage A first")
 
-    lin_ranked = sorted(LINEAR_POOL, key=lambda b: off[b])
-    full_ranked = sorted(FULL_POOL, key=lambda b: off[b])
-    l_star, f_star = lin_ranked[0], full_ranked[0]
+    l_star = min(LINEAR_POOL, key=off.__getitem__)
+    full_ranked = sorted(FULL_POOL, key=off.__getitem__)
+    f_star = full_ranked[0]
 
     sets = {
         "k8_linear": [16, 12, 13, 9, 8, 4, 5, l_star],

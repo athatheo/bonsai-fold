@@ -5,8 +5,9 @@
 #
 # Idempotent and crash-safe end to end: every stage checkpoints per item and
 # resumes by id. After ANY interruption (battery death, reboot) just rerun
-# this one script; completed stages fast-forward. After an unclean shutdown
-# it first re-runs the runtime validation battery (must pass).
+# this one script; completed stages fast-forward. The runtime validation
+# battery runs unconditionally at startup (must pass) — cheap, and it covers
+# the unclean-shutdown case without needing to detect one.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
