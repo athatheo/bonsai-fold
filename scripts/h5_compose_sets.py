@@ -10,8 +10,9 @@ Sets composed (matched-k against existing anchors):
   k8_linear  {16,12,13,9,8,4,5}+L*  vs mixed k8 {16,12,13,9,8,4,5,15} — differ in one member
   k2_full    {15,F*}                vs linear k2 {16,12}
   k4_mixed   {16,12,15,F*}          vs linear k4 {16,12,13,9}
-  k4_full    {15,F1,F2,F3}          only if all three new full singles pass the
+  k4_full    {15,F1,F2,F3}          from the best 3 new full singles passing the
                                     provisional 0.05-nats off-policy screen
+                                    (omitted if fewer than 3 pass)
 where L* / F* = best new linear / full single by off-policy KL.
 """
 import json
@@ -54,11 +55,9 @@ def main():
         "k4_mixed": [16, 12, 15, f_star],
     }
     passing = [b for b in full_ranked if off[b] < OFFPOLICY_SCREEN]
+    vetoed = {b: off[b] for b in full_ranked if b not in passing}
     if len(passing) >= 3:
         sets["k4_full"] = [15] + passing[:3]
-    else:
-        vetoed = {b: off[b] for b in full_ranked if off[b] >= OFFPOLICY_SCREEN}
-        sets["k4_full_vetoed"] = vetoed  # rationale only, not screened
 
     rationale = {
         "rule": "rank new singles by off-policy KL; L*/F* = best linear/full",
@@ -66,17 +65,12 @@ def main():
         "singles_offpolicy": {str(b): off[b] for b in LINEAR_POOL + FULL_POOL},
         "l_star": l_star,
         "f_star": f_star,
-        "sets": {k: v for k, v in sets.items() if not k.endswith("_vetoed")},
-        "vetoed": sets.get("k4_full_vetoed"),
+        "sets": sets,
+        "vetoed": vetoed or None,
     }
     (RESULTS / "h5_selection.json").write_text(json.dumps(rationale, indent=1))
 
-    args = [
-        f"--drop {','.join(str(b) for b in blocks)}"
-        for name, blocks in sets.items()
-        if not name.endswith("_vetoed")
-    ]
-    print(" ".join(args))
+    print(" ".join(f"--drop {','.join(str(b) for b in blocks)}" for blocks in sets.values()))
 
 
 if __name__ == "__main__":

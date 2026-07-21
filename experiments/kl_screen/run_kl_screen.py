@@ -91,6 +91,13 @@ def main():
             for r in c["items"]:
                 done[(c["name"], r["id"])] = r
 
+    # candidate names are derivable without the model: skip the ~5GB load
+    # (and mlx startup) when every (candidate, item) pair is checkpointed
+    names = [f"drop[{spec}]" for spec in args.drop] + list(args.candidate_pack)
+    if all((n, item["id"]) in done for n in names for item in probes["items"]):
+        print(f"{out} already complete")
+        return
+
     ref_model, _ = load_bonsai(args.reference)
     candidates = [
         (f"drop[{spec}]", drop_view(ref_model, [int(i) for i in spec.split(",")]))

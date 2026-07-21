@@ -81,6 +81,9 @@ def main():
     done = {}
     if out.exists():
         done = {r["id"]: r for r in json.loads(out.read_text())["items"]}
+    if all(item["id"] in done for item in data["items"]):
+        print(f"{out} already complete")  # skip the multi-minute model load
+        return
 
     if args.stock_loader:
         from mlx_lm import load
