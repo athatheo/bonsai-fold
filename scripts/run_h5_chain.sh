@@ -20,8 +20,9 @@ ON=experiments/calibration/probes_onpolicy.json
 OFF=experiments/calibration/probes_offpolicy.json
 R=experiments/kl_screen/results
 
-SINGLES=""
-for b in 57 17 37 58 33 30 55 39 23 47; do SINGLES="$SINGLES --drop $b"; done
+# candidate pool lives in h5_compose_sets.py (LINEAR_POOL/FULL_POOL) —
+# single source of truth for stage A and stage B composition
+SINGLES=$(uv run python scripts/h5_compose_sets.py --print-singles)
 
 commit() {
   git add "$@"

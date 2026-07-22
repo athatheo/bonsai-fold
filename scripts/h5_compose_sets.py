@@ -69,4 +69,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if "--print-singles" in sys.argv:
+        # stage A consumes the pools from here too — single source of truth
+        print(" ".join(f"--drop {b}" for b in LINEAR_POOL + FULL_POOL))
+    else:
+        main()
