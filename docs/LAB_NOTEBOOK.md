@@ -147,3 +147,21 @@ Artifacts: experiments/minibench/analysis/{a_mmlu_tail,b_math_anomaly,c_thinking
 **Ops.** Battery death mid-off-policy-singles (the first hard crash since the atomic-write fix): checkpoint survived intact at 23/100, runtime re-validated (all 21 checks), chain relaunched detached from the session harness (start_new_session — three earlier "kill batches" turned out to be the session harness reaping its background process group, not sleep or user action). On-policy singles complete and committed (100 probes x 10 candidates); off-policy running (~5 min/probe).
 
 **Decision from Thanasis:** the matched-deployed-GB comparison (Qwen3.5-4B-MLX-8bit, 4.470 GB language-only vs k8's 4.13 GB) will cite Qwen's PUBLISHED thinking-mode benchmark numbers instead of running our 500-item mini-bench locally. Saves ~2-3h GPU; the chain's stage 3 skips via its pack guard (pack parked at models/Qwen3.5-4B-MLX-8bit.parked, kept for possible future spot checks). Framing consequence, recorded honestly: the comparison drops from protocol-matched (same frozen items, sampling, budget) to REFERENCE CONTEXT — same status as the whitepaper's own numbers under CLAUDE.md. Published numbers use Qwen's optimal settings (their recommended sampling, larger budgets), so if the folded pack still compares acceptably, the claim survives an unfavorable-to-us comparison; a paired claim ("beats/loses to Qwen3.5-4B on identical items") is NOT available in this design. Sourced numbers + eval-setting caveats to be appended when the web research pass lands.
+
+## 2026-07-22: Matched-deployed-GB comparison via published numbers — the folded 27B does NOT beat the 2026 4B state of the art
+
+Sources (cross-checked byte-identical): huggingface.co/Qwen/Qwen3.5-4B model card (thinking-mode table; confirmed against the identical Qwen3.5-4B column on the Qwen3.5-9B card). Qwen3.5-4B is a unified model, thinking on by default; card numbers are thinking-mode. GSM8K and MATH-500 are NOT reported for this model (only competition-level HMMT 74.0/76.8 and PolyMATH 51.1 — no calibrated stand-in for our math tasks), so the comparison rests on the two clean name-matches: IFEval and MMLU-Redux.
+
+| model | deployed GB (lang-only) | IFEval | MMLU-Redux |
+|---|---|---|---|
+| Qwen3.5-4B (published, thinking) | 4.470 (8-bit MLX) | 89.8 | 88.8 |
+| Bonsai-27B 1-bit unfolded (ours, N=100/200) | 4.61 | 93.0 | 80.5 |
+| k2 fold (ours) | 4.49 | 88.0 | 79.0 |
+| k8 fold (ours) | 4.13 | 79.0 | 62.0 |
+
+Readings, with the design caveat that this is reference-context not protocol-matched (their settings: temp 1.0, presence_penalty 1.5, 32-80K output budgets vs our 0.7/0.95/20 @ 16,384; their full benchmark sets vs our frozen 100/200-item subsets, Wilson CIs ±5-9 pts):
+1. **On knowledge, the folded pack loses decisively at matched bytes**: k8 MMLU-Redux 62.0 vs 88.8 — and even the UNFOLDED 1-bit 27B (80.5) sits ~8 pts below the native 4B. The 1-bit conversion already cedes the knowledge axis to 2026's small dense models; folding widens the gap (each dropped block cost MMLU most — consistent with the per-task slopes).
+2. **On instruction following, the unfolded pack still leads** (93.0 vs 89.8, N=100 so CI-overlapping) and k2 is at parity (88.0); k8 is clearly behind (79.0). 
+3. **Math: no comparable published benchmark exists** for Qwen3.5-4B; our GSM8K/MATH500 numbers cannot be placed against it honestly.
+4. **Positioning verdict for the paper:** "a folded 27B is a smaller model" survives as framing, but "and it beats models born that size" does NOT hold at k8 against the newest 4B-class on the comparable axes; at k2 it holds only on IFEval-vs-parity. The honest Pareto statement: 1-bit Bonsai (folded or not) buys its bytes from a 2024-25-era capability base, while native 2026 4B models pack newer training into the same footprint. Capability-per-deployed-GB favors the native small model on knowledge; the fold's remaining edge is instruction-following at low k and whatever math advantage exists (unmeasurable from published data).
+Decision: comparison closed (no local run, per 2026-07-22 decision above). Pack stays parked. If a reviewer demands protocol-matched numbers, the parked pack + minibench --stock-loader path is ready (~2-3h).
