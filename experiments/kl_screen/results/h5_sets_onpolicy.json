@@ -1,0 +1,2039 @@
+{
+ "reference": "models/Bonsai-27B-mlx-1bit",
+ "probes": {
+  "seed": 20260715,
+  "tokenizer_pack": "/Users/atheocharis/repos/bonsai-fold/models/Bonsai-27B-mlx-1bit",
+  "target_tokens": 2048,
+  "completion_pack": "/Users/atheocharis/repos/bonsai-fold/models/Bonsai-27B-mlx-1bit",
+  "completion_max_tokens": 1024,
+  "completion_seed": 20260715,
+  "complete": true
+ },
+ "probe_fingerprint": "f47ad8da24426755",
+ "candidates": [
+  {
+   "name": "drop[16,12,13,9,8,4,5,37]",
+   "mean_kl_nats": 0.056346884050137346,
+   "items": [
+    {
+     "id": "math-probe-257",
+     "tokens": 1058,
+     "kl_nats": 0.038725114837711384
+    },
+    {
+     "id": "math-probe-409",
+     "tokens": 1093,
+     "kl_nats": 0.04241946784051754
+    },
+    {
+     "id": "math-probe-246",
+     "tokens": 931,
+     "kl_nats": 0.06893394789813541
+    },
+    {
+     "id": "math-probe-331",
+     "tokens": 1086,
+     "kl_nats": 0.060789925836945986
+    },
+    {
+     "id": "math-probe-100",
+     "tokens": 1249,
+     "kl_nats": 0.1464446810744494
+    },
+    {
+     "id": "math-probe-391",
+     "tokens": 1125,
+     "kl_nats": 0.053997128592597116
+    },
+    {
+     "id": "math-probe-342",
+     "tokens": 1061,
+     "kl_nats": 0.04239282834990535
+    },
+    {
+     "id": "math-probe-024",
+     "tokens": 1137,
+     "kl_nats": 0.05606488963439995
+    },
+    {
+     "id": "math-probe-192",
+     "tokens": 1073,
+     "kl_nats": 0.07321341234395577
+    },
+    {
+     "id": "math-probe-238",
+     "tokens": 1080,
+     "kl_nats": 0.03427930341826545
+    },
+    {
+     "id": "math-probe-155",
+     "tokens": 1088,
+     "kl_nats": 0.0380808842532775
+    },
+    {
+     "id": "math-probe-414",
+     "tokens": 1072,
+     "kl_nats": 0.07076132697845573
+    },
+    {
+     "id": "math-probe-305",
+     "tokens": 1069,
+     "kl_nats": 0.02873424328410592
+    },
+    {
+     "id": "math-probe-484",
+     "tokens": 1070,
+     "kl_nats": 0.029984844622210922
+    },
+    {
+     "id": "math-probe-252",
+     "tokens": 1060,
+     "kl_nats": 0.04495666926761843
+    },
+    {
+     "id": "math-probe-427",
+     "tokens": 1082,
+     "kl_nats": 0.04856767738151903
+    },
+    {
+     "id": "math-probe-059",
+     "tokens": 1083,
+     "kl_nats": 0.05774717185635976
+    },
+    {
+     "id": "math-probe-039",
+     "tokens": 1061,
+     "kl_nats": 0.0688685107972687
+    },
+    {
+     "id": "math-probe-437",
+     "tokens": 1135,
+     "kl_nats": 0.04007643918108835
+    },
+    {
+     "id": "math-probe-341",
+     "tokens": 1048,
+     "kl_nats": 0.0453279725922883
+    },
+    {
+     "id": "math-probe-480",
+     "tokens": 1095,
+     "kl_nats": 0.055716070845791194
+    },
+    {
+     "id": "math-probe-121",
+     "tokens": 1055,
+     "kl_nats": 0.040140893561015197
+    },
+    {
+     "id": "math-probe-389",
+     "tokens": 1170,
+     "kl_nats": 0.08285239578312278
+    },
+    {
+     "id": "math-probe-316",
+     "tokens": 1080,
+     "kl_nats": 0.027344182099181193
+    },
+    {
+     "id": "math-probe-354",
+     "tokens": 1054,
+     "kl_nats": 0.03700659548831959
+    },
+    {
+     "id": "math-probe-489",
+     "tokens": 1098,
+     "kl_nats": 0.03865938960745904
+    },
+    {
+     "id": "math-probe-310",
+     "tokens": 1106,
+     "kl_nats": 0.05227207102784196
+    },
+    {
+     "id": "math-probe-213",
+     "tokens": 1102,
+     "kl_nats": 0.0450790527727989
+    },
+    {
+     "id": "math-probe-280",
+     "tokens": 1079,
+     "kl_nats": 0.04757528779018356
+    },
+    {
+     "id": "math-probe-393",
+     "tokens": 1116,
+     "kl_nats": 0.055504792907332005
+    },
+    {
+     "id": "math-probe-023",
+     "tokens": 1062,
+     "kl_nats": 0.040263093180126615
+    },
+    {
+     "id": "math-probe-079",
+     "tokens": 1056,
+     "kl_nats": 0.04529606979904753
+    },
+    {
+     "id": "math-probe-433",
+     "tokens": 1050,
+     "kl_nats": 0.04832594372332096
+    },
+    {
+     "id": "math-probe-137",
+     "tokens": 1055,
+     "kl_nats": 0.05597484656984772
+    },
+    {
+     "id": "math-probe-141",
+     "tokens": 1094,
+     "kl_nats": 0.09023001119903062
+    },
+    {
+     "id": "math-probe-312",
+     "tokens": 1060,
+     "kl_nats": 0.051820206192304506
+    },
+    {
+     "id": "math-probe-330",
+     "tokens": 1071,
+     "kl_nats": 0.028774213779762903
+    },
+    {
+     "id": "math-probe-156",
+     "tokens": 1244,
+     "kl_nats": 0.1408346274274722
+    },
+    {
+     "id": "math-probe-036",
+     "tokens": 1063,
+     "kl_nats": 0.02956152433285933
+    },
+    {
+     "id": "math-probe-044",
+     "tokens": 1098,
+     "kl_nats": 0.04646446405212736
+    },
+    {
+     "id": "math-probe-182",
+     "tokens": 1067,
+     "kl_nats": 0.05275431590987458
+    },
+    {
+     "id": "math-probe-282",
+     "tokens": 1162,
+     "kl_nats": 0.033523152494184326
+    },
+    {
+     "id": "math-probe-169",
+     "tokens": 1060,
+     "kl_nats": 0.06820083226797716
+    },
+    {
+     "id": "math-probe-468",
+     "tokens": 1067,
+     "kl_nats": 0.04756078953595506
+    },
+    {
+     "id": "math-probe-271",
+     "tokens": 1065,
+     "kl_nats": 0.04034104951670472
+    },
+    {
+     "id": "math-probe-222",
+     "tokens": 1178,
+     "kl_nats": 0.05532063814496751
+    },
+    {
+     "id": "math-probe-157",
+     "tokens": 1080,
+     "kl_nats": 0.057104176503640636
+    },
+    {
+     "id": "math-probe-350",
+     "tokens": 1045,
+     "kl_nats": 0.04187267146042089
+    },
+    {
+     "id": "math-probe-436",
+     "tokens": 1075,
+     "kl_nats": 0.05530225410017856
+    },
+    {
+     "id": "math-probe-496",
+     "tokens": 1067,
+     "kl_nats": 0.06379785421526979
+    },
+    {
+     "id": "math-probe-253",
+     "tokens": 577,
+     "kl_nats": 0.038126852318153846
+    },
+    {
+     "id": "math-probe-231",
+     "tokens": 1098,
+     "kl_nats": 0.03823833989966763
+    },
+    {
+     "id": "math-probe-314",
+     "tokens": 1097,
+     "kl_nats": 0.040720223402477114
+    },
+    {
+     "id": "math-probe-185",
+     "tokens": 1051,
+     "kl_nats": 0.0684046369368524
+    },
+    {
+     "id": "math-probe-303",
+     "tokens": 1111,
+     "kl_nats": 0.08070861359741321
+    },
+    {
+     "id": "math-probe-171",
+     "tokens": 1083,
+     "kl_nats": 0.03905859350167483
+    },
+    {
+     "id": "math-probe-003",
+     "tokens": 1048,
+     "kl_nats": 0.07850921290521404
+    },
+    {
+     "id": "math-probe-196",
+     "tokens": 1057,
+     "kl_nats": 0.0717726545505289
+    },
+    {
+     "id": "math-probe-236",
+     "tokens": 1086,
+     "kl_nats": 0.046183885790366495
+    },
+    {
+     "id": "math-probe-233",
+     "tokens": 1140,
+     "kl_nats": 0.05471599185675906
+    },
+    {
+     "id": "math-probe-081",
+     "tokens": 1083,
+     "kl_nats": 0.045825212065643
+    },
+    {
+     "id": "math-probe-189",
+     "tokens": 1528,
+     "kl_nats": 0.18458192822820854
+    },
+    {
+     "id": "math-probe-114",
+     "tokens": 1109,
+     "kl_nats": 0.05816584250430356
+    },
+    {
+     "id": "math-probe-353",
+     "tokens": 1084,
+     "kl_nats": 0.047574810106376
+    },
+    {
+     "id": "math-probe-324",
+     "tokens": 1323,
+     "kl_nats": 0.12298114770123748
+    },
+    {
+     "id": "math-probe-395",
+     "tokens": 1069,
+     "kl_nats": 0.05487317242724969
+    },
+    {
+     "id": "math-probe-098",
+     "tokens": 1052,
+     "kl_nats": 0.0456238331223622
+    },
+    {
+     "id": "math-probe-076",
+     "tokens": 1073,
+     "kl_nats": 0.05527345648682906
+    },
+    {
+     "id": "math-probe-173",
+     "tokens": 1089,
+     "kl_nats": 0.04624063931439753
+    },
+    {
+     "id": "math-probe-322",
+     "tokens": 1073,
+     "kl_nats": 0.030586070527790422
+    },
+    {
+     "id": "math-probe-459",
+     "tokens": 1113,
+     "kl_nats": 0.03093508225995361
+    },
+    {
+     "id": "math-probe-127",
+     "tokens": 1048,
+     "kl_nats": 0.04043843125114004
+    },
+    {
+     "id": "math-probe-380",
+     "tokens": 1064,
+     "kl_nats": 0.03839657241408538
+    },
+    {
+     "id": "math-probe-180",
+     "tokens": 1054,
+     "kl_nats": 0.03596708625272284
+    },
+    {
+     "id": "math-probe-340",
+     "tokens": 1132,
+     "kl_nats": 0.05309208627303161
+    },
+    {
+     "id": "math-probe-333",
+     "tokens": 1099,
+     "kl_nats": 0.07724595915956645
+    },
+    {
+     "id": "math-probe-116",
+     "tokens": 1059,
+     "kl_nats": 0.04433153551406068
+    },
+    {
+     "id": "math-probe-172",
+     "tokens": 1064,
+     "kl_nats": 0.027289493639666335
+    },
+    {
+     "id": "math-probe-384",
+     "tokens": 1059,
+     "kl_nats": 0.05665269226708201
+    },
+    {
+     "id": "math-probe-243",
+     "tokens": 1072,
+     "kl_nats": 0.04456862940717099
+    },
+    {
+     "id": "math-probe-497",
+     "tokens": 1085,
+     "kl_nats": 0.0759613665567565
+    },
+    {
+     "id": "math-probe-383",
+     "tokens": 1070,
+     "kl_nats": 0.042050101378253685
+    },
+    {
+     "id": "math-probe-179",
+     "tokens": 1134,
+     "kl_nats": 0.05649149249680669
+    },
+    {
+     "id": "math-probe-052",
+     "tokens": 1064,
+     "kl_nats": 0.08702884121496875
+    },
+    {
+     "id": "math-probe-264",
+     "tokens": 1295,
+     "kl_nats": 0.09249354695261215
+    },
+    {
+     "id": "math-probe-454",
+     "tokens": 1156,
+     "kl_nats": 0.045243253963628854
+    },
+    {
+     "id": "math-probe-109",
+     "tokens": 1175,
+     "kl_nats": 0.04237017935894905
+    },
+    {
+     "id": "math-probe-292",
+     "tokens": 1159,
+     "kl_nats": 0.04135861316562419
+    },
+    {
+     "id": "math-probe-299",
+     "tokens": 1075,
+     "kl_nats": 0.03692719770032306
+    },
+    {
+     "id": "math-probe-474",
+     "tokens": 1091,
+     "kl_nats": 0.02644459060525588
+    },
+    {
+     "id": "math-probe-012",
+     "tokens": 1105,
+     "kl_nats": 0.05426615287815284
+    },
+    {
+     "id": "math-probe-267",
+     "tokens": 1228,
+     "kl_nats": 0.1216028326885708
+    },
+    {
+     "id": "math-probe-241",
+     "tokens": 1076,
+     "kl_nats": 0.03860528761569452
+    },
+    {
+     "id": "math-probe-160",
+     "tokens": 1057,
+     "kl_nats": 0.07657918054874821
+    },
+    {
+     "id": "math-probe-394",
+     "tokens": 1148,
+     "kl_nats": 0.080978015781695
+    },
+    {
+     "id": "math-probe-346",
+     "tokens": 1067,
+     "kl_nats": 0.05793394669261957
+    },
+    {
+     "id": "math-probe-347",
+     "tokens": 1093,
+     "kl_nats": 0.04105940622031307
+    },
+    {
+     "id": "math-probe-245",
+     "tokens": 1121,
+     "kl_nats": 0.03029780575040193
+    },
+    {
+     "id": "math-probe-498",
+     "tokens": 1093,
+     "kl_nats": 0.050383315485546816
+    },
+    {
+     "id": "math-probe-435",
+     "tokens": 1069,
+     "kl_nats": 0.0560687739119784
+    }
+   ]
+  },
+  {
+   "name": "drop[15,39]",
+   "mean_kl_nats": 0.016491742142679813,
+   "items": [
+    {
+     "id": "math-probe-257",
+     "tokens": 1058,
+     "kl_nats": 0.013996877867749597
+    },
+    {
+     "id": "math-probe-409",
+     "tokens": 1093,
+     "kl_nats": 0.012218153214956355
+    },
+    {
+     "id": "math-probe-246",
+     "tokens": 931,
+     "kl_nats": 0.018366153206912327
+    },
+    {
+     "id": "math-probe-331",
+     "tokens": 1086,
+     "kl_nats": 0.009649712626666215
+    },
+    {
+     "id": "math-probe-100",
+     "tokens": 1249,
+     "kl_nats": 0.0653953844304081
+    },
+    {
+     "id": "math-probe-391",
+     "tokens": 1125,
+     "kl_nats": 0.016911248736911348
+    },
+    {
+     "id": "math-probe-342",
+     "tokens": 1061,
+     "kl_nats": 0.01246774631300476
+    },
+    {
+     "id": "math-probe-024",
+     "tokens": 1137,
+     "kl_nats": 0.014058089245802074
+    },
+    {
+     "id": "math-probe-192",
+     "tokens": 1073,
+     "kl_nats": 0.01586589536595767
+    },
+    {
+     "id": "math-probe-238",
+     "tokens": 1080,
+     "kl_nats": 0.00963059327116719
+    },
+    {
+     "id": "math-probe-155",
+     "tokens": 1088,
+     "kl_nats": 0.018423709141857484
+    },
+    {
+     "id": "math-probe-414",
+     "tokens": 1072,
+     "kl_nats": 0.021217635985630662
+    },
+    {
+     "id": "math-probe-305",
+     "tokens": 1069,
+     "kl_nats": 0.009638627184340618
+    },
+    {
+     "id": "math-probe-484",
+     "tokens": 1070,
+     "kl_nats": 0.009470730555182863
+    },
+    {
+     "id": "math-probe-252",
+     "tokens": 1060,
+     "kl_nats": 0.013322836385582978
+    },
+    {
+     "id": "math-probe-427",
+     "tokens": 1082,
+     "kl_nats": 0.012984543102285558
+    },
+    {
+     "id": "math-probe-059",
+     "tokens": 1083,
+     "kl_nats": 0.011053875267560683
+    },
+    {
+     "id": "math-probe-039",
+     "tokens": 1061,
+     "kl_nats": 0.009937027320055103
+    },
+    {
+     "id": "math-probe-437",
+     "tokens": 1135,
+     "kl_nats": 0.013951807190143065
+    },
+    {
+     "id": "math-probe-341",
+     "tokens": 1048,
+     "kl_nats": 0.013208587888542933
+    },
+    {
+     "id": "math-probe-480",
+     "tokens": 1095,
+     "kl_nats": 0.01552436841677313
+    },
+    {
+     "id": "math-probe-121",
+     "tokens": 1055,
+     "kl_nats": 0.012278104760635521
+    },
+    {
+     "id": "math-probe-389",
+     "tokens": 1170,
+     "kl_nats": 0.022594176296494965
+    },
+    {
+     "id": "math-probe-316",
+     "tokens": 1080,
+     "kl_nats": 0.00610716816175867
+    },
+    {
+     "id": "math-probe-354",
+     "tokens": 1054,
+     "kl_nats": 0.012070210625822224
+    },
+    {
+     "id": "math-probe-489",
+     "tokens": 1098,
+     "kl_nats": 0.013603461719710101
+    },
+    {
+     "id": "math-probe-310",
+     "tokens": 1106,
+     "kl_nats": 0.013936768819798613
+    },
+    {
+     "id": "math-probe-213",
+     "tokens": 1102,
+     "kl_nats": 0.008141133183792585
+    },
+    {
+     "id": "math-probe-280",
+     "tokens": 1079,
+     "kl_nats": 0.012538999070493682
+    },
+    {
+     "id": "math-probe-393",
+     "tokens": 1116,
+     "kl_nats": 0.020343665794659686
+    },
+    {
+     "id": "math-probe-023",
+     "tokens": 1062,
+     "kl_nats": 0.01778764396962024
+    },
+    {
+     "id": "math-probe-079",
+     "tokens": 1056,
+     "kl_nats": 0.010903418854330525
+    },
+    {
+     "id": "math-probe-433",
+     "tokens": 1050,
+     "kl_nats": 0.017678213531062716
+    },
+    {
+     "id": "math-probe-137",
+     "tokens": 1055,
+     "kl_nats": 0.014479618614883784
+    },
+    {
+     "id": "math-probe-141",
+     "tokens": 1094,
+     "kl_nats": 0.028880114311274054
+    },
+    {
+     "id": "math-probe-312",
+     "tokens": 1060,
+     "kl_nats": 0.01666011720333459
+    },
+    {
+     "id": "math-probe-330",
+     "tokens": 1071,
+     "kl_nats": 0.011216377232477667
+    },
+    {
+     "id": "math-probe-156",
+     "tokens": 1244,
+     "kl_nats": 0.03903711033787375
+    },
+    {
+     "id": "math-probe-036",
+     "tokens": 1063,
+     "kl_nats": 0.009510077290790661
+    },
+    {
+     "id": "math-probe-044",
+     "tokens": 1098,
+     "kl_nats": 0.01359042552433813
+    },
+    {
+     "id": "math-probe-182",
+     "tokens": 1067,
+     "kl_nats": 0.015598123109329495
+    },
+    {
+     "id": "math-probe-282",
+     "tokens": 1162,
+     "kl_nats": 0.01177420068320637
+    },
+    {
+     "id": "math-probe-169",
+     "tokens": 1060,
+     "kl_nats": 0.015211041243571156
+    },
+    {
+     "id": "math-probe-468",
+     "tokens": 1067,
+     "kl_nats": 0.011476073263958445
+    },
+    {
+     "id": "math-probe-271",
+     "tokens": 1065,
+     "kl_nats": 0.015382779875831426
+    },
+    {
+     "id": "math-probe-222",
+     "tokens": 1178,
+     "kl_nats": 0.02053230697311246
+    },
+    {
+     "id": "math-probe-157",
+     "tokens": 1080,
+     "kl_nats": 0.01859878599643707
+    },
+    {
+     "id": "math-probe-350",
+     "tokens": 1045,
+     "kl_nats": 0.01259989042601517
+    },
+    {
+     "id": "math-probe-436",
+     "tokens": 1075,
+     "kl_nats": 0.01527674442113832
+    },
+    {
+     "id": "math-probe-496",
+     "tokens": 1067,
+     "kl_nats": 0.014937548125695154
+    },
+    {
+     "id": "math-probe-253",
+     "tokens": 577,
+     "kl_nats": 0.010806357736604053
+    },
+    {
+     "id": "math-probe-231",
+     "tokens": 1098,
+     "kl_nats": 0.006335870001485439
+    },
+    {
+     "id": "math-probe-314",
+     "tokens": 1097,
+     "kl_nats": 0.015043270837858577
+    },
+    {
+     "id": "math-probe-185",
+     "tokens": 1051,
+     "kl_nats": 0.019857331013376094
+    },
+    {
+     "id": "math-probe-303",
+     "tokens": 1111,
+     "kl_nats": 0.018477699544170115
+    },
+    {
+     "id": "math-probe-171",
+     "tokens": 1083,
+     "kl_nats": 0.011409211604548953
+    },
+    {
+     "id": "math-probe-003",
+     "tokens": 1048,
+     "kl_nats": 0.01772579391494052
+    },
+    {
+     "id": "math-probe-196",
+     "tokens": 1057,
+     "kl_nats": 0.016524719763388585
+    },
+    {
+     "id": "math-probe-236",
+     "tokens": 1086,
+     "kl_nats": 0.010763410760113766
+    },
+    {
+     "id": "math-probe-233",
+     "tokens": 1140,
+     "kl_nats": 0.0181319372695789
+    },
+    {
+     "id": "math-probe-081",
+     "tokens": 1083,
+     "kl_nats": 0.013087958014902977
+    },
+    {
+     "id": "math-probe-189",
+     "tokens": 1528,
+     "kl_nats": 0.07477828860282898
+    },
+    {
+     "id": "math-probe-114",
+     "tokens": 1109,
+     "kl_nats": 0.016165002495238542
+    },
+    {
+     "id": "math-probe-353",
+     "tokens": 1084,
+     "kl_nats": 0.01671659033676795
+    },
+    {
+     "id": "math-probe-324",
+     "tokens": 1323,
+     "kl_nats": 0.039194931879425625
+    },
+    {
+     "id": "math-probe-395",
+     "tokens": 1069,
+     "kl_nats": 0.017330450694955767
+    },
+    {
+     "id": "math-probe-098",
+     "tokens": 1052,
+     "kl_nats": 0.015655839270398646
+    },
+    {
+     "id": "math-probe-076",
+     "tokens": 1073,
+     "kl_nats": 0.017215259643991974
+    },
+    {
+     "id": "math-probe-173",
+     "tokens": 1089,
+     "kl_nats": 0.012090006095756622
+    },
+    {
+     "id": "math-probe-322",
+     "tokens": 1073,
+     "kl_nats": 0.010103333251896243
+    },
+    {
+     "id": "math-probe-459",
+     "tokens": 1113,
+     "kl_nats": 0.009413364334140719
+    },
+    {
+     "id": "math-probe-127",
+     "tokens": 1048,
+     "kl_nats": 0.01057103293315145
+    },
+    {
+     "id": "math-probe-380",
+     "tokens": 1064,
+     "kl_nats": 0.013759465825120757
+    },
+    {
+     "id": "math-probe-180",
+     "tokens": 1054,
+     "kl_nats": 0.010478839193394787
+    },
+    {
+     "id": "math-probe-340",
+     "tokens": 1132,
+     "kl_nats": 0.019785130297758555
+    },
+    {
+     "id": "math-probe-333",
+     "tokens": 1099,
+     "kl_nats": 0.01669603613314572
+    },
+    {
+     "id": "math-probe-116",
+     "tokens": 1059,
+     "kl_nats": 0.010517102026849337
+    },
+    {
+     "id": "math-probe-172",
+     "tokens": 1064,
+     "kl_nats": 0.009734459781557098
+    },
+    {
+     "id": "math-probe-384",
+     "tokens": 1059,
+     "kl_nats": 0.01823173411281971
+    },
+    {
+     "id": "math-probe-243",
+     "tokens": 1072,
+     "kl_nats": 0.014501998896029458
+    },
+    {
+     "id": "math-probe-497",
+     "tokens": 1085,
+     "kl_nats": 0.02474661796323715
+    },
+    {
+     "id": "math-probe-383",
+     "tokens": 1070,
+     "kl_nats": 0.011368916970547115
+    },
+    {
+     "id": "math-probe-179",
+     "tokens": 1134,
+     "kl_nats": 0.02316523775642301
+    },
+    {
+     "id": "math-probe-052",
+     "tokens": 1064,
+     "kl_nats": 0.013536270959933
+    },
+    {
+     "id": "math-probe-264",
+     "tokens": 1295,
+     "kl_nats": 0.04046271255807987
+    },
+    {
+     "id": "math-probe-454",
+     "tokens": 1156,
+     "kl_nats": 0.00857881268415484
+    },
+    {
+     "id": "math-probe-109",
+     "tokens": 1175,
+     "kl_nats": 0.01006617267081078
+    },
+    {
+     "id": "math-probe-292",
+     "tokens": 1159,
+     "kl_nats": 0.01308067319103106
+    },
+    {
+     "id": "math-probe-299",
+     "tokens": 1075,
+     "kl_nats": 0.010305733639140462
+    },
+    {
+     "id": "math-probe-474",
+     "tokens": 1091,
+     "kl_nats": 0.009815591611958337
+    },
+    {
+     "id": "math-probe-012",
+     "tokens": 1105,
+     "kl_nats": 0.010293965749611143
+    },
+    {
+     "id": "math-probe-267",
+     "tokens": 1228,
+     "kl_nats": 0.027861681551420728
+    },
+    {
+     "id": "math-probe-241",
+     "tokens": 1076,
+     "kl_nats": 0.010391793618858083
+    },
+    {
+     "id": "math-probe-160",
+     "tokens": 1057,
+     "kl_nats": 0.015514102090386252
+    },
+    {
+     "id": "math-probe-394",
+     "tokens": 1148,
+     "kl_nats": 0.01503185984980354
+    },
+    {
+     "id": "math-probe-346",
+     "tokens": 1067,
+     "kl_nats": 0.009224578221490032
+    },
+    {
+     "id": "math-probe-347",
+     "tokens": 1093,
+     "kl_nats": 0.01017199272642633
+    },
+    {
+     "id": "math-probe-245",
+     "tokens": 1121,
+     "kl_nats": 0.01066773906549527
+    },
+    {
+     "id": "math-probe-498",
+     "tokens": 1093,
+     "kl_nats": 0.011639805856584303
+    },
+    {
+     "id": "math-probe-435",
+     "tokens": 1069,
+     "kl_nats": 0.012756218745175425
+    }
+   ]
+  },
+  {
+   "name": "drop[16,12,15,39]",
+   "mean_kl_nats": 0.025188952560261345,
+   "items": [
+    {
+     "id": "math-probe-257",
+     "tokens": 1058,
+     "kl_nats": 0.02176479271671159
+    },
+    {
+     "id": "math-probe-409",
+     "tokens": 1093,
+     "kl_nats": 0.018356205396224682
+    },
+    {
+     "id": "math-probe-246",
+     "tokens": 931,
+     "kl_nats": 0.034919999467827194
+    },
+    {
+     "id": "math-probe-331",
+     "tokens": 1086,
+     "kl_nats": 0.014029237995709723
+    },
+    {
+     "id": "math-probe-100",
+     "tokens": 1249,
+     "kl_nats": 0.08537363528823547
+    },
+    {
+     "id": "math-probe-391",
+     "tokens": 1125,
+     "kl_nats": 0.024604199939303927
+    },
+    {
+     "id": "math-probe-342",
+     "tokens": 1061,
+     "kl_nats": 0.01737673865748845
+    },
+    {
+     "id": "math-probe-024",
+     "tokens": 1137,
+     "kl_nats": 0.021725220961222654
+    },
+    {
+     "id": "math-probe-192",
+     "tokens": 1073,
+     "kl_nats": 0.018825779978849013
+    },
+    {
+     "id": "math-probe-238",
+     "tokens": 1080,
+     "kl_nats": 0.014378868650507044
+    },
+    {
+     "id": "math-probe-155",
+     "tokens": 1088,
+     "kl_nats": 0.025886306648745257
+    },
+    {
+     "id": "math-probe-414",
+     "tokens": 1072,
+     "kl_nats": 0.030212123391788397
+    },
+    {
+     "id": "math-probe-305",
+     "tokens": 1069,
+     "kl_nats": 0.01515612521943252
+    },
+    {
+     "id": "math-probe-484",
+     "tokens": 1070,
+     "kl_nats": 0.018146649950018554
+    },
+    {
+     "id": "math-probe-252",
+     "tokens": 1060,
+     "kl_nats": 0.02054858623810534
+    },
+    {
+     "id": "math-probe-427",
+     "tokens": 1082,
+     "kl_nats": 0.020842533510405565
+    },
+    {
+     "id": "math-probe-059",
+     "tokens": 1083,
+     "kl_nats": 0.01512194609928219
+    },
+    {
+     "id": "math-probe-039",
+     "tokens": 1061,
+     "kl_nats": 0.014245539285684958
+    },
+    {
+     "id": "math-probe-437",
+     "tokens": 1135,
+     "kl_nats": 0.0212147897560691
+    },
+    {
+     "id": "math-probe-341",
+     "tokens": 1048,
+     "kl_nats": 0.01957142125559217
+    },
+    {
+     "id": "math-probe-480",
+     "tokens": 1095,
+     "kl_nats": 0.02483997617138031
+    },
+    {
+     "id": "math-probe-121",
+     "tokens": 1055,
+     "kl_nats": 0.018800894626508958
+    },
+    {
+     "id": "math-probe-389",
+     "tokens": 1170,
+     "kl_nats": 0.03545281112703503
+    },
+    {
+     "id": "math-probe-316",
+     "tokens": 1080,
+     "kl_nats": 0.01276731601467839
+    },
+    {
+     "id": "math-probe-354",
+     "tokens": 1054,
+     "kl_nats": 0.018795472988593735
+    },
+    {
+     "id": "math-probe-489",
+     "tokens": 1098,
+     "kl_nats": 0.023492224032707336
+    },
+    {
+     "id": "math-probe-310",
+     "tokens": 1106,
+     "kl_nats": 0.024457196861667186
+    },
+    {
+     "id": "math-probe-213",
+     "tokens": 1102,
+     "kl_nats": 0.016529820142770203
+    },
+    {
+     "id": "math-probe-280",
+     "tokens": 1079,
+     "kl_nats": 0.01896126735420333
+    },
+    {
+     "id": "math-probe-393",
+     "tokens": 1116,
+     "kl_nats": 0.03361188339930709
+    },
+    {
+     "id": "math-probe-023",
+     "tokens": 1062,
+     "kl_nats": 0.025123920368833954
+    },
+    {
+     "id": "math-probe-079",
+     "tokens": 1056,
+     "kl_nats": 0.017600245999567436
+    },
+    {
+     "id": "math-probe-433",
+     "tokens": 1050,
+     "kl_nats": 0.023839763757728394
+    },
+    {
+     "id": "math-probe-137",
+     "tokens": 1055,
+     "kl_nats": 0.018295254526545086
+    },
+    {
+     "id": "math-probe-141",
+     "tokens": 1094,
+     "kl_nats": 0.04925254668352591
+    },
+    {
+     "id": "math-probe-312",
+     "tokens": 1060,
+     "kl_nats": 0.025951102994522957
+    },
+    {
+     "id": "math-probe-330",
+     "tokens": 1071,
+     "kl_nats": 0.01465158691815858
+    },
+    {
+     "id": "math-probe-156",
+     "tokens": 1244,
+     "kl_nats": 0.06285379630576376
+    },
+    {
+     "id": "math-probe-036",
+     "tokens": 1063,
+     "kl_nats": 0.01477865032283966
+    },
+    {
+     "id": "math-probe-044",
+     "tokens": 1098,
+     "kl_nats": 0.021314566578369974
+    },
+    {
+     "id": "math-probe-182",
+     "tokens": 1067,
+     "kl_nats": 0.02198631403707631
+    },
+    {
+     "id": "math-probe-282",
+     "tokens": 1162,
+     "kl_nats": 0.023744191442217146
+    },
+    {
+     "id": "math-probe-169",
+     "tokens": 1060,
+     "kl_nats": 0.022600334882736207
+    },
+    {
+     "id": "math-probe-468",
+     "tokens": 1067,
+     "kl_nats": 0.017910528791878082
+    },
+    {
+     "id": "math-probe-271",
+     "tokens": 1065,
+     "kl_nats": 0.021599367302908023
+    },
+    {
+     "id": "math-probe-222",
+     "tokens": 1178,
+     "kl_nats": 0.03155935964276714
+    },
+    {
+     "id": "math-probe-157",
+     "tokens": 1080,
+     "kl_nats": 0.02703256297994543
+    },
+    {
+     "id": "math-probe-350",
+     "tokens": 1045,
+     "kl_nats": 0.020010234522477292
+    },
+    {
+     "id": "math-probe-436",
+     "tokens": 1075,
+     "kl_nats": 0.020904592247896415
+    },
+    {
+     "id": "math-probe-496",
+     "tokens": 1067,
+     "kl_nats": 0.02157669103134427
+    },
+    {
+     "id": "math-probe-253",
+     "tokens": 577,
+     "kl_nats": 0.016189091643592928
+    },
+    {
+     "id": "math-probe-231",
+     "tokens": 1098,
+     "kl_nats": 0.010086921666272133
+    },
+    {
+     "id": "math-probe-314",
+     "tokens": 1097,
+     "kl_nats": 0.02936287250101512
+    },
+    {
+     "id": "math-probe-185",
+     "tokens": 1051,
+     "kl_nats": 0.02524609125434615
+    },
+    {
+     "id": "math-probe-303",
+     "tokens": 1111,
+     "kl_nats": 0.027957263452098993
+    },
+    {
+     "id": "math-probe-171",
+     "tokens": 1083,
+     "kl_nats": 0.015227337182944061
+    },
+    {
+     "id": "math-probe-003",
+     "tokens": 1048,
+     "kl_nats": 0.029258890745749
+    },
+    {
+     "id": "math-probe-196",
+     "tokens": 1057,
+     "kl_nats": 0.02737791896881421
+    },
+    {
+     "id": "math-probe-236",
+     "tokens": 1086,
+     "kl_nats": 0.01592669467241066
+    },
+    {
+     "id": "math-probe-233",
+     "tokens": 1140,
+     "kl_nats": 0.025252389071280495
+    },
+    {
+     "id": "math-probe-081",
+     "tokens": 1083,
+     "kl_nats": 0.022069252621544144
+    },
+    {
+     "id": "math-probe-189",
+     "tokens": 1528,
+     "kl_nats": 0.11038881150215708
+    },
+    {
+     "id": "math-probe-114",
+     "tokens": 1109,
+     "kl_nats": 0.024921349301007117
+    },
+    {
+     "id": "math-probe-353",
+     "tokens": 1084,
+     "kl_nats": 0.02398315171034134
+    },
+    {
+     "id": "math-probe-324",
+     "tokens": 1323,
+     "kl_nats": 0.051536023121211715
+    },
+    {
+     "id": "math-probe-395",
+     "tokens": 1069,
+     "kl_nats": 0.021561964635429705
+    },
+    {
+     "id": "math-probe-098",
+     "tokens": 1052,
+     "kl_nats": 0.02230337878313808
+    },
+    {
+     "id": "math-probe-076",
+     "tokens": 1073,
+     "kl_nats": 0.023425855152204786
+    },
+    {
+     "id": "math-probe-173",
+     "tokens": 1089,
+     "kl_nats": 0.02011502456840186
+    },
+    {
+     "id": "math-probe-322",
+     "tokens": 1073,
+     "kl_nats": 0.017772206666862866
+    },
+    {
+     "id": "math-probe-459",
+     "tokens": 1113,
+     "kl_nats": 0.01599154302052089
+    },
+    {
+     "id": "math-probe-127",
+     "tokens": 1048,
+     "kl_nats": 0.017152997373624614
+    },
+    {
+     "id": "math-probe-380",
+     "tokens": 1064,
+     "kl_nats": 0.020939582867785952
+    },
+    {
+     "id": "math-probe-180",
+     "tokens": 1054,
+     "kl_nats": 0.016766845275147817
+    },
+    {
+     "id": "math-probe-340",
+     "tokens": 1132,
+     "kl_nats": 0.03630670241669294
+    },
+    {
+     "id": "math-probe-333",
+     "tokens": 1099,
+     "kl_nats": 0.028376131300713606
+    },
+    {
+     "id": "math-probe-116",
+     "tokens": 1059,
+     "kl_nats": 0.018206109321826577
+    },
+    {
+     "id": "math-probe-172",
+     "tokens": 1064,
+     "kl_nats": 0.017327062365479935
+    },
+    {
+     "id": "math-probe-384",
+     "tokens": 1059,
+     "kl_nats": 0.03007099834447542
+    },
+    {
+     "id": "math-probe-243",
+     "tokens": 1072,
+     "kl_nats": 0.021734734524541825
+    },
+    {
+     "id": "math-probe-497",
+     "tokens": 1085,
+     "kl_nats": 0.03794946582635976
+    },
+    {
+     "id": "math-probe-383",
+     "tokens": 1070,
+     "kl_nats": 0.014670949672984185
+    },
+    {
+     "id": "math-probe-179",
+     "tokens": 1134,
+     "kl_nats": 0.03310171721053081
+    },
+    {
+     "id": "math-probe-052",
+     "tokens": 1064,
+     "kl_nats": 0.019019710474220432
+    },
+    {
+     "id": "math-probe-264",
+     "tokens": 1295,
+     "kl_nats": 0.05861228363854545
+    },
+    {
+     "id": "math-probe-454",
+     "tokens": 1156,
+     "kl_nats": 0.01555188923146073
+    },
+    {
+     "id": "math-probe-109",
+     "tokens": 1175,
+     "kl_nats": 0.018762606052642173
+    },
+    {
+     "id": "math-probe-292",
+     "tokens": 1159,
+     "kl_nats": 0.019269032325078126
+    },
+    {
+     "id": "math-probe-299",
+     "tokens": 1075,
+     "kl_nats": 0.01722537828046222
+    },
+    {
+     "id": "math-probe-474",
+     "tokens": 1091,
+     "kl_nats": 0.014104522170548478
+    },
+    {
+     "id": "math-probe-012",
+     "tokens": 1105,
+     "kl_nats": 0.01890249273895678
+    },
+    {
+     "id": "math-probe-267",
+     "tokens": 1228,
+     "kl_nats": 0.04082388248816375
+    },
+    {
+     "id": "math-probe-241",
+     "tokens": 1076,
+     "kl_nats": 0.016861366073438227
+    },
+    {
+     "id": "math-probe-160",
+     "tokens": 1057,
+     "kl_nats": 0.028196781563555845
+    },
+    {
+     "id": "math-probe-394",
+     "tokens": 1148,
+     "kl_nats": 0.02326252708659355
+    },
+    {
+     "id": "math-probe-346",
+     "tokens": 1067,
+     "kl_nats": 0.015722011894183173
+    },
+    {
+     "id": "math-probe-347",
+     "tokens": 1093,
+     "kl_nats": 0.018420072059400126
+    },
+    {
+     "id": "math-probe-245",
+     "tokens": 1121,
+     "kl_nats": 0.016930456676193903
+    },
+    {
+     "id": "math-probe-498",
+     "tokens": 1093,
+     "kl_nats": 0.016656894805991966
+    },
+    {
+     "id": "math-probe-435",
+     "tokens": 1069,
+     "kl_nats": 0.01911350005803764
+    }
+   ]
+  },
+  {
+   "name": "drop[15,39,23,47]",
+   "mean_kl_nats": 0.05254683153464065,
+   "items": [
+    {
+     "id": "math-probe-257",
+     "tokens": 1058,
+     "kl_nats": 0.050820329633236835
+    },
+    {
+     "id": "math-probe-409",
+     "tokens": 1093,
+     "kl_nats": 0.05069780022533029
+    },
+    {
+     "id": "math-probe-246",
+     "tokens": 931,
+     "kl_nats": 0.07295142234204023
+    },
+    {
+     "id": "math-probe-331",
+     "tokens": 1086,
+     "kl_nats": 0.029791603760166062
+    },
+    {
+     "id": "math-probe-100",
+     "tokens": 1249,
+     "kl_nats": 0.10963223589430626
+    },
+    {
+     "id": "math-probe-391",
+     "tokens": 1125,
+     "kl_nats": 0.05335437350802951
+    },
+    {
+     "id": "math-probe-342",
+     "tokens": 1061,
+     "kl_nats": 0.04149139376882109
+    },
+    {
+     "id": "math-probe-024",
+     "tokens": 1137,
+     "kl_nats": 0.04040630763313072
+    },
+    {
+     "id": "math-probe-192",
+     "tokens": 1073,
+     "kl_nats": 0.05359919212293314
+    },
+    {
+     "id": "math-probe-238",
+     "tokens": 1080,
+     "kl_nats": 0.03771709093341121
+    },
+    {
+     "id": "math-probe-155",
+     "tokens": 1088,
+     "kl_nats": 0.05009682695655262
+    },
+    {
+     "id": "math-probe-414",
+     "tokens": 1072,
+     "kl_nats": 0.08645952437351
+    },
+    {
+     "id": "math-probe-305",
+     "tokens": 1069,
+     "kl_nats": 0.03820192334359778
+    },
+    {
+     "id": "math-probe-484",
+     "tokens": 1070,
+     "kl_nats": 0.034596416305437264
+    },
+    {
+     "id": "math-probe-252",
+     "tokens": 1060,
+     "kl_nats": 0.04889987785861177
+    },
+    {
+     "id": "math-probe-427",
+     "tokens": 1082,
+     "kl_nats": 0.048407657089162885
+    },
+    {
+     "id": "math-probe-059",
+     "tokens": 1083,
+     "kl_nats": 0.04636637127630598
+    },
+    {
+     "id": "math-probe-039",
+     "tokens": 1061,
+     "kl_nats": 0.029705824321671324
+    },
+    {
+     "id": "math-probe-437",
+     "tokens": 1135,
+     "kl_nats": 0.04675676938195586
+    },
+    {
+     "id": "math-probe-341",
+     "tokens": 1048,
+     "kl_nats": 0.04422997927847709
+    },
+    {
+     "id": "math-probe-480",
+     "tokens": 1095,
+     "kl_nats": 0.057682019499338925
+    },
+    {
+     "id": "math-probe-121",
+     "tokens": 1055,
+     "kl_nats": 0.04376504144397392
+    },
+    {
+     "id": "math-probe-389",
+     "tokens": 1170,
+     "kl_nats": 0.07776061856848562
+    },
+    {
+     "id": "math-probe-316",
+     "tokens": 1080,
+     "kl_nats": 0.02047873647124679
+    },
+    {
+     "id": "math-probe-354",
+     "tokens": 1054,
+     "kl_nats": 0.04034995077004695
+    },
+    {
+     "id": "math-probe-489",
+     "tokens": 1098,
+     "kl_nats": 0.05743562360930313
+    },
+    {
+     "id": "math-probe-310",
+     "tokens": 1106,
+     "kl_nats": 0.04957618075296633
+    },
+    {
+     "id": "math-probe-213",
+     "tokens": 1102,
+     "kl_nats": 0.034351656095085906
+    },
+    {
+     "id": "math-probe-280",
+     "tokens": 1079,
+     "kl_nats": 0.047287809506293466
+    },
+    {
+     "id": "math-probe-393",
+     "tokens": 1116,
+     "kl_nats": 0.06371985114176214
+    },
+    {
+     "id": "math-probe-023",
+     "tokens": 1062,
+     "kl_nats": 0.04860969406961272
+    },
+    {
+     "id": "math-probe-079",
+     "tokens": 1056,
+     "kl_nats": 0.04114047291152405
+    },
+    {
+     "id": "math-probe-433",
+     "tokens": 1050,
+     "kl_nats": 0.05748449825105213
+    },
+    {
+     "id": "math-probe-137",
+     "tokens": 1055,
+     "kl_nats": 0.045072874638706587
+    },
+    {
+     "id": "math-probe-141",
+     "tokens": 1094,
+     "kl_nats": 0.0968721789023558
+    },
+    {
+     "id": "math-probe-312",
+     "tokens": 1060,
+     "kl_nats": 0.05845969240620451
+    },
+    {
+     "id": "math-probe-330",
+     "tokens": 1071,
+     "kl_nats": 0.03719199271429153
+    },
+    {
+     "id": "math-probe-156",
+     "tokens": 1244,
+     "kl_nats": 0.10620142179286748
+    },
+    {
+     "id": "math-probe-036",
+     "tokens": 1063,
+     "kl_nats": 0.043482924337557544
+    },
+    {
+     "id": "math-probe-044",
+     "tokens": 1098,
+     "kl_nats": 0.041527164221244216
+    },
+    {
+     "id": "math-probe-182",
+     "tokens": 1067,
+     "kl_nats": 0.06322598971265884
+    },
+    {
+     "id": "math-probe-282",
+     "tokens": 1162,
+     "kl_nats": 0.038873182927064355
+    },
+    {
+     "id": "math-probe-169",
+     "tokens": 1060,
+     "kl_nats": 0.051797585667304274
+    },
+    {
+     "id": "math-probe-468",
+     "tokens": 1067,
+     "kl_nats": 0.03804207239177815
+    },
+    {
+     "id": "math-probe-271",
+     "tokens": 1065,
+     "kl_nats": 0.05458186579422212
+    },
+    {
+     "id": "math-probe-222",
+     "tokens": 1178,
+     "kl_nats": 0.07276563895376105
+    },
+    {
+     "id": "math-probe-157",
+     "tokens": 1080,
+     "kl_nats": 0.058218930606488827
+    },
+    {
+     "id": "math-probe-350",
+     "tokens": 1045,
+     "kl_nats": 0.04750141390202719
+    },
+    {
+     "id": "math-probe-436",
+     "tokens": 1075,
+     "kl_nats": 0.053919308019238846
+    },
+    {
+     "id": "math-probe-496",
+     "tokens": 1067,
+     "kl_nats": 0.05163513575073929
+    },
+    {
+     "id": "math-probe-253",
+     "tokens": 577,
+     "kl_nats": 0.04470667082887382
+    },
+    {
+     "id": "math-probe-231",
+     "tokens": 1098,
+     "kl_nats": 0.03016153569647089
+    },
+    {
+     "id": "math-probe-314",
+     "tokens": 1097,
+     "kl_nats": 0.04695835087444963
+    },
+    {
+     "id": "math-probe-185",
+     "tokens": 1051,
+     "kl_nats": 0.06193819253587587
+    },
+    {
+     "id": "math-probe-303",
+     "tokens": 1111,
+     "kl_nats": 0.0580167512867925
+    },
+    {
+     "id": "math-probe-171",
+     "tokens": 1083,
+     "kl_nats": 0.03959901026851693
+    },
+    {
+     "id": "math-probe-003",
+     "tokens": 1048,
+     "kl_nats": 0.05050216785824026
+    },
+    {
+     "id": "math-probe-196",
+     "tokens": 1057,
+     "kl_nats": 0.05301032251305702
+    },
+    {
+     "id": "math-probe-236",
+     "tokens": 1086,
+     "kl_nats": 0.038644497346263344
+    },
+    {
+     "id": "math-probe-233",
+     "tokens": 1140,
+     "kl_nats": 0.05673446487962154
+    },
+    {
+     "id": "math-probe-081",
+     "tokens": 1083,
+     "kl_nats": 0.04505773825658656
+    },
+    {
+     "id": "math-probe-189",
+     "tokens": 1528,
+     "kl_nats": 0.13597905198941057
+    },
+    {
+     "id": "math-probe-114",
+     "tokens": 1109,
+     "kl_nats": 0.04530251939840635
+    },
+    {
+     "id": "math-probe-353",
+     "tokens": 1084,
+     "kl_nats": 0.06339476887150444
+    },
+    {
+     "id": "math-probe-324",
+     "tokens": 1323,
+     "kl_nats": 0.1154922851539433
+    },
+    {
+     "id": "math-probe-395",
+     "tokens": 1069,
+     "kl_nats": 0.04876551168671939
+    },
+    {
+     "id": "math-probe-098",
+     "tokens": 1052,
+     "kl_nats": 0.05620301851981493
+    },
+    {
+     "id": "math-probe-076",
+     "tokens": 1073,
+     "kl_nats": 0.05798069561960979
+    },
+    {
+     "id": "math-probe-173",
+     "tokens": 1089,
+     "kl_nats": 0.04257930386931224
+    },
+    {
+     "id": "math-probe-322",
+     "tokens": 1073,
+     "kl_nats": 0.04686116372327991
+    },
+    {
+     "id": "math-probe-459",
+     "tokens": 1113,
+     "kl_nats": 0.03513867514474051
+    },
+    {
+     "id": "math-probe-127",
+     "tokens": 1048,
+     "kl_nats": 0.03925616265708254
+    },
+    {
+     "id": "math-probe-380",
+     "tokens": 1064,
+     "kl_nats": 0.04268408561111393
+    },
+    {
+     "id": "math-probe-180",
+     "tokens": 1054,
+     "kl_nats": 0.03583432431465308
+    },
+    {
+     "id": "math-probe-340",
+     "tokens": 1132,
+     "kl_nats": 0.05093749673122231
+    },
+    {
+     "id": "math-probe-333",
+     "tokens": 1099,
+     "kl_nats": 0.06087122102343461
+    },
+    {
+     "id": "math-probe-116",
+     "tokens": 1059,
+     "kl_nats": 0.0378715398741624
+    },
+    {
+     "id": "math-probe-172",
+     "tokens": 1064,
+     "kl_nats": 0.03579356168445788
+    },
+    {
+     "id": "math-probe-384",
+     "tokens": 1059,
+     "kl_nats": 0.06046644351300032
+    },
+    {
+     "id": "math-probe-243",
+     "tokens": 1072,
+     "kl_nats": 0.05571327858896398
+    },
+    {
+     "id": "math-probe-497",
+     "tokens": 1085,
+     "kl_nats": 0.07043600390034337
+    },
+    {
+     "id": "math-probe-383",
+     "tokens": 1070,
+     "kl_nats": 0.03606313188499379
+    },
+    {
+     "id": "math-probe-179",
+     "tokens": 1134,
+     "kl_nats": 0.06352966634895016
+    },
+    {
+     "id": "math-probe-052",
+     "tokens": 1064,
+     "kl_nats": 0.049764500076609444
+    },
+    {
+     "id": "math-probe-264",
+     "tokens": 1295,
+     "kl_nats": 0.1103038617312678
+    },
+    {
+     "id": "math-probe-454",
+     "tokens": 1156,
+     "kl_nats": 0.022537904214694014
+    },
+    {
+     "id": "math-probe-109",
+     "tokens": 1175,
+     "kl_nats": 0.03381984244001673
+    },
+    {
+     "id": "math-probe-292",
+     "tokens": 1159,
+     "kl_nats": 0.04120475717203899
+    },
+    {
+     "id": "math-probe-299",
+     "tokens": 1075,
+     "kl_nats": 0.0402471122076345
+    },
+    {
+     "id": "math-probe-474",
+     "tokens": 1091,
+     "kl_nats": 0.04278591627598246
+    },
+    {
+     "id": "math-probe-012",
+     "tokens": 1105,
+     "kl_nats": 0.03238122948694013
+    },
+    {
+     "id": "math-probe-267",
+     "tokens": 1228,
+     "kl_nats": 0.09698288759113523
+    },
+    {
+     "id": "math-probe-241",
+     "tokens": 1076,
+     "kl_nats": 0.03760965029989476
+    },
+    {
+     "id": "math-probe-160",
+     "tokens": 1057,
+     "kl_nats": 0.048415068759034015
+    },
+    {
+     "id": "math-probe-394",
+     "tokens": 1148,
+     "kl_nats": 0.05168979882363243
+    },
+    {
+     "id": "math-probe-346",
+     "tokens": 1067,
+     "kl_nats": 0.03198025376302903
+    },
+    {
+     "id": "math-probe-347",
+     "tokens": 1093,
+     "kl_nats": 0.03345206628015907
+    },
+    {
+     "id": "math-probe-245",
+     "tokens": 1121,
+     "kl_nats": 0.03758935264771161
+    },
+    {
+     "id": "math-probe-498",
+     "tokens": 1093,
+     "kl_nats": 0.043161237992394005
+    },
+    {
+     "id": "math-probe-435",
+     "tokens": 1069,
+     "kl_nats": 0.04089928933456749
+    }
+   ]
+  }
+ ]
+}
