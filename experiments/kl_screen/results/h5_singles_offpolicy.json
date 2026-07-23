@@ -9,7 +9,7 @@
  "candidates": [
   {
    "name": "drop[57]",
-   "mean_kl_nats": 0.06189096286744202,
+   "mean_kl_nats": 0.06090670750621141,
    "items": [
     {
      "id": "wiki-probe-000",
@@ -190,12 +190,332 @@
      "id": "wiki-probe-035",
      "tokens": 3027,
      "kl_nats": 0.05698886546200165
+    },
+    {
+     "id": "wiki-probe-036",
+     "tokens": 3754,
+     "kl_nats": 0.053849043716568866
+    },
+    {
+     "id": "wiki-probe-037",
+     "tokens": 3799,
+     "kl_nats": 0.06357540096474748
+    },
+    {
+     "id": "wiki-probe-038",
+     "tokens": 3299,
+     "kl_nats": 0.05287112941088623
+    },
+    {
+     "id": "wiki-probe-039",
+     "tokens": 3507,
+     "kl_nats": 0.06112334515452215
+    },
+    {
+     "id": "wiki-probe-040",
+     "tokens": 3569,
+     "kl_nats": 0.06962149735758304
+    },
+    {
+     "id": "wiki-probe-041",
+     "tokens": 2965,
+     "kl_nats": 0.0653809828862774
+    },
+    {
+     "id": "wiki-probe-042",
+     "tokens": 2585,
+     "kl_nats": 0.05484497752364876
+    },
+    {
+     "id": "wiki-probe-043",
+     "tokens": 2645,
+     "kl_nats": 0.054802585504456144
+    },
+    {
+     "id": "wiki-probe-044",
+     "tokens": 2200,
+     "kl_nats": 0.06022699182683771
+    },
+    {
+     "id": "wiki-probe-045",
+     "tokens": 4023,
+     "kl_nats": 0.059764509796059136
+    },
+    {
+     "id": "wiki-probe-046",
+     "tokens": 3697,
+     "kl_nats": 0.07116461367680635
+    },
+    {
+     "id": "wiki-probe-047",
+     "tokens": 2513,
+     "kl_nats": 0.06283196177180905
+    },
+    {
+     "id": "wiki-probe-048",
+     "tokens": 2995,
+     "kl_nats": 0.05998224694661187
+    },
+    {
+     "id": "wiki-probe-049",
+     "tokens": 3965,
+     "kl_nats": 0.062356791430132986
+    },
+    {
+     "id": "wiki-probe-050",
+     "tokens": 2696,
+     "kl_nats": 0.06571432461724437
+    },
+    {
+     "id": "wiki-probe-051",
+     "tokens": 2200,
+     "kl_nats": 0.06489263556220315
+    },
+    {
+     "id": "wiki-probe-052",
+     "tokens": 3709,
+     "kl_nats": 0.054958138063481696
+    },
+    {
+     "id": "wiki-probe-053",
+     "tokens": 2657,
+     "kl_nats": 0.05673290707807501
+    },
+    {
+     "id": "wiki-probe-054",
+     "tokens": 3676,
+     "kl_nats": 0.0645389319503917
+    },
+    {
+     "id": "wiki-probe-055",
+     "tokens": 2940,
+     "kl_nats": 0.06340492631302398
+    },
+    {
+     "id": "wiki-probe-056",
+     "tokens": 2523,
+     "kl_nats": 0.06251228550243038
+    },
+    {
+     "id": "wiki-probe-057",
+     "tokens": 2279,
+     "kl_nats": 0.048732140755747534
+    },
+    {
+     "id": "wiki-probe-058",
+     "tokens": 3878,
+     "kl_nats": 0.04933616671136755
+    },
+    {
+     "id": "wiki-probe-059",
+     "tokens": 3228,
+     "kl_nats": 0.07133510239800851
+    },
+    {
+     "id": "wiki-probe-060",
+     "tokens": 3324,
+     "kl_nats": 0.06070031901702697
+    },
+    {
+     "id": "wiki-probe-061",
+     "tokens": 3156,
+     "kl_nats": 0.06047966649474904
+    },
+    {
+     "id": "wiki-probe-062",
+     "tokens": 2984,
+     "kl_nats": 0.08407821540218895
+    },
+    {
+     "id": "wiki-probe-063",
+     "tokens": 3466,
+     "kl_nats": 0.061582180921287116
+    },
+    {
+     "id": "wiki-probe-064",
+     "tokens": 3288,
+     "kl_nats": 0.050935130339759396
+    },
+    {
+     "id": "wiki-probe-065",
+     "tokens": 2829,
+     "kl_nats": 0.05737011658719758
+    },
+    {
+     "id": "wiki-probe-066",
+     "tokens": 2350,
+     "kl_nats": 0.044362953317926286
+    },
+    {
+     "id": "wiki-probe-067",
+     "tokens": 3474,
+     "kl_nats": 0.05591983141814008
+    },
+    {
+     "id": "wiki-probe-068",
+     "tokens": 2956,
+     "kl_nats": 0.06541018218245655
+    },
+    {
+     "id": "wiki-probe-069",
+     "tokens": 3687,
+     "kl_nats": 0.05435414439719448
+    },
+    {
+     "id": "wiki-probe-070",
+     "tokens": 2492,
+     "kl_nats": 0.06583940198295189
+    },
+    {
+     "id": "wiki-probe-071",
+     "tokens": 2787,
+     "kl_nats": 0.07286204272031699
+    },
+    {
+     "id": "wiki-probe-072",
+     "tokens": 3581,
+     "kl_nats": 0.07850120387840324
+    },
+    {
+     "id": "wiki-probe-073",
+     "tokens": 2264,
+     "kl_nats": 0.04718379502582887
+    },
+    {
+     "id": "wiki-probe-074",
+     "tokens": 3994,
+     "kl_nats": 0.054542131763013174
+    },
+    {
+     "id": "wiki-probe-075",
+     "tokens": 3864,
+     "kl_nats": 0.0641600073124311
+    },
+    {
+     "id": "wiki-probe-076",
+     "tokens": 3317,
+     "kl_nats": 0.0768529502677745
+    },
+    {
+     "id": "wiki-probe-077",
+     "tokens": 2396,
+     "kl_nats": 0.06062268136140699
+    },
+    {
+     "id": "wiki-probe-078",
+     "tokens": 3069,
+     "kl_nats": 0.0856835249387779
+    },
+    {
+     "id": "wiki-probe-079",
+     "tokens": 2893,
+     "kl_nats": 0.05395988358208517
+    },
+    {
+     "id": "wiki-probe-080",
+     "tokens": 2289,
+     "kl_nats": 0.053100137223109974
+    },
+    {
+     "id": "wiki-probe-081",
+     "tokens": 2186,
+     "kl_nats": 0.05755192581274481
+    },
+    {
+     "id": "wiki-probe-082",
+     "tokens": 4092,
+     "kl_nats": 0.05310033703130012
+    },
+    {
+     "id": "wiki-probe-083",
+     "tokens": 2338,
+     "kl_nats": 0.05069924828535068
+    },
+    {
+     "id": "wiki-probe-084",
+     "tokens": 3959,
+     "kl_nats": 0.05187267521229258
+    },
+    {
+     "id": "wiki-probe-085",
+     "tokens": 2506,
+     "kl_nats": 0.07304008389508734
+    },
+    {
+     "id": "wiki-probe-086",
+     "tokens": 2931,
+     "kl_nats": 0.06733939754234894
+    },
+    {
+     "id": "wiki-probe-087",
+     "tokens": 3256,
+     "kl_nats": 0.05182963111769655
+    },
+    {
+     "id": "wiki-probe-088",
+     "tokens": 2569,
+     "kl_nats": 0.06791383364452096
+    },
+    {
+     "id": "wiki-probe-089",
+     "tokens": 3198,
+     "kl_nats": 0.05470852586461127
+    },
+    {
+     "id": "wiki-probe-090",
+     "tokens": 2442,
+     "kl_nats": 0.04091261391948228
+    },
+    {
+     "id": "wiki-probe-091",
+     "tokens": 3800,
+     "kl_nats": 0.052263138168736505
+    },
+    {
+     "id": "wiki-probe-092",
+     "tokens": 2309,
+     "kl_nats": 0.06657927952167945
+    },
+    {
+     "id": "wiki-probe-093",
+     "tokens": 3070,
+     "kl_nats": 0.05703553749606353
+    },
+    {
+     "id": "wiki-probe-094",
+     "tokens": 2642,
+     "kl_nats": 0.06788938105061233
+    },
+    {
+     "id": "wiki-probe-095",
+     "tokens": 3395,
+     "kl_nats": 0.05049780577377297
+    },
+    {
+     "id": "wiki-probe-096",
+     "tokens": 3470,
+     "kl_nats": 0.05452234586996029
+    },
+    {
+     "id": "wiki-probe-097",
+     "tokens": 3907,
+     "kl_nats": 0.06562729250417514
+    },
+    {
+     "id": "wiki-probe-098",
+     "tokens": 3606,
+     "kl_nats": 0.061784682509241934
+    },
+    {
+     "id": "wiki-probe-099",
+     "tokens": 3985,
+     "kl_nats": 0.05312142102900832
     }
    ]
   },
   {
    "name": "drop[17]",
-   "mean_kl_nats": 0.01700388148010575,
+   "mean_kl_nats": 0.016625859682626174,
    "items": [
     {
      "id": "wiki-probe-000",
@@ -376,12 +696,332 @@
      "id": "wiki-probe-035",
      "tokens": 3027,
      "kl_nats": 0.014557242511639628
+    },
+    {
+     "id": "wiki-probe-036",
+     "tokens": 3754,
+     "kl_nats": 0.015656739012891458
+    },
+    {
+     "id": "wiki-probe-037",
+     "tokens": 3799,
+     "kl_nats": 0.016789270595802576
+    },
+    {
+     "id": "wiki-probe-038",
+     "tokens": 3299,
+     "kl_nats": 0.016663044790457004
+    },
+    {
+     "id": "wiki-probe-039",
+     "tokens": 3507,
+     "kl_nats": 0.013608754955875864
+    },
+    {
+     "id": "wiki-probe-040",
+     "tokens": 3569,
+     "kl_nats": 0.021560674289522734
+    },
+    {
+     "id": "wiki-probe-041",
+     "tokens": 2965,
+     "kl_nats": 0.019078020382088313
+    },
+    {
+     "id": "wiki-probe-042",
+     "tokens": 2585,
+     "kl_nats": 0.01781804999714894
+    },
+    {
+     "id": "wiki-probe-043",
+     "tokens": 2645,
+     "kl_nats": 0.021496529750427363
+    },
+    {
+     "id": "wiki-probe-044",
+     "tokens": 2200,
+     "kl_nats": 0.020670520175587046
+    },
+    {
+     "id": "wiki-probe-045",
+     "tokens": 4023,
+     "kl_nats": 0.015840429469124465
+    },
+    {
+     "id": "wiki-probe-046",
+     "tokens": 3697,
+     "kl_nats": 0.02149612203236364
+    },
+    {
+     "id": "wiki-probe-047",
+     "tokens": 2513,
+     "kl_nats": 0.012441992237897114
+    },
+    {
+     "id": "wiki-probe-048",
+     "tokens": 2995,
+     "kl_nats": 0.015442980032333348
+    },
+    {
+     "id": "wiki-probe-049",
+     "tokens": 3965,
+     "kl_nats": 0.013172199416431172
+    },
+    {
+     "id": "wiki-probe-050",
+     "tokens": 2696,
+     "kl_nats": 0.019228357677997396
+    },
+    {
+     "id": "wiki-probe-051",
+     "tokens": 2200,
+     "kl_nats": 0.015432493578303943
+    },
+    {
+     "id": "wiki-probe-052",
+     "tokens": 3709,
+     "kl_nats": 0.015032529863073164
+    },
+    {
+     "id": "wiki-probe-053",
+     "tokens": 2657,
+     "kl_nats": 0.016234746228764727
+    },
+    {
+     "id": "wiki-probe-054",
+     "tokens": 3676,
+     "kl_nats": 0.016183502104648178
+    },
+    {
+     "id": "wiki-probe-055",
+     "tokens": 2940,
+     "kl_nats": 0.017820994343076435
+    },
+    {
+     "id": "wiki-probe-056",
+     "tokens": 2523,
+     "kl_nats": 0.017187296092108607
+    },
+    {
+     "id": "wiki-probe-057",
+     "tokens": 2279,
+     "kl_nats": 0.011140897902756106
+    },
+    {
+     "id": "wiki-probe-058",
+     "tokens": 3878,
+     "kl_nats": 0.01433705246098082
+    },
+    {
+     "id": "wiki-probe-059",
+     "tokens": 3228,
+     "kl_nats": 0.012412439860966717
+    },
+    {
+     "id": "wiki-probe-060",
+     "tokens": 3324,
+     "kl_nats": 0.014398097705037728
+    },
+    {
+     "id": "wiki-probe-061",
+     "tokens": 3156,
+     "kl_nats": 0.015431672825710552
+    },
+    {
+     "id": "wiki-probe-062",
+     "tokens": 2984,
+     "kl_nats": 0.014119952917098999
+    },
+    {
+     "id": "wiki-probe-063",
+     "tokens": 3466,
+     "kl_nats": 0.01657851328412302
+    },
+    {
+     "id": "wiki-probe-064",
+     "tokens": 3288,
+     "kl_nats": 0.017872827984120723
+    },
+    {
+     "id": "wiki-probe-065",
+     "tokens": 2829,
+     "kl_nats": 0.019133197725050944
+    },
+    {
+     "id": "wiki-probe-066",
+     "tokens": 2350,
+     "kl_nats": 0.010156502571511777
+    },
+    {
+     "id": "wiki-probe-067",
+     "tokens": 3474,
+     "kl_nats": 0.017129925111277595
+    },
+    {
+     "id": "wiki-probe-068",
+     "tokens": 2956,
+     "kl_nats": 0.015293187112704987
+    },
+    {
+     "id": "wiki-probe-069",
+     "tokens": 3687,
+     "kl_nats": 0.014632083065373353
+    },
+    {
+     "id": "wiki-probe-070",
+     "tokens": 2492,
+     "kl_nats": 0.016380710452555843
+    },
+    {
+     "id": "wiki-probe-071",
+     "tokens": 2787,
+     "kl_nats": 0.019339744019003638
+    },
+    {
+     "id": "wiki-probe-072",
+     "tokens": 3581,
+     "kl_nats": 0.013138674784225979
+    },
+    {
+     "id": "wiki-probe-073",
+     "tokens": 2264,
+     "kl_nats": 0.01854333123554189
+    },
+    {
+     "id": "wiki-probe-074",
+     "tokens": 3994,
+     "kl_nats": 0.017553241478543192
+    },
+    {
+     "id": "wiki-probe-075",
+     "tokens": 3864,
+     "kl_nats": 0.017460493185783025
+    },
+    {
+     "id": "wiki-probe-076",
+     "tokens": 3317,
+     "kl_nats": 0.01621387814914817
+    },
+    {
+     "id": "wiki-probe-077",
+     "tokens": 2396,
+     "kl_nats": 0.014763622928740385
+    },
+    {
+     "id": "wiki-probe-078",
+     "tokens": 3069,
+     "kl_nats": 0.018731568760031323
+    },
+    {
+     "id": "wiki-probe-079",
+     "tokens": 2893,
+     "kl_nats": 0.01652506396632849
+    },
+    {
+     "id": "wiki-probe-080",
+     "tokens": 2289,
+     "kl_nats": 0.021505061066687082
+    },
+    {
+     "id": "wiki-probe-081",
+     "tokens": 2186,
+     "kl_nats": 0.019964818003411045
+    },
+    {
+     "id": "wiki-probe-082",
+     "tokens": 4092,
+     "kl_nats": 0.018236881477042728
+    },
+    {
+     "id": "wiki-probe-083",
+     "tokens": 2338,
+     "kl_nats": 0.01856354980309668
+    },
+    {
+     "id": "wiki-probe-084",
+     "tokens": 3959,
+     "kl_nats": 0.020121849194473917
+    },
+    {
+     "id": "wiki-probe-085",
+     "tokens": 2506,
+     "kl_nats": 0.014652002837690276
+    },
+    {
+     "id": "wiki-probe-086",
+     "tokens": 2931,
+     "kl_nats": 0.016165681846798258
+    },
+    {
+     "id": "wiki-probe-087",
+     "tokens": 3256,
+     "kl_nats": 0.017781876961194914
+    },
+    {
+     "id": "wiki-probe-088",
+     "tokens": 2569,
+     "kl_nats": 0.015581643128381159
+    },
+    {
+     "id": "wiki-probe-089",
+     "tokens": 3198,
+     "kl_nats": 0.015868907425088983
+    },
+    {
+     "id": "wiki-probe-090",
+     "tokens": 2442,
+     "kl_nats": 0.013201312438861744
+    },
+    {
+     "id": "wiki-probe-091",
+     "tokens": 3800,
+     "kl_nats": 0.018390181942989952
+    },
+    {
+     "id": "wiki-probe-092",
+     "tokens": 2309,
+     "kl_nats": 0.01880282921907756
+    },
+    {
+     "id": "wiki-probe-093",
+     "tokens": 3070,
+     "kl_nats": 0.019679753244505643
+    },
+    {
+     "id": "wiki-probe-094",
+     "tokens": 2642,
+     "kl_nats": 0.017868614214825683
+    },
+    {
+     "id": "wiki-probe-095",
+     "tokens": 3395,
+     "kl_nats": 0.011002396957863763
+    },
+    {
+     "id": "wiki-probe-096",
+     "tokens": 3470,
+     "kl_nats": 0.014332706303005604
+    },
+    {
+     "id": "wiki-probe-097",
+     "tokens": 3907,
+     "kl_nats": 0.013711302183398756
+    },
+    {
+     "id": "wiki-probe-098",
+     "tokens": 3606,
+     "kl_nats": 0.01303336169742176
+    },
+    {
+     "id": "wiki-probe-099",
+     "tokens": 3985,
+     "kl_nats": 0.015154882835474337
     }
    ]
   },
   {
    "name": "drop[37]",
-   "mean_kl_nats": 0.014254591956389128,
+   "mean_kl_nats": 0.013939163329091429,
    "items": [
     {
      "id": "wiki-probe-000",
@@ -562,12 +1202,332 @@
      "id": "wiki-probe-035",
      "tokens": 3027,
      "kl_nats": 0.016565609576877763
+    },
+    {
+     "id": "wiki-probe-036",
+     "tokens": 3754,
+     "kl_nats": 0.013910831322870677
+    },
+    {
+     "id": "wiki-probe-037",
+     "tokens": 3799,
+     "kl_nats": 0.014933256388777462
+    },
+    {
+     "id": "wiki-probe-038",
+     "tokens": 3299,
+     "kl_nats": 0.012367116136600046
+    },
+    {
+     "id": "wiki-probe-039",
+     "tokens": 3507,
+     "kl_nats": 0.01531002029993271
+    },
+    {
+     "id": "wiki-probe-040",
+     "tokens": 3569,
+     "kl_nats": 0.015672804294563736
+    },
+    {
+     "id": "wiki-probe-041",
+     "tokens": 2965,
+     "kl_nats": 0.015219989956731942
+    },
+    {
+     "id": "wiki-probe-042",
+     "tokens": 2585,
+     "kl_nats": 0.01246087984605269
+    },
+    {
+     "id": "wiki-probe-043",
+     "tokens": 2645,
+     "kl_nats": 0.015254716927252556
+    },
+    {
+     "id": "wiki-probe-044",
+     "tokens": 2200,
+     "kl_nats": 0.015865310430526733
+    },
+    {
+     "id": "wiki-probe-045",
+     "tokens": 4023,
+     "kl_nats": 0.01449713053882285
+    },
+    {
+     "id": "wiki-probe-046",
+     "tokens": 3697,
+     "kl_nats": 0.015564873310756708
+    },
+    {
+     "id": "wiki-probe-047",
+     "tokens": 2513,
+     "kl_nats": 0.01124447871146333
+    },
+    {
+     "id": "wiki-probe-048",
+     "tokens": 2995,
+     "kl_nats": 0.014755363655408754
+    },
+    {
+     "id": "wiki-probe-049",
+     "tokens": 3965,
+     "kl_nats": 0.01222833859514619
+    },
+    {
+     "id": "wiki-probe-050",
+     "tokens": 2696,
+     "kl_nats": 0.015931584139959747
+    },
+    {
+     "id": "wiki-probe-051",
+     "tokens": 2200,
+     "kl_nats": 0.013314029628580267
+    },
+    {
+     "id": "wiki-probe-052",
+     "tokens": 3709,
+     "kl_nats": 0.01630778285685046
+    },
+    {
+     "id": "wiki-probe-053",
+     "tokens": 2657,
+     "kl_nats": 0.012608534059535303
+    },
+    {
+     "id": "wiki-probe-054",
+     "tokens": 3676,
+     "kl_nats": 0.015205861435102561
+    },
+    {
+     "id": "wiki-probe-055",
+     "tokens": 2940,
+     "kl_nats": 0.014793289680870212
+    },
+    {
+     "id": "wiki-probe-056",
+     "tokens": 2523,
+     "kl_nats": 0.01412095193866695
+    },
+    {
+     "id": "wiki-probe-057",
+     "tokens": 2279,
+     "kl_nats": 0.009257749540338185
+    },
+    {
+     "id": "wiki-probe-058",
+     "tokens": 3878,
+     "kl_nats": 0.012261916061478095
+    },
+    {
+     "id": "wiki-probe-059",
+     "tokens": 3228,
+     "kl_nats": 0.011864747588962428
+    },
+    {
+     "id": "wiki-probe-060",
+     "tokens": 3324,
+     "kl_nats": 0.012780700134456372
+    },
+    {
+     "id": "wiki-probe-061",
+     "tokens": 3156,
+     "kl_nats": 0.012403368723256506
+    },
+    {
+     "id": "wiki-probe-062",
+     "tokens": 2984,
+     "kl_nats": 0.012616874944748252
+    },
+    {
+     "id": "wiki-probe-063",
+     "tokens": 3466,
+     "kl_nats": 0.015601442786083013
+    },
+    {
+     "id": "wiki-probe-064",
+     "tokens": 3288,
+     "kl_nats": 0.011215486013106186
+    },
+    {
+     "id": "wiki-probe-065",
+     "tokens": 2829,
+     "kl_nats": 0.014654611703173016
+    },
+    {
+     "id": "wiki-probe-066",
+     "tokens": 2350,
+     "kl_nats": 0.011326803653798205
+    },
+    {
+     "id": "wiki-probe-067",
+     "tokens": 3474,
+     "kl_nats": 0.014302899045510476
+    },
+    {
+     "id": "wiki-probe-068",
+     "tokens": 2956,
+     "kl_nats": 0.013978171251784804
+    },
+    {
+     "id": "wiki-probe-069",
+     "tokens": 3687,
+     "kl_nats": 0.01254771659133038
+    },
+    {
+     "id": "wiki-probe-070",
+     "tokens": 2492,
+     "kl_nats": 0.013589580311629783
+    },
+    {
+     "id": "wiki-probe-071",
+     "tokens": 2787,
+     "kl_nats": 0.01844080965023636
+    },
+    {
+     "id": "wiki-probe-072",
+     "tokens": 3581,
+     "kl_nats": 0.012849262459122978
+    },
+    {
+     "id": "wiki-probe-073",
+     "tokens": 2264,
+     "kl_nats": 0.011966865707202009
+    },
+    {
+     "id": "wiki-probe-074",
+     "tokens": 3994,
+     "kl_nats": 0.013872477610706984
+    },
+    {
+     "id": "wiki-probe-075",
+     "tokens": 3864,
+     "kl_nats": 0.014149050889671713
+    },
+    {
+     "id": "wiki-probe-076",
+     "tokens": 3317,
+     "kl_nats": 0.013647891830384534
+    },
+    {
+     "id": "wiki-probe-077",
+     "tokens": 2396,
+     "kl_nats": 0.01302252120287072
+    },
+    {
+     "id": "wiki-probe-078",
+     "tokens": 3069,
+     "kl_nats": 0.015641906588502487
+    },
+    {
+     "id": "wiki-probe-079",
+     "tokens": 2893,
+     "kl_nats": 0.01312421730468729
+    },
+    {
+     "id": "wiki-probe-080",
+     "tokens": 2289,
+     "kl_nats": 0.017141768691736625
+    },
+    {
+     "id": "wiki-probe-081",
+     "tokens": 2186,
+     "kl_nats": 0.013972626186137012
+    },
+    {
+     "id": "wiki-probe-082",
+     "tokens": 4092,
+     "kl_nats": 0.013719197359019827
+    },
+    {
+     "id": "wiki-probe-083",
+     "tokens": 2338,
+     "kl_nats": 0.011789072849895324
+    },
+    {
+     "id": "wiki-probe-084",
+     "tokens": 3959,
+     "kl_nats": 0.014280045445021369
+    },
+    {
+     "id": "wiki-probe-085",
+     "tokens": 2506,
+     "kl_nats": 0.014716623881675677
+    },
+    {
+     "id": "wiki-probe-086",
+     "tokens": 2931,
+     "kl_nats": 0.014776285334847072
+    },
+    {
+     "id": "wiki-probe-087",
+     "tokens": 3256,
+     "kl_nats": 0.012671925951280524
+    },
+    {
+     "id": "wiki-probe-088",
+     "tokens": 2569,
+     "kl_nats": 0.012483210192319716
+    },
+    {
+     "id": "wiki-probe-089",
+     "tokens": 3198,
+     "kl_nats": 0.011692419732041923
+    },
+    {
+     "id": "wiki-probe-090",
+     "tokens": 2442,
+     "kl_nats": 0.00901001433092097
+    },
+    {
+     "id": "wiki-probe-091",
+     "tokens": 3800,
+     "kl_nats": 0.016914565751427097
+    },
+    {
+     "id": "wiki-probe-092",
+     "tokens": 2309,
+     "kl_nats": 0.014217492111508027
+    },
+    {
+     "id": "wiki-probe-093",
+     "tokens": 3070,
+     "kl_nats": 0.014572692927009507
+    },
+    {
+     "id": "wiki-probe-094",
+     "tokens": 2642,
+     "kl_nats": 0.014471075238827772
+    },
+    {
+     "id": "wiki-probe-095",
+     "tokens": 3395,
+     "kl_nats": 0.010630302611787821
+    },
+    {
+     "id": "wiki-probe-096",
+     "tokens": 3470,
+     "kl_nats": 0.011928676047311392
+    },
+    {
+     "id": "wiki-probe-097",
+     "tokens": 3907,
+     "kl_nats": 0.01536145096152281
+    },
+    {
+     "id": "wiki-probe-098",
+     "tokens": 3606,
+     "kl_nats": 0.013440271135971273
+    },
+    {
+     "id": "wiki-probe-099",
+     "tokens": 3985,
+     "kl_nats": 0.013012951739609167
     }
    ]
   },
   {
    "name": "drop[58]",
-   "mean_kl_nats": 0.06471633120436275,
+   "mean_kl_nats": 0.06496918440649548,
    "items": [
     {
      "id": "wiki-probe-000",
@@ -748,12 +1708,332 @@
      "id": "wiki-probe-035",
      "tokens": 3027,
      "kl_nats": 0.06892101670949814
+    },
+    {
+     "id": "wiki-probe-036",
+     "tokens": 3754,
+     "kl_nats": 0.05897196849483598
+    },
+    {
+     "id": "wiki-probe-037",
+     "tokens": 3799,
+     "kl_nats": 0.08065350515712529
+    },
+    {
+     "id": "wiki-probe-038",
+     "tokens": 3299,
+     "kl_nats": 0.06210756229609928
+    },
+    {
+     "id": "wiki-probe-039",
+     "tokens": 3507,
+     "kl_nats": 0.06749518671571478
+    },
+    {
+     "id": "wiki-probe-040",
+     "tokens": 3569,
+     "kl_nats": 0.07278502104361874
+    },
+    {
+     "id": "wiki-probe-041",
+     "tokens": 2965,
+     "kl_nats": 0.06452663190047214
+    },
+    {
+     "id": "wiki-probe-042",
+     "tokens": 2585,
+     "kl_nats": 0.05554469853812537
+    },
+    {
+     "id": "wiki-probe-043",
+     "tokens": 2645,
+     "kl_nats": 0.06529032557583035
+    },
+    {
+     "id": "wiki-probe-044",
+     "tokens": 2200,
+     "kl_nats": 0.05795626293529164
+    },
+    {
+     "id": "wiki-probe-045",
+     "tokens": 4023,
+     "kl_nats": 0.06691867653896286
+    },
+    {
+     "id": "wiki-probe-046",
+     "tokens": 3697,
+     "kl_nats": 0.07401263755755003
+    },
+    {
+     "id": "wiki-probe-047",
+     "tokens": 2513,
+     "kl_nats": 0.061557178140587886
+    },
+    {
+     "id": "wiki-probe-048",
+     "tokens": 2995,
+     "kl_nats": 0.052930372426028244
+    },
+    {
+     "id": "wiki-probe-049",
+     "tokens": 3965,
+     "kl_nats": 0.06036359936111662
+    },
+    {
+     "id": "wiki-probe-050",
+     "tokens": 2696,
+     "kl_nats": 0.0734958111001759
+    },
+    {
+     "id": "wiki-probe-051",
+     "tokens": 2200,
+     "kl_nats": 0.06908957091244784
+    },
+    {
+     "id": "wiki-probe-052",
+     "tokens": 3709,
+     "kl_nats": 0.06396267799136773
+    },
+    {
+     "id": "wiki-probe-053",
+     "tokens": 2657,
+     "kl_nats": 0.06714678582366265
+    },
+    {
+     "id": "wiki-probe-054",
+     "tokens": 3676,
+     "kl_nats": 0.060391275226356414
+    },
+    {
+     "id": "wiki-probe-055",
+     "tokens": 2940,
+     "kl_nats": 0.06458321655688642
+    },
+    {
+     "id": "wiki-probe-056",
+     "tokens": 2523,
+     "kl_nats": 0.0797415890960149
+    },
+    {
+     "id": "wiki-probe-057",
+     "tokens": 2279,
+     "kl_nats": 0.04570950829914758
+    },
+    {
+     "id": "wiki-probe-058",
+     "tokens": 3878,
+     "kl_nats": 0.04536170861719809
+    },
+    {
+     "id": "wiki-probe-059",
+     "tokens": 3228,
+     "kl_nats": 0.058245727416160235
+    },
+    {
+     "id": "wiki-probe-060",
+     "tokens": 3324,
+     "kl_nats": 0.06714891813578876
+    },
+    {
+     "id": "wiki-probe-061",
+     "tokens": 3156,
+     "kl_nats": 0.057687917287509854
+    },
+    {
+     "id": "wiki-probe-062",
+     "tokens": 2984,
+     "kl_nats": 0.08621052410902989
+    },
+    {
+     "id": "wiki-probe-063",
+     "tokens": 3466,
+     "kl_nats": 0.06871173303387307
+    },
+    {
+     "id": "wiki-probe-064",
+     "tokens": 3288,
+     "kl_nats": 0.0590601512695461
+    },
+    {
+     "id": "wiki-probe-065",
+     "tokens": 2829,
+     "kl_nats": 0.05994707573509418
+    },
+    {
+     "id": "wiki-probe-066",
+     "tokens": 2350,
+     "kl_nats": 0.04622313129140976
+    },
+    {
+     "id": "wiki-probe-067",
+     "tokens": 3474,
+     "kl_nats": 0.057834220605124394
+    },
+    {
+     "id": "wiki-probe-068",
+     "tokens": 2956,
+     "kl_nats": 0.0652346220648821
+    },
+    {
+     "id": "wiki-probe-069",
+     "tokens": 3687,
+     "kl_nats": 0.055048150035919195
+    },
+    {
+     "id": "wiki-probe-070",
+     "tokens": 2492,
+     "kl_nats": 0.07870195306131966
+    },
+    {
+     "id": "wiki-probe-071",
+     "tokens": 2787,
+     "kl_nats": 0.07130465800076947
+    },
+    {
+     "id": "wiki-probe-072",
+     "tokens": 3581,
+     "kl_nats": 0.08625973645817198
+    },
+    {
+     "id": "wiki-probe-073",
+     "tokens": 2264,
+     "kl_nats": 0.057816478894371866
+    },
+    {
+     "id": "wiki-probe-074",
+     "tokens": 3994,
+     "kl_nats": 0.051008453474202395
+    },
+    {
+     "id": "wiki-probe-075",
+     "tokens": 3864,
+     "kl_nats": 0.07395019541122405
+    },
+    {
+     "id": "wiki-probe-076",
+     "tokens": 3317,
+     "kl_nats": 0.0880763922465074
+    },
+    {
+     "id": "wiki-probe-077",
+     "tokens": 2396,
+     "kl_nats": 0.0648541816685952
+    },
+    {
+     "id": "wiki-probe-078",
+     "tokens": 3069,
+     "kl_nats": 0.08989153160028095
+    },
+    {
+     "id": "wiki-probe-079",
+     "tokens": 2893,
+     "kl_nats": 0.06687747422609616
+    },
+    {
+     "id": "wiki-probe-080",
+     "tokens": 2289,
+     "kl_nats": 0.12573915009104877
+    },
+    {
+     "id": "wiki-probe-081",
+     "tokens": 2186,
+     "kl_nats": 0.06731884433714927
+    },
+    {
+     "id": "wiki-probe-082",
+     "tokens": 4092,
+     "kl_nats": 0.056168902071806456
+    },
+    {
+     "id": "wiki-probe-083",
+     "tokens": 2338,
+     "kl_nats": 0.05406843254564153
+    },
+    {
+     "id": "wiki-probe-084",
+     "tokens": 3959,
+     "kl_nats": 0.06202660584937566
+    },
+    {
+     "id": "wiki-probe-085",
+     "tokens": 2506,
+     "kl_nats": 0.06619964936021225
+    },
+    {
+     "id": "wiki-probe-086",
+     "tokens": 2931,
+     "kl_nats": 0.06275855408964284
+    },
+    {
+     "id": "wiki-probe-087",
+     "tokens": 3256,
+     "kl_nats": 0.059573087411079126
+    },
+    {
+     "id": "wiki-probe-088",
+     "tokens": 2569,
+     "kl_nats": 0.061987031104732644
+    },
+    {
+     "id": "wiki-probe-089",
+     "tokens": 3198,
+     "kl_nats": 0.053470078671701705
+    },
+    {
+     "id": "wiki-probe-090",
+     "tokens": 2442,
+     "kl_nats": 0.03912751075188514
+    },
+    {
+     "id": "wiki-probe-091",
+     "tokens": 3800,
+     "kl_nats": 0.08629620828126607
+    },
+    {
+     "id": "wiki-probe-092",
+     "tokens": 2309,
+     "kl_nats": 0.05602178690675122
+    },
+    {
+     "id": "wiki-probe-093",
+     "tokens": 3070,
+     "kl_nats": 0.06136316585230128
+    },
+    {
+     "id": "wiki-probe-094",
+     "tokens": 2642,
+     "kl_nats": 0.08543230438665582
+    },
+    {
+     "id": "wiki-probe-095",
+     "tokens": 3395,
+     "kl_nats": 0.04352205112159516
+    },
+    {
+     "id": "wiki-probe-096",
+     "tokens": 3470,
+     "kl_nats": 0.05111374593949112
+    },
+    {
+     "id": "wiki-probe-097",
+     "tokens": 3907,
+     "kl_nats": 0.08717588393438616
+    },
+    {
+     "id": "wiki-probe-098",
+     "tokens": 3606,
+     "kl_nats": 0.06235338771468854
+    },
+    {
+     "id": "wiki-probe-099",
+     "tokens": 3985,
+     "kl_nats": 0.04995998432824722
     }
    ]
   },
   {
    "name": "drop[33]",
-   "mean_kl_nats": 0.018701721167328184,
+   "mean_kl_nats": 0.018027908209287687,
    "items": [
     {
      "id": "wiki-probe-000",
@@ -934,12 +2214,332 @@
      "id": "wiki-probe-035",
      "tokens": 3027,
      "kl_nats": 0.017859150798635037
+    },
+    {
+     "id": "wiki-probe-036",
+     "tokens": 3754,
+     "kl_nats": 0.01746329190442711
+    },
+    {
+     "id": "wiki-probe-037",
+     "tokens": 3799,
+     "kl_nats": 0.019411242676584554
+    },
+    {
+     "id": "wiki-probe-038",
+     "tokens": 3299,
+     "kl_nats": 0.017125112788537733
+    },
+    {
+     "id": "wiki-probe-039",
+     "tokens": 3507,
+     "kl_nats": 0.015629924937874497
+    },
+    {
+     "id": "wiki-probe-040",
+     "tokens": 3569,
+     "kl_nats": 0.018771801785816163
+    },
+    {
+     "id": "wiki-probe-041",
+     "tokens": 2965,
+     "kl_nats": 0.019274845734414525
+    },
+    {
+     "id": "wiki-probe-042",
+     "tokens": 2585,
+     "kl_nats": 0.015625110977622942
+    },
+    {
+     "id": "wiki-probe-043",
+     "tokens": 2645,
+     "kl_nats": 0.01910805945585716
+    },
+    {
+     "id": "wiki-probe-044",
+     "tokens": 2200,
+     "kl_nats": 0.021116598411039873
+    },
+    {
+     "id": "wiki-probe-045",
+     "tokens": 4023,
+     "kl_nats": 0.018190457457604767
+    },
+    {
+     "id": "wiki-probe-046",
+     "tokens": 3697,
+     "kl_nats": 0.024941933874120446
+    },
+    {
+     "id": "wiki-probe-047",
+     "tokens": 2513,
+     "kl_nats": 0.014335898825527424
+    },
+    {
+     "id": "wiki-probe-048",
+     "tokens": 2995,
+     "kl_nats": 0.01804287588855062
+    },
+    {
+     "id": "wiki-probe-049",
+     "tokens": 3965,
+     "kl_nats": 0.01650327310285532
+    },
+    {
+     "id": "wiki-probe-050",
+     "tokens": 2696,
+     "kl_nats": 0.019669716099956977
+    },
+    {
+     "id": "wiki-probe-051",
+     "tokens": 2200,
+     "kl_nats": 0.015472551584243774
+    },
+    {
+     "id": "wiki-probe-052",
+     "tokens": 3709,
+     "kl_nats": 0.01914666958271766
+    },
+    {
+     "id": "wiki-probe-053",
+     "tokens": 2657,
+     "kl_nats": 0.016798468519073705
+    },
+    {
+     "id": "wiki-probe-054",
+     "tokens": 3676,
+     "kl_nats": 0.017942189586564686
+    },
+    {
+     "id": "wiki-probe-055",
+     "tokens": 2940,
+     "kl_nats": 0.018861240189091688
+    },
+    {
+     "id": "wiki-probe-056",
+     "tokens": 2523,
+     "kl_nats": 0.01735273108707266
+    },
+    {
+     "id": "wiki-probe-057",
+     "tokens": 2279,
+     "kl_nats": 0.010748645253953519
+    },
+    {
+     "id": "wiki-probe-058",
+     "tokens": 3878,
+     "kl_nats": 0.015551534416504654
+    },
+    {
+     "id": "wiki-probe-059",
+     "tokens": 3228,
+     "kl_nats": 0.014695805909465237
+    },
+    {
+     "id": "wiki-probe-060",
+     "tokens": 3324,
+     "kl_nats": 0.015365490987986577
+    },
+    {
+     "id": "wiki-probe-061",
+     "tokens": 3156,
+     "kl_nats": 0.015098178379133778
+    },
+    {
+     "id": "wiki-probe-062",
+     "tokens": 2984,
+     "kl_nats": 0.015373588806822217
+    },
+    {
+     "id": "wiki-probe-063",
+     "tokens": 3466,
+     "kl_nats": 0.02046225508443895
+    },
+    {
+     "id": "wiki-probe-064",
+     "tokens": 3288,
+     "kl_nats": 0.018519935381673548
+    },
+    {
+     "id": "wiki-probe-065",
+     "tokens": 2829,
+     "kl_nats": 0.02254894937820846
+    },
+    {
+     "id": "wiki-probe-066",
+     "tokens": 2350,
+     "kl_nats": 0.013261473559318705
+    },
+    {
+     "id": "wiki-probe-067",
+     "tokens": 3474,
+     "kl_nats": 0.018754044001858743
+    },
+    {
+     "id": "wiki-probe-068",
+     "tokens": 2956,
+     "kl_nats": 0.016413468388646477
+    },
+    {
+     "id": "wiki-probe-069",
+     "tokens": 3687,
+     "kl_nats": 0.016669635951179523
+    },
+    {
+     "id": "wiki-probe-070",
+     "tokens": 2492,
+     "kl_nats": 0.01621015573198493
+    },
+    {
+     "id": "wiki-probe-071",
+     "tokens": 2787,
+     "kl_nats": 0.019156949597958557
+    },
+    {
+     "id": "wiki-probe-072",
+     "tokens": 3581,
+     "kl_nats": 0.015700032410758794
+    },
+    {
+     "id": "wiki-probe-073",
+     "tokens": 2264,
+     "kl_nats": 0.017442142163064372
+    },
+    {
+     "id": "wiki-probe-074",
+     "tokens": 3994,
+     "kl_nats": 0.019274714892066953
+    },
+    {
+     "id": "wiki-probe-075",
+     "tokens": 3864,
+     "kl_nats": 0.020046662037910636
+    },
+    {
+     "id": "wiki-probe-076",
+     "tokens": 3317,
+     "kl_nats": 0.01688878939458682
+    },
+    {
+     "id": "wiki-probe-077",
+     "tokens": 2396,
+     "kl_nats": 0.017124295781968234
+    },
+    {
+     "id": "wiki-probe-078",
+     "tokens": 3069,
+     "kl_nats": 0.019353995380668853
+    },
+    {
+     "id": "wiki-probe-079",
+     "tokens": 2893,
+     "kl_nats": 0.016341530283635518
+    },
+    {
+     "id": "wiki-probe-080",
+     "tokens": 2289,
+     "kl_nats": 0.0213604150457953
+    },
+    {
+     "id": "wiki-probe-081",
+     "tokens": 2186,
+     "kl_nats": 0.01776585454583059
+    },
+    {
+     "id": "wiki-probe-082",
+     "tokens": 4092,
+     "kl_nats": 0.019892853842219765
+    },
+    {
+     "id": "wiki-probe-083",
+     "tokens": 2338,
+     "kl_nats": 0.018473261870106027
+    },
+    {
+     "id": "wiki-probe-084",
+     "tokens": 3959,
+     "kl_nats": 0.018673856922640106
+    },
+    {
+     "id": "wiki-probe-085",
+     "tokens": 2506,
+     "kl_nats": 0.01621553675232177
+    },
+    {
+     "id": "wiki-probe-086",
+     "tokens": 2931,
+     "kl_nats": 0.016668240432648154
+    },
+    {
+     "id": "wiki-probe-087",
+     "tokens": 3256,
+     "kl_nats": 0.0193367997317115
+    },
+    {
+     "id": "wiki-probe-088",
+     "tokens": 2569,
+     "kl_nats": 0.015000693108516707
+    },
+    {
+     "id": "wiki-probe-089",
+     "tokens": 3198,
+     "kl_nats": 0.015999755388203824
+    },
+    {
+     "id": "wiki-probe-090",
+     "tokens": 2442,
+     "kl_nats": 0.01688080357294606
+    },
+    {
+     "id": "wiki-probe-091",
+     "tokens": 3800,
+     "kl_nats": 0.020158564667952687
+    },
+    {
+     "id": "wiki-probe-092",
+     "tokens": 2309,
+     "kl_nats": 0.0177535292183865
+    },
+    {
+     "id": "wiki-probe-093",
+     "tokens": 3070,
+     "kl_nats": 0.020436879555643186
+    },
+    {
+     "id": "wiki-probe-094",
+     "tokens": 2642,
+     "kl_nats": 0.017546421736140398
+    },
+    {
+     "id": "wiki-probe-095",
+     "tokens": 3395,
+     "kl_nats": 0.012986426869618524
+    },
+    {
+     "id": "wiki-probe-096",
+     "tokens": 3470,
+     "kl_nats": 0.016046848283377435
+    },
+    {
+     "id": "wiki-probe-097",
+     "tokens": 3907,
+     "kl_nats": 0.01667439589757946
+    },
+    {
+     "id": "wiki-probe-098",
+     "tokens": 3606,
+     "kl_nats": 0.017187230136086393
+    },
+    {
+     "id": "wiki-probe-099",
+     "tokens": 3985,
+     "kl_nats": 0.017241727991714383
     }
    ]
   },
   {
    "name": "drop[30]",
-   "mean_kl_nats": 0.026433329411873038,
+   "mean_kl_nats": 0.02565939379297287,
    "items": [
     {
      "id": "wiki-probe-000",
@@ -1120,12 +2720,332 @@
      "id": "wiki-probe-035",
      "tokens": 3027,
      "kl_nats": 0.02420635187157239
+    },
+    {
+     "id": "wiki-probe-036",
+     "tokens": 3754,
+     "kl_nats": 0.023411282339690528
+    },
+    {
+     "id": "wiki-probe-037",
+     "tokens": 3799,
+     "kl_nats": 0.024580692422801052
+    },
+    {
+     "id": "wiki-probe-038",
+     "tokens": 3299,
+     "kl_nats": 0.02370662449272736
+    },
+    {
+     "id": "wiki-probe-039",
+     "tokens": 3507,
+     "kl_nats": 0.021656641023329665
+    },
+    {
+     "id": "wiki-probe-040",
+     "tokens": 3569,
+     "kl_nats": 0.025981019143799033
+    },
+    {
+     "id": "wiki-probe-041",
+     "tokens": 2965,
+     "kl_nats": 0.03135792714548352
+    },
+    {
+     "id": "wiki-probe-042",
+     "tokens": 2585,
+     "kl_nats": 0.0227250572906472
+    },
+    {
+     "id": "wiki-probe-043",
+     "tokens": 2645,
+     "kl_nats": 0.0255209686625432
+    },
+    {
+     "id": "wiki-probe-044",
+     "tokens": 2200,
+     "kl_nats": 0.03008914275602861
+    },
+    {
+     "id": "wiki-probe-045",
+     "tokens": 4023,
+     "kl_nats": 0.024740476677022467
+    },
+    {
+     "id": "wiki-probe-046",
+     "tokens": 3697,
+     "kl_nats": 0.03293883726343388
+    },
+    {
+     "id": "wiki-probe-047",
+     "tokens": 2513,
+     "kl_nats": 0.01913072244133363
+    },
+    {
+     "id": "wiki-probe-048",
+     "tokens": 2995,
+     "kl_nats": 0.021228599707550914
+    },
+    {
+     "id": "wiki-probe-049",
+     "tokens": 3965,
+     "kl_nats": 0.024565759673244866
+    },
+    {
+     "id": "wiki-probe-050",
+     "tokens": 2696,
+     "kl_nats": 0.026296484010509637
+    },
+    {
+     "id": "wiki-probe-051",
+     "tokens": 2200,
+     "kl_nats": 0.024223582636226308
+    },
+    {
+     "id": "wiki-probe-052",
+     "tokens": 3709,
+     "kl_nats": 0.024576939865404396
+    },
+    {
+     "id": "wiki-probe-053",
+     "tokens": 2657,
+     "kl_nats": 0.026328828938706368
+    },
+    {
+     "id": "wiki-probe-054",
+     "tokens": 3676,
+     "kl_nats": 0.028590346057215246
+    },
+    {
+     "id": "wiki-probe-055",
+     "tokens": 2940,
+     "kl_nats": 0.028105722641458317
+    },
+    {
+     "id": "wiki-probe-056",
+     "tokens": 2523,
+     "kl_nats": 0.025198597781392634
+    },
+    {
+     "id": "wiki-probe-057",
+     "tokens": 2279,
+     "kl_nats": 0.014482255042671583
+    },
+    {
+     "id": "wiki-probe-058",
+     "tokens": 3878,
+     "kl_nats": 0.029243867442803384
+    },
+    {
+     "id": "wiki-probe-059",
+     "tokens": 3228,
+     "kl_nats": 0.021847586132484446
+    },
+    {
+     "id": "wiki-probe-060",
+     "tokens": 3324,
+     "kl_nats": 0.019900953654921585
+    },
+    {
+     "id": "wiki-probe-061",
+     "tokens": 3156,
+     "kl_nats": 0.02732077161622138
+    },
+    {
+     "id": "wiki-probe-062",
+     "tokens": 2984,
+     "kl_nats": 0.02360046005760377
+    },
+    {
+     "id": "wiki-probe-063",
+     "tokens": 3466,
+     "kl_nats": 0.023660755129955576
+    },
+    {
+     "id": "wiki-probe-064",
+     "tokens": 3288,
+     "kl_nats": 0.02805583436413693
+    },
+    {
+     "id": "wiki-probe-065",
+     "tokens": 2829,
+     "kl_nats": 0.027574247835001873
+    },
+    {
+     "id": "wiki-probe-066",
+     "tokens": 2350,
+     "kl_nats": 0.01964917834768904
+    },
+    {
+     "id": "wiki-probe-067",
+     "tokens": 3474,
+     "kl_nats": 0.02485091664287367
+    },
+    {
+     "id": "wiki-probe-068",
+     "tokens": 2956,
+     "kl_nats": 0.022326746151476333
+    },
+    {
+     "id": "wiki-probe-069",
+     "tokens": 3687,
+     "kl_nats": 0.024509302671601656
+    },
+    {
+     "id": "wiki-probe-070",
+     "tokens": 2492,
+     "kl_nats": 0.02503278473598425
+    },
+    {
+     "id": "wiki-probe-071",
+     "tokens": 2787,
+     "kl_nats": 0.029118979323667398
+    },
+    {
+     "id": "wiki-probe-072",
+     "tokens": 3581,
+     "kl_nats": 0.020739791114314978
+    },
+    {
+     "id": "wiki-probe-073",
+     "tokens": 2264,
+     "kl_nats": 0.024627470085561907
+    },
+    {
+     "id": "wiki-probe-074",
+     "tokens": 3994,
+     "kl_nats": 0.02654659360065183
+    },
+    {
+     "id": "wiki-probe-075",
+     "tokens": 3864,
+     "kl_nats": 0.02614749742837673
+    },
+    {
+     "id": "wiki-probe-076",
+     "tokens": 3317,
+     "kl_nats": 0.02195120483124727
+    },
+    {
+     "id": "wiki-probe-077",
+     "tokens": 2396,
+     "kl_nats": 0.02217718431468002
+    },
+    {
+     "id": "wiki-probe-078",
+     "tokens": 3069,
+     "kl_nats": 0.02448702868439546
+    },
+    {
+     "id": "wiki-probe-079",
+     "tokens": 2893,
+     "kl_nats": 0.023800752997769233
+    },
+    {
+     "id": "wiki-probe-080",
+     "tokens": 2289,
+     "kl_nats": 0.03397729876990296
+    },
+    {
+     "id": "wiki-probe-081",
+     "tokens": 2186,
+     "kl_nats": 0.023679948354792618
+    },
+    {
+     "id": "wiki-probe-082",
+     "tokens": 4092,
+     "kl_nats": 0.030643922725614097
+    },
+    {
+     "id": "wiki-probe-083",
+     "tokens": 2338,
+     "kl_nats": 0.028301949221624892
+    },
+    {
+     "id": "wiki-probe-084",
+     "tokens": 3959,
+     "kl_nats": 0.02738598911230478
+    },
+    {
+     "id": "wiki-probe-085",
+     "tokens": 2506,
+     "kl_nats": 0.02238226260362581
+    },
+    {
+     "id": "wiki-probe-086",
+     "tokens": 2931,
+     "kl_nats": 0.02540234883300927
+    },
+    {
+     "id": "wiki-probe-087",
+     "tokens": 3256,
+     "kl_nats": 0.024406680164524613
+    },
+    {
+     "id": "wiki-probe-088",
+     "tokens": 2569,
+     "kl_nats": 0.02679324415162548
+    },
+    {
+     "id": "wiki-probe-089",
+     "tokens": 3198,
+     "kl_nats": 0.024175313206446624
+    },
+    {
+     "id": "wiki-probe-090",
+     "tokens": 2442,
+     "kl_nats": 0.03087823064868124
+    },
+    {
+     "id": "wiki-probe-091",
+     "tokens": 3800,
+     "kl_nats": 0.02720234331331755
+    },
+    {
+     "id": "wiki-probe-092",
+     "tokens": 2309,
+     "kl_nats": 0.024839750009085927
+    },
+    {
+     "id": "wiki-probe-093",
+     "tokens": 3070,
+     "kl_nats": 0.028749689450093124
+    },
+    {
+     "id": "wiki-probe-094",
+     "tokens": 2642,
+     "kl_nats": 0.026328794618703306
+    },
+    {
+     "id": "wiki-probe-095",
+     "tokens": 3395,
+     "kl_nats": 0.01826490239296465
+    },
+    {
+     "id": "wiki-probe-096",
+     "tokens": 3470,
+     "kl_nats": 0.026492705193995054
+    },
+    {
+     "id": "wiki-probe-097",
+     "tokens": 3907,
+     "kl_nats": 0.022776916535394345
+    },
+    {
+     "id": "wiki-probe-098",
+     "tokens": 3606,
+     "kl_nats": 0.02258346916170697
+    },
+    {
+     "id": "wiki-probe-099",
+     "tokens": 3985,
+     "kl_nats": 0.02858453999499006
     }
    ]
   },
   {
    "name": "drop[55]",
-   "mean_kl_nats": 0.08081955787560753,
+   "mean_kl_nats": 0.07973378782600599,
    "items": [
     {
      "id": "wiki-probe-000",
@@ -1306,12 +3226,332 @@
      "id": "wiki-probe-035",
      "tokens": 3027,
      "kl_nats": 0.0748597561899569
+    },
+    {
+     "id": "wiki-probe-036",
+     "tokens": 3754,
+     "kl_nats": 0.07062012576396375
+    },
+    {
+     "id": "wiki-probe-037",
+     "tokens": 3799,
+     "kl_nats": 0.10409776647958859
+    },
+    {
+     "id": "wiki-probe-038",
+     "tokens": 3299,
+     "kl_nats": 0.060984973150081584
+    },
+    {
+     "id": "wiki-probe-039",
+     "tokens": 3507,
+     "kl_nats": 0.07616264880604305
+    },
+    {
+     "id": "wiki-probe-040",
+     "tokens": 3569,
+     "kl_nats": 0.09795950988188082
+    },
+    {
+     "id": "wiki-probe-041",
+     "tokens": 2965,
+     "kl_nats": 0.0692222640244997
+    },
+    {
+     "id": "wiki-probe-042",
+     "tokens": 2585,
+     "kl_nats": 0.07630124165887298
+    },
+    {
+     "id": "wiki-probe-043",
+     "tokens": 2645,
+     "kl_nats": 0.07921526103028728
+    },
+    {
+     "id": "wiki-probe-044",
+     "tokens": 2200,
+     "kl_nats": 0.07922221053730358
+    },
+    {
+     "id": "wiki-probe-045",
+     "tokens": 4023,
+     "kl_nats": 0.06946554262188279
+    },
+    {
+     "id": "wiki-probe-046",
+     "tokens": 3697,
+     "kl_nats": 0.09645162081441139
+    },
+    {
+     "id": "wiki-probe-047",
+     "tokens": 2513,
+     "kl_nats": 0.06100609252237486
+    },
+    {
+     "id": "wiki-probe-048",
+     "tokens": 2995,
+     "kl_nats": 0.0712598014156488
+    },
+    {
+     "id": "wiki-probe-049",
+     "tokens": 3965,
+     "kl_nats": 0.08235135457254147
+    },
+    {
+     "id": "wiki-probe-050",
+     "tokens": 2696,
+     "kl_nats": 0.07379718739484113
+    },
+    {
+     "id": "wiki-probe-051",
+     "tokens": 2200,
+     "kl_nats": 0.08026848316192627
+    },
+    {
+     "id": "wiki-probe-052",
+     "tokens": 3709,
+     "kl_nats": 0.077078733909609
+    },
+    {
+     "id": "wiki-probe-053",
+     "tokens": 2657,
+     "kl_nats": 0.07880910895666683
+    },
+    {
+     "id": "wiki-probe-054",
+     "tokens": 3676,
+     "kl_nats": 0.07361448394850108
+    },
+    {
+     "id": "wiki-probe-055",
+     "tokens": 2940,
+     "kl_nats": 0.08241001181051033
+    },
+    {
+     "id": "wiki-probe-056",
+     "tokens": 2523,
+     "kl_nats": 0.09107603934186345
+    },
+    {
+     "id": "wiki-probe-057",
+     "tokens": 2279,
+     "kl_nats": 0.06463071723526222
+    },
+    {
+     "id": "wiki-probe-058",
+     "tokens": 3878,
+     "kl_nats": 0.06575458470295852
+    },
+    {
+     "id": "wiki-probe-059",
+     "tokens": 3228,
+     "kl_nats": 0.07390816710990897
+    },
+    {
+     "id": "wiki-probe-060",
+     "tokens": 3324,
+     "kl_nats": 0.07407972700759392
+    },
+    {
+     "id": "wiki-probe-061",
+     "tokens": 3156,
+     "kl_nats": 0.06559552227740656
+    },
+    {
+     "id": "wiki-probe-062",
+     "tokens": 2984,
+     "kl_nats": 0.07746907597252894
+    },
+    {
+     "id": "wiki-probe-063",
+     "tokens": 3466,
+     "kl_nats": 0.07494528116137048
+    },
+    {
+     "id": "wiki-probe-064",
+     "tokens": 3288,
+     "kl_nats": 0.07323470254884148
+    },
+    {
+     "id": "wiki-probe-065",
+     "tokens": 2829,
+     "kl_nats": 0.07773593745496257
+    },
+    {
+     "id": "wiki-probe-066",
+     "tokens": 2350,
+     "kl_nats": 0.07003415919364767
+    },
+    {
+     "id": "wiki-probe-067",
+     "tokens": 3474,
+     "kl_nats": 0.08310202311426315
+    },
+    {
+     "id": "wiki-probe-068",
+     "tokens": 2956,
+     "kl_nats": 0.0844461708172087
+    },
+    {
+     "id": "wiki-probe-069",
+     "tokens": 3687,
+     "kl_nats": 0.06896619457910143
+    },
+    {
+     "id": "wiki-probe-070",
+     "tokens": 2492,
+     "kl_nats": 0.09354732583843495
+    },
+    {
+     "id": "wiki-probe-071",
+     "tokens": 2787,
+     "kl_nats": 0.07398216485720532
+    },
+    {
+     "id": "wiki-probe-072",
+     "tokens": 3581,
+     "kl_nats": 0.08314621778081763
+    },
+    {
+     "id": "wiki-probe-073",
+     "tokens": 2264,
+     "kl_nats": 0.07312174188795864
+    },
+    {
+     "id": "wiki-probe-074",
+     "tokens": 3994,
+     "kl_nats": 0.07660898448350015
+    },
+    {
+     "id": "wiki-probe-075",
+     "tokens": 3864,
+     "kl_nats": 0.08431287908899611
+    },
+    {
+     "id": "wiki-probe-076",
+     "tokens": 3317,
+     "kl_nats": 0.13414578097104524
+    },
+    {
+     "id": "wiki-probe-077",
+     "tokens": 2396,
+     "kl_nats": 0.06817940638738004
+    },
+    {
+     "id": "wiki-probe-078",
+     "tokens": 3069,
+     "kl_nats": 0.09055557884894974
+    },
+    {
+     "id": "wiki-probe-079",
+     "tokens": 2893,
+     "kl_nats": 0.08654261443015823
+    },
+    {
+     "id": "wiki-probe-080",
+     "tokens": 2289,
+     "kl_nats": 0.10766772715583958
+    },
+    {
+     "id": "wiki-probe-081",
+     "tokens": 2186,
+     "kl_nats": 0.07247949759020024
+    },
+    {
+     "id": "wiki-probe-082",
+     "tokens": 4092,
+     "kl_nats": 0.07730610839083048
+    },
+    {
+     "id": "wiki-probe-083",
+     "tokens": 2338,
+     "kl_nats": 0.07279062505661676
+    },
+    {
+     "id": "wiki-probe-084",
+     "tokens": 3959,
+     "kl_nats": 0.07872706502638371
+    },
+    {
+     "id": "wiki-probe-085",
+     "tokens": 2506,
+     "kl_nats": 0.0758468402640304
+    },
+    {
+     "id": "wiki-probe-086",
+     "tokens": 2931,
+     "kl_nats": 0.08235728297368612
+    },
+    {
+     "id": "wiki-probe-087",
+     "tokens": 3256,
+     "kl_nats": 0.07933200840868002
+    },
+    {
+     "id": "wiki-probe-088",
+     "tokens": 2569,
+     "kl_nats": 0.07688302170585315
+    },
+    {
+     "id": "wiki-probe-089",
+     "tokens": 3198,
+     "kl_nats": 0.07208581713306077
+    },
+    {
+     "id": "wiki-probe-090",
+     "tokens": 2442,
+     "kl_nats": 0.07268632307685272
+    },
+    {
+     "id": "wiki-probe-091",
+     "tokens": 3800,
+     "kl_nats": 0.09166496879176089
+    },
+    {
+     "id": "wiki-probe-092",
+     "tokens": 2309,
+     "kl_nats": 0.08197704287977536
+    },
+    {
+     "id": "wiki-probe-093",
+     "tokens": 3070,
+     "kl_nats": 0.08590201679192459
+    },
+    {
+     "id": "wiki-probe-094",
+     "tokens": 2642,
+     "kl_nats": 0.07489801662424854
+    },
+    {
+     "id": "wiki-probe-095",
+     "tokens": 3395,
+     "kl_nats": 0.06183304484708671
+    },
+    {
+     "id": "wiki-probe-096",
+     "tokens": 3470,
+     "kl_nats": 0.06968335555678486
+    },
+    {
+     "id": "wiki-probe-097",
+     "tokens": 3907,
+     "kl_nats": 0.0940515723471328
+    },
+    {
+     "id": "wiki-probe-098",
+     "tokens": 3606,
+     "kl_nats": 0.08096313939382814
+    },
+    {
+     "id": "wiki-probe-099",
+     "tokens": 3985,
+     "kl_nats": 0.07232212822888995
     }
    ]
   },
   {
    "name": "drop[39]",
-   "mean_kl_nats": 0.022597989325458017,
+   "mean_kl_nats": 0.022225417947927848,
    "items": [
     {
      "id": "wiki-probe-000",
@@ -1492,12 +3732,332 @@
      "id": "wiki-probe-035",
      "tokens": 3027,
      "kl_nats": 0.023693741765950117
+    },
+    {
+     "id": "wiki-probe-036",
+     "tokens": 3754,
+     "kl_nats": 0.020571815757975023
+    },
+    {
+     "id": "wiki-probe-037",
+     "tokens": 3799,
+     "kl_nats": 0.02348308395040321
+    },
+    {
+     "id": "wiki-probe-038",
+     "tokens": 3299,
+     "kl_nats": 0.020212272471751398
+    },
+    {
+     "id": "wiki-probe-039",
+     "tokens": 3507,
+     "kl_nats": 0.02176288828266493
+    },
+    {
+     "id": "wiki-probe-040",
+     "tokens": 3569,
+     "kl_nats": 0.023330982675335926
+    },
+    {
+     "id": "wiki-probe-041",
+     "tokens": 2965,
+     "kl_nats": 0.024963247353873806
+    },
+    {
+     "id": "wiki-probe-042",
+     "tokens": 2585,
+     "kl_nats": 0.01944209809921235
+    },
+    {
+     "id": "wiki-probe-043",
+     "tokens": 2645,
+     "kl_nats": 0.028539640105739658
+    },
+    {
+     "id": "wiki-probe-044",
+     "tokens": 2200,
+     "kl_nats": 0.02244193282994357
+    },
+    {
+     "id": "wiki-probe-045",
+     "tokens": 4023,
+     "kl_nats": 0.021529294174463632
+    },
+    {
+     "id": "wiki-probe-046",
+     "tokens": 3697,
+     "kl_nats": 0.02701727873833398
+    },
+    {
+     "id": "wiki-probe-047",
+     "tokens": 2513,
+     "kl_nats": 0.020802367317026657
+    },
+    {
+     "id": "wiki-probe-048",
+     "tokens": 2995,
+     "kl_nats": 0.02054938338634765
+    },
+    {
+     "id": "wiki-probe-049",
+     "tokens": 3965,
+     "kl_nats": 0.020648314522915198
+    },
+    {
+     "id": "wiki-probe-050",
+     "tokens": 2696,
+     "kl_nats": 0.023452708204705214
+    },
+    {
+     "id": "wiki-probe-051",
+     "tokens": 2200,
+     "kl_nats": 0.021503000259399413
+    },
+    {
+     "id": "wiki-probe-052",
+     "tokens": 3709,
+     "kl_nats": 0.025360245047698095
+    },
+    {
+     "id": "wiki-probe-053",
+     "tokens": 2657,
+     "kl_nats": 0.021113046811943356
+    },
+    {
+     "id": "wiki-probe-054",
+     "tokens": 3676,
+     "kl_nats": 0.025000809909729235
+    },
+    {
+     "id": "wiki-probe-055",
+     "tokens": 2940,
+     "kl_nats": 0.023322343420820173
+    },
+    {
+     "id": "wiki-probe-056",
+     "tokens": 2523,
+     "kl_nats": 0.023787957734642075
+    },
+    {
+     "id": "wiki-probe-057",
+     "tokens": 2279,
+     "kl_nats": 0.013278978861649342
+    },
+    {
+     "id": "wiki-probe-058",
+     "tokens": 3878,
+     "kl_nats": 0.02144796398572543
+    },
+    {
+     "id": "wiki-probe-059",
+     "tokens": 3228,
+     "kl_nats": 0.019900109318847847
+    },
+    {
+     "id": "wiki-probe-060",
+     "tokens": 3324,
+     "kl_nats": 0.02008449988244673
+    },
+    {
+     "id": "wiki-probe-061",
+     "tokens": 3156,
+     "kl_nats": 0.018229724600892255
+    },
+    {
+     "id": "wiki-probe-062",
+     "tokens": 2984,
+     "kl_nats": 0.021035677705948858
+    },
+    {
+     "id": "wiki-probe-063",
+     "tokens": 3466,
+     "kl_nats": 0.02250558643484143
+    },
+    {
+     "id": "wiki-probe-064",
+     "tokens": 3288,
+     "kl_nats": 0.0196267530285819
+    },
+    {
+     "id": "wiki-probe-065",
+     "tokens": 2829,
+     "kl_nats": 0.022907679147963055
+    },
+    {
+     "id": "wiki-probe-066",
+     "tokens": 2350,
+     "kl_nats": 0.0213913479510774
+    },
+    {
+     "id": "wiki-probe-067",
+     "tokens": 3474,
+     "kl_nats": 0.022271651472246502
+    },
+    {
+     "id": "wiki-probe-068",
+     "tokens": 2956,
+     "kl_nats": 0.022648274656561617
+    },
+    {
+     "id": "wiki-probe-069",
+     "tokens": 3687,
+     "kl_nats": 0.02154847551950569
+    },
+    {
+     "id": "wiki-probe-070",
+     "tokens": 2492,
+     "kl_nats": 0.02319553709719001
+    },
+    {
+     "id": "wiki-probe-071",
+     "tokens": 2787,
+     "kl_nats": 0.03035170534925731
+    },
+    {
+     "id": "wiki-probe-072",
+     "tokens": 3581,
+     "kl_nats": 0.02089839279901312
+    },
+    {
+     "id": "wiki-probe-073",
+     "tokens": 2264,
+     "kl_nats": 0.02154795714907427
+    },
+    {
+     "id": "wiki-probe-074",
+     "tokens": 3994,
+     "kl_nats": 0.021332987559456555
+    },
+    {
+     "id": "wiki-probe-075",
+     "tokens": 3864,
+     "kl_nats": 0.020984172936737166
+    },
+    {
+     "id": "wiki-probe-076",
+     "tokens": 3317,
+     "kl_nats": 0.02266581172787859
+    },
+    {
+     "id": "wiki-probe-077",
+     "tokens": 2396,
+     "kl_nats": 0.019851055686581316
+    },
+    {
+     "id": "wiki-probe-078",
+     "tokens": 3069,
+     "kl_nats": 0.023474767566232194
+    },
+    {
+     "id": "wiki-probe-079",
+     "tokens": 2893,
+     "kl_nats": 0.019606521539196932
+    },
+    {
+     "id": "wiki-probe-080",
+     "tokens": 2289,
+     "kl_nats": 0.029996658631837644
+    },
+    {
+     "id": "wiki-probe-081",
+     "tokens": 2186,
+     "kl_nats": 0.021498099991954584
+    },
+    {
+     "id": "wiki-probe-082",
+     "tokens": 4092,
+     "kl_nats": 0.02305366531495125
+    },
+    {
+     "id": "wiki-probe-083",
+     "tokens": 2338,
+     "kl_nats": 0.01914008699797279
+    },
+    {
+     "id": "wiki-probe-084",
+     "tokens": 3959,
+     "kl_nats": 0.022194069243043502
+    },
+    {
+     "id": "wiki-probe-085",
+     "tokens": 2506,
+     "kl_nats": 0.02322946827790305
+    },
+    {
+     "id": "wiki-probe-086",
+     "tokens": 2931,
+     "kl_nats": 0.022768032994135295
+    },
+    {
+     "id": "wiki-probe-087",
+     "tokens": 3256,
+     "kl_nats": 0.018892562360084027
+    },
+    {
+     "id": "wiki-probe-088",
+     "tokens": 2569,
+     "kl_nats": 0.02084040575080365
+    },
+    {
+     "id": "wiki-probe-089",
+     "tokens": 3198,
+     "kl_nats": 0.01956460668266826
+    },
+    {
+     "id": "wiki-probe-090",
+     "tokens": 2442,
+     "kl_nats": 0.020159571215717837
+    },
+    {
+     "id": "wiki-probe-091",
+     "tokens": 3800,
+     "kl_nats": 0.02632904755441766
+    },
+    {
+     "id": "wiki-probe-092",
+     "tokens": 2309,
+     "kl_nats": 0.021081906846200506
+    },
+    {
+     "id": "wiki-probe-093",
+     "tokens": 3070,
+     "kl_nats": 0.020673291147337673
+    },
+    {
+     "id": "wiki-probe-094",
+     "tokens": 2642,
+     "kl_nats": 0.025422863622762144
+    },
+    {
+     "id": "wiki-probe-095",
+     "tokens": 3395,
+     "kl_nats": 0.017459117014383532
+    },
+    {
+     "id": "wiki-probe-096",
+     "tokens": 3470,
+     "kl_nats": 0.01930207450382991
+    },
+    {
+     "id": "wiki-probe-097",
+     "tokens": 3907,
+     "kl_nats": 0.023724872162191345
+    },
+    {
+     "id": "wiki-probe-098",
+     "tokens": 3606,
+     "kl_nats": 0.02010613167477659
+    },
+    {
+     "id": "wiki-probe-099",
+     "tokens": 3985,
+     "kl_nats": 0.022566791460235863
     }
    ]
   },
   {
    "name": "drop[23]",
-   "mean_kl_nats": 0.023249862410882408,
+   "mean_kl_nats": 0.022866376422892448,
    "items": [
     {
      "id": "wiki-probe-000",
@@ -1678,12 +4238,332 @@
      "id": "wiki-probe-035",
      "tokens": 3027,
      "kl_nats": 0.021043717999012508
+    },
+    {
+     "id": "wiki-probe-036",
+     "tokens": 3754,
+     "kl_nats": 0.019006645927164997
+    },
+    {
+     "id": "wiki-probe-037",
+     "tokens": 3799,
+     "kl_nats": 0.023993752824221514
+    },
+    {
+     "id": "wiki-probe-038",
+     "tokens": 3299,
+     "kl_nats": 0.020047287393172752
+    },
+    {
+     "id": "wiki-probe-039",
+     "tokens": 3507,
+     "kl_nats": 0.01786906283432716
+    },
+    {
+     "id": "wiki-probe-040",
+     "tokens": 3569,
+     "kl_nats": 0.02538099767247246
+    },
+    {
+     "id": "wiki-probe-041",
+     "tokens": 2965,
+     "kl_nats": 0.03285442194689386
+    },
+    {
+     "id": "wiki-probe-042",
+     "tokens": 2585,
+     "kl_nats": 0.018704354520923165
+    },
+    {
+     "id": "wiki-probe-043",
+     "tokens": 2645,
+     "kl_nats": 0.03745597684315788
+    },
+    {
+     "id": "wiki-probe-044",
+     "tokens": 2200,
+     "kl_nats": 0.02366219466382807
+    },
+    {
+     "id": "wiki-probe-045",
+     "tokens": 4023,
+     "kl_nats": 0.023194514190916574
+    },
+    {
+     "id": "wiki-probe-046",
+     "tokens": 3697,
+     "kl_nats": 0.027234530300587166
+    },
+    {
+     "id": "wiki-probe-047",
+     "tokens": 2513,
+     "kl_nats": 0.01958100557611893
+    },
+    {
+     "id": "wiki-probe-048",
+     "tokens": 2995,
+     "kl_nats": 0.01961825455170442
+    },
+    {
+     "id": "wiki-probe-049",
+     "tokens": 3965,
+     "kl_nats": 0.021420349539604044
+    },
+    {
+     "id": "wiki-probe-050",
+     "tokens": 2696,
+     "kl_nats": 0.022303765092476186
+    },
+    {
+     "id": "wiki-probe-051",
+     "tokens": 2200,
+     "kl_nats": 0.021500482775948265
+    },
+    {
+     "id": "wiki-probe-052",
+     "tokens": 3709,
+     "kl_nats": 0.026586166511940873
+    },
+    {
+     "id": "wiki-probe-053",
+     "tokens": 2657,
+     "kl_nats": 0.021854861140654956
+    },
+    {
+     "id": "wiki-probe-054",
+     "tokens": 3676,
+     "kl_nats": 0.02480613277319077
+    },
+    {
+     "id": "wiki-probe-055",
+     "tokens": 2940,
+     "kl_nats": 0.024529493098356284
+    },
+    {
+     "id": "wiki-probe-056",
+     "tokens": 2523,
+     "kl_nats": 0.02312017819544081
+    },
+    {
+     "id": "wiki-probe-057",
+     "tokens": 2279,
+     "kl_nats": 0.01447511001760994
+    },
+    {
+     "id": "wiki-probe-058",
+     "tokens": 3878,
+     "kl_nats": 0.02117024930006699
+    },
+    {
+     "id": "wiki-probe-059",
+     "tokens": 3228,
+     "kl_nats": 0.01901958578138103
+    },
+    {
+     "id": "wiki-probe-060",
+     "tokens": 3324,
+     "kl_nats": 0.021071951311848223
+    },
+    {
+     "id": "wiki-probe-061",
+     "tokens": 3156,
+     "kl_nats": 0.018347540924606515
+    },
+    {
+     "id": "wiki-probe-062",
+     "tokens": 2984,
+     "kl_nats": 0.02323175563249767
+    },
+    {
+     "id": "wiki-probe-063",
+     "tokens": 3466,
+     "kl_nats": 0.024917880304273814
+    },
+    {
+     "id": "wiki-probe-064",
+     "tokens": 3288,
+     "kl_nats": 0.023271704894782853
+    },
+    {
+     "id": "wiki-probe-065",
+     "tokens": 2829,
+     "kl_nats": 0.02575497255493028
+    },
+    {
+     "id": "wiki-probe-066",
+     "tokens": 2350,
+     "kl_nats": 0.017785975324346663
+    },
+    {
+     "id": "wiki-probe-067",
+     "tokens": 3474,
+     "kl_nats": 0.022707885479748627
+    },
+    {
+     "id": "wiki-probe-068",
+     "tokens": 2956,
+     "kl_nats": 0.02134195821049733
+    },
+    {
+     "id": "wiki-probe-069",
+     "tokens": 3687,
+     "kl_nats": 0.02049715595902354
+    },
+    {
+     "id": "wiki-probe-070",
+     "tokens": 2492,
+     "kl_nats": 0.02678082517406531
+    },
+    {
+     "id": "wiki-probe-071",
+     "tokens": 2787,
+     "kl_nats": 0.029072591468857573
+    },
+    {
+     "id": "wiki-probe-072",
+     "tokens": 3581,
+     "kl_nats": 0.021602011565821228
+    },
+    {
+     "id": "wiki-probe-073",
+     "tokens": 2264,
+     "kl_nats": 0.0221296801583927
+    },
+    {
+     "id": "wiki-probe-074",
+     "tokens": 3994,
+     "kl_nats": 0.02412501728170564
+    },
+    {
+     "id": "wiki-probe-075",
+     "tokens": 3864,
+     "kl_nats": 0.021521964798802914
+    },
+    {
+     "id": "wiki-probe-076",
+     "tokens": 3317,
+     "kl_nats": 0.021636369180204926
+    },
+    {
+     "id": "wiki-probe-077",
+     "tokens": 2396,
+     "kl_nats": 0.02037539705012199
+    },
+    {
+     "id": "wiki-probe-078",
+     "tokens": 3069,
+     "kl_nats": 0.0256357112199641
+    },
+    {
+     "id": "wiki-probe-079",
+     "tokens": 2893,
+     "kl_nats": 0.020813199792236264
+    },
+    {
+     "id": "wiki-probe-080",
+     "tokens": 2289,
+     "kl_nats": 0.030533256255783542
+    },
+    {
+     "id": "wiki-probe-081",
+     "tokens": 2186,
+     "kl_nats": 0.020990110381633342
+    },
+    {
+     "id": "wiki-probe-082",
+     "tokens": 4092,
+     "kl_nats": 0.022642655980901635
+    },
+    {
+     "id": "wiki-probe-083",
+     "tokens": 2338,
+     "kl_nats": 0.02278270193202767
+    },
+    {
+     "id": "wiki-probe-084",
+     "tokens": 3959,
+     "kl_nats": 0.024310668088715917
+    },
+    {
+     "id": "wiki-probe-085",
+     "tokens": 2506,
+     "kl_nats": 0.023384880087229127
+    },
+    {
+     "id": "wiki-probe-086",
+     "tokens": 2931,
+     "kl_nats": 0.023320753962381105
+    },
+    {
+     "id": "wiki-probe-087",
+     "tokens": 3256,
+     "kl_nats": 0.02077606605956244
+    },
+    {
+     "id": "wiki-probe-088",
+     "tokens": 2569,
+     "kl_nats": 0.021515975995210414
+    },
+    {
+     "id": "wiki-probe-089",
+     "tokens": 3198,
+     "kl_nats": 0.018800997152561096
+    },
+    {
+     "id": "wiki-probe-090",
+     "tokens": 2442,
+     "kl_nats": 0.019137138621324795
+    },
+    {
+     "id": "wiki-probe-091",
+     "tokens": 3800,
+     "kl_nats": 0.026241850225548997
+    },
+    {
+     "id": "wiki-probe-092",
+     "tokens": 2309,
+     "kl_nats": 0.02069767133117806
+    },
+    {
+     "id": "wiki-probe-093",
+     "tokens": 3070,
+     "kl_nats": 0.02143533843348003
+    },
+    {
+     "id": "wiki-probe-094",
+     "tokens": 2642,
+     "kl_nats": 0.0280825599497868
+    },
+    {
+     "id": "wiki-probe-095",
+     "tokens": 3395,
+     "kl_nats": 0.019062710580839852
+    },
+    {
+     "id": "wiki-probe-096",
+     "tokens": 3470,
+     "kl_nats": 0.020176286862288152
+    },
+    {
+     "id": "wiki-probe-097",
+     "tokens": 3907,
+     "kl_nats": 0.02446475378656009
+    },
+    {
+     "id": "wiki-probe-098",
+     "tokens": 3606,
+     "kl_nats": 0.01878514269359629
+    },
+    {
+     "id": "wiki-probe-099",
+     "tokens": 3985,
+     "kl_nats": 0.020619583129882813
     }
    ]
   },
   {
    "name": "drop[47]",
-   "mean_kl_nats": 0.034140172392687615,
+   "mean_kl_nats": 0.0326587541871183,
    "items": [
     {
      "id": "wiki-probe-000",
@@ -1864,6 +4744,326 @@
      "id": "wiki-probe-035",
      "tokens": 3027,
      "kl_nats": 0.03077056221257825
+    },
+    {
+     "id": "wiki-probe-036",
+     "tokens": 3754,
+     "kl_nats": 0.03314487503511066
+    },
+    {
+     "id": "wiki-probe-037",
+     "tokens": 3799,
+     "kl_nats": 0.032587260000013496
+    },
+    {
+     "id": "wiki-probe-038",
+     "tokens": 3299,
+     "kl_nats": 0.02988753112094552
+    },
+    {
+     "id": "wiki-probe-039",
+     "tokens": 3507,
+     "kl_nats": 0.031654537386930935
+    },
+    {
+     "id": "wiki-probe-040",
+     "tokens": 3569,
+     "kl_nats": 0.03156596707776669
+    },
+    {
+     "id": "wiki-probe-041",
+     "tokens": 2965,
+     "kl_nats": 0.0316826130447259
+    },
+    {
+     "id": "wiki-probe-042",
+     "tokens": 2585,
+     "kl_nats": 0.02738323400744617
+    },
+    {
+     "id": "wiki-probe-043",
+     "tokens": 2645,
+     "kl_nats": 0.03188726194414164
+    },
+    {
+     "id": "wiki-probe-044",
+     "tokens": 2200,
+     "kl_nats": 0.03687070217999545
+    },
+    {
+     "id": "wiki-probe-045",
+     "tokens": 4023,
+     "kl_nats": 0.02925392978676747
+    },
+    {
+     "id": "wiki-probe-046",
+     "tokens": 3697,
+     "kl_nats": 0.038896351851158154
+    },
+    {
+     "id": "wiki-probe-047",
+     "tokens": 2513,
+     "kl_nats": 0.02766977853619431
+    },
+    {
+     "id": "wiki-probe-048",
+     "tokens": 2995,
+     "kl_nats": 0.02661670309076325
+    },
+    {
+     "id": "wiki-probe-049",
+     "tokens": 3965,
+     "kl_nats": 0.02892506696838148
+    },
+    {
+     "id": "wiki-probe-050",
+     "tokens": 2696,
+     "kl_nats": 0.031846115603291314
+    },
+    {
+     "id": "wiki-probe-051",
+     "tokens": 2200,
+     "kl_nats": 0.031254877610640094
+    },
+    {
+     "id": "wiki-probe-052",
+     "tokens": 3709,
+     "kl_nats": 0.03307144697800773
+    },
+    {
+     "id": "wiki-probe-053",
+     "tokens": 2657,
+     "kl_nats": 0.03282170669001478
+    },
+    {
+     "id": "wiki-probe-054",
+     "tokens": 3676,
+     "kl_nats": 0.0348092671706705
+    },
+    {
+     "id": "wiki-probe-055",
+     "tokens": 2940,
+     "kl_nats": 0.03217774751235028
+    },
+    {
+     "id": "wiki-probe-056",
+     "tokens": 2523,
+     "kl_nats": 0.033516104052192484
+    },
+    {
+     "id": "wiki-probe-057",
+     "tokens": 2279,
+     "kl_nats": 0.03697965562526674
+    },
+    {
+     "id": "wiki-probe-058",
+     "tokens": 3878,
+     "kl_nats": 0.036408885936874774
+    },
+    {
+     "id": "wiki-probe-059",
+     "tokens": 3228,
+     "kl_nats": 0.023234312345251865
+    },
+    {
+     "id": "wiki-probe-060",
+     "tokens": 3324,
+     "kl_nats": 0.02938399977632378
+    },
+    {
+     "id": "wiki-probe-061",
+     "tokens": 3156,
+     "kl_nats": 0.02995737416360466
+    },
+    {
+     "id": "wiki-probe-062",
+     "tokens": 2984,
+     "kl_nats": 0.031506821872721406
+    },
+    {
+     "id": "wiki-probe-063",
+     "tokens": 3466,
+     "kl_nats": 0.03098006132910586
+    },
+    {
+     "id": "wiki-probe-064",
+     "tokens": 3288,
+     "kl_nats": 0.03246550142329975
+    },
+    {
+     "id": "wiki-probe-065",
+     "tokens": 2829,
+     "kl_nats": 0.03439920061929945
+    },
+    {
+     "id": "wiki-probe-066",
+     "tokens": 2350,
+     "kl_nats": 0.039108754827621134
+    },
+    {
+     "id": "wiki-probe-067",
+     "tokens": 3474,
+     "kl_nats": 0.029162332801621196
+    },
+    {
+     "id": "wiki-probe-068",
+     "tokens": 2956,
+     "kl_nats": 0.029887803675196008
+    },
+    {
+     "id": "wiki-probe-069",
+     "tokens": 3687,
+     "kl_nats": 0.029951560390587256
+    },
+    {
+     "id": "wiki-probe-070",
+     "tokens": 2492,
+     "kl_nats": 0.02981555959386198
+    },
+    {
+     "id": "wiki-probe-071",
+     "tokens": 2787,
+     "kl_nats": 0.03475767247857353
+    },
+    {
+     "id": "wiki-probe-072",
+     "tokens": 3581,
+     "kl_nats": 0.028227281450592782
+    },
+    {
+     "id": "wiki-probe-073",
+     "tokens": 2264,
+     "kl_nats": 0.03410089205516101
+    },
+    {
+     "id": "wiki-probe-074",
+     "tokens": 3994,
+     "kl_nats": 0.029667303212356378
+    },
+    {
+     "id": "wiki-probe-075",
+     "tokens": 3864,
+     "kl_nats": 0.03305774387242137
+    },
+    {
+     "id": "wiki-probe-076",
+     "tokens": 3317,
+     "kl_nats": 0.03214287448799103
+    },
+    {
+     "id": "wiki-probe-077",
+     "tokens": 2396,
+     "kl_nats": 0.029151015568257173
+    },
+    {
+     "id": "wiki-probe-078",
+     "tokens": 3069,
+     "kl_nats": 0.029666348908226434
+    },
+    {
+     "id": "wiki-probe-079",
+     "tokens": 2893,
+     "kl_nats": 0.0277719212534351
+    },
+    {
+     "id": "wiki-probe-080",
+     "tokens": 2289,
+     "kl_nats": 0.04031133630901718
+    },
+    {
+     "id": "wiki-probe-081",
+     "tokens": 2186,
+     "kl_nats": 0.027971829827073944
+    },
+    {
+     "id": "wiki-probe-082",
+     "tokens": 4092,
+     "kl_nats": 0.03211465317715881
+    },
+    {
+     "id": "wiki-probe-083",
+     "tokens": 2338,
+     "kl_nats": 0.03146748852790983
+    },
+    {
+     "id": "wiki-probe-084",
+     "tokens": 3959,
+     "kl_nats": 0.03267985071970917
+    },
+    {
+     "id": "wiki-probe-085",
+     "tokens": 2506,
+     "kl_nats": 0.027827729250275414
+    },
+    {
+     "id": "wiki-probe-086",
+     "tokens": 2931,
+     "kl_nats": 0.028179284697382657
+    },
+    {
+     "id": "wiki-probe-087",
+     "tokens": 3256,
+     "kl_nats": 0.03320106871297963
+    },
+    {
+     "id": "wiki-probe-088",
+     "tokens": 2569,
+     "kl_nats": 0.02857509911431557
+    },
+    {
+     "id": "wiki-probe-089",
+     "tokens": 3198,
+     "kl_nats": 0.03042153137187946
+    },
+    {
+     "id": "wiki-probe-090",
+     "tokens": 2442,
+     "kl_nats": 0.04073196312719247
+    },
+    {
+     "id": "wiki-probe-091",
+     "tokens": 3800,
+     "kl_nats": 0.0348835687888296
+    },
+    {
+     "id": "wiki-probe-092",
+     "tokens": 2309,
+     "kl_nats": 0.029584932731905763
+    },
+    {
+     "id": "wiki-probe-093",
+     "tokens": 3070,
+     "kl_nats": 0.035486888885498044
+    },
+    {
+     "id": "wiki-probe-094",
+     "tokens": 2642,
+     "kl_nats": 0.029449309840696856
+    },
+    {
+     "id": "wiki-probe-095",
+     "tokens": 3395,
+     "kl_nats": 0.029966949468508735
+    },
+    {
+     "id": "wiki-probe-096",
+     "tokens": 3470,
+     "kl_nats": 0.03112899892955417
+    },
+    {
+     "id": "wiki-probe-097",
+     "tokens": 3907,
+     "kl_nats": 0.03450642762234182
+    },
+    {
+     "id": "wiki-probe-098",
+     "tokens": 3606,
+     "kl_nats": 0.03498695074222647
+    },
+    {
+     "id": "wiki-probe-099",
+     "tokens": 3985,
+     "kl_nats": 0.034607240875512174
     }
    ]
   }
