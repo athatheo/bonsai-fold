@@ -165,3 +165,27 @@ Readings, with the design caveat that this is reference-context not protocol-mat
 3. **Math: no comparable published benchmark exists** for Qwen3.5-4B; our GSM8K/MATH500 numbers cannot be placed against it honestly.
 4. **Positioning verdict for the paper:** "a folded 27B is a smaller model" survives as framing, but "and it beats models born that size" does NOT hold at k8 against the newest 4B-class on the comparable axes; at k2 it holds only on IFEval-vs-parity. The honest Pareto statement: 1-bit Bonsai (folded or not) buys its bytes from a 2024-25-era capability base, while native 2026 4B models pack newer training into the same footprint. Capability-per-deployed-GB favors the native small model on knowledge; the fold's remaining edge is instruction-following at low k and whatever math advantage exists (unmeasurable from published data).
 Decision: comparison closed (no local run, per 2026-07-22 decision above). Pack stays parked. If a reviewer demands protocol-matched numbers, the parked pack + minibench --stock-loader path is ready (~2-3h).
+
+## 2026-07-23: H5 COMPLETE — block type is not the axis; the interaction tax is a same-type phenomenon
+
+Machine rebooted ~10:43 (crash #4 of the project); launchd supervision (com.bonsaifold.chain, KeepAlive, added 2026-07-23 after the silent detached-process death lost ~18h) relaunched the chain at login with zero intervention and zero data loss. Full H5 chain committed: 10 singles + 4 composed sets, on+off-policy, 100 probes each. Composer selected L*=37, F*=39 (h5_selection.json).
+
+**Singles (final, N=100).** Ranked by off-policy KL (nats), off/on amplification in parens: 37-lin .0059/.0140 (2.4x) < 17-lin .0048/.0168 (3.5x) < 33-CTRL .0075/.0181 (2.4x) < 39-FULL .0093/.0223 (2.4x) < 23-FULL .0082/.0230 (2.8x) < 30-CTRL .0097/.0258 (2.6x) < 47-FULL .0195/.0326 (1.7x) < 57-lin .0116/.0611 (5.3x) < 58-lin .0142/.0653 (4.6x) < 55-FULL .0178/.0800 (4.5x). Unfolded reference = 0 by construction.
+
+**Matched-k sets (KL nats on/off, interaction tax = set KL / Σ singles):**
+| set | blocks | KL on (tax) | KL off (tax) |
+|---|---|---|---|
+| k2_linear (anchor) | 16,12 | .0076 (1.00) | .0330 (1.00) |
+| k2_full | 15,39 | .0165 (1.01) | .0485 (1.03) |
+| k4_linear (anchor) | 16,12,13,9 | .0177 (1.17) | .0864 (1.14) |
+| k4_mixed | 16,12,15,39 | .0252 (1.05) | .0815 (1.02) |
+| k4_full | 15,39,23,47 | .0525 (1.19) | .1212 (1.18) |
+| k8_mixed (anchor) | 16,12,13,9,8,4,5,15 | .0643 (1.88) | .3915 (1.85) |
+| k8_linear | 16,12,13,9,8,4,5,37 | .0563 (1.70) | .3977 (1.98) |
+
+**H5 verdict — three findings:**
+1. **Block type is NOT a clean droppability axis.** The BI-matched controls split (full-15 ≈ linear-33 in both regimes; full-55 ≈ 3x its twin 30 off-policy); the cheapest fulls cost ~1.5-2x the cheapest remaining linears at the singles level, but full blocks are the more regime-STABLE class (amplification 1.7-2.8x vs the linear tail's 4.5-5.3x). Droppability is block-specific, not type-categorical. H5 as originally posed (fulls systematically less droppable) is REJECTED in its strong form.
+2. **The interaction tax is a same-type phenomenon — the real H5 finding.** Cross-type k4_mixed composes at tax 1.02-1.05 (both regimes) vs 1.14-1.17 for same-type k4_linear; k2_full is additive (1.01-1.03); k4_full (same-type full) pays the full 1.18-1.19. Same-type blocks share redundancy with each other; removing several of one type compounds damage, mixing types nearly doesn't. Off-policy, k4_mixed (.0815) is CHEAPER than k4_linear (.0864) despite a 43% larger singles sum. Phase 3 implication is direct: functional overlap concentrates within type — exactly the regime merge operators want — and merge pairs should be same-type not just for mechanical compatibility but because that is where the shared computation lives.
+3. **The shipped k8_mixed is effectively optimal among tested k8s.** Swapping its full-15 for linear-37 trades −12% on-policy KL for +2% off-policy — a wash within regime noise; no reranking of the anchor results needed. Full drops carry the KV bonus: k2_full {15,39} cuts KV cache 12.5% (2 of 16 cachers) at a predicted (sqrt-fit) macro cost ~4.6 pts vs k2_linear's measured 2.9 — i.e., KV savings price at roughly 1.5 macro points per 2 full blocks under the current gate arithmetic.
+
+k4 mini-bench running (165/500 at entry-writing time); comparator stage will self-skip (published-numbers decision, 2026-07-22). Next after k4: notebook synthesis of the damage-curve fit discrimination, then ternary arm + Phase 3 merge design (pair shortlist now informed by finding 2).
