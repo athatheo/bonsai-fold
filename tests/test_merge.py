@@ -70,6 +70,9 @@ def test_promotion_disagreement_dequants_to_zero():
 
 @pytest.mark.parametrize("kernel,bits", [(sign_election, 1), (promotion, 2)])
 def test_self_merge_exactness(kernel, bits):
+    # exact for normal-range scales; NOT for ~2048 subnormal/min-normal f16
+    # scales where s != 2*f16(s/2) (60 of 210M groups in the real pack,
+    # per-weight error <= 2^-25 — see verify_algebra.py finding 1)
     rng = np.random.default_rng(1)
     codes = rng.integers(0, 2, size=(6, 256), dtype=np.uint8)
     scales = rng.uniform(0.25, 4.0, size=(6, 2)).astype(np.float16)
@@ -126,6 +129,9 @@ def test_merge_fp_mean():
     b = np.array([2.0, 5.0], dtype=np.float16)
     out = merge_fp_mean(a, b)
     assert out.dtype == np.float16 and out.tolist() == [1.5, 3.5]
+    # fp32 accumulation: naive f16 60000+60000 overflows to inf
+    big = np.array([60000.0], dtype=np.float16)
+    assert merge_fp_mean(big, big).tolist() == [60000.0]
 
 
 # --- end-to-end pack surgery ---------------------------------------------
@@ -181,20 +187,55 @@ def test_merge_blocks_sign_election(merge_pack, tmp_path):
     assert report["mismatched"] == [] and report["missing"] == []
 
 
-def test_verify_merge_catches_corruption(merge_pack, tmp_path):
-    dst = tmp_path / "merged_c"
-    block_map = merge_blocks(merge_pack, dst, 0, 1, "promotion")
-    # overwrite a merged scales value -> merged_checks fail
+def _flip_tensor_byte(dst, name):
     pack_path = dst / "model.safetensors"
     data = bytearray(pack_path.read_bytes())
     out = PackReader(dst)
-    name = "language_model.model.layers.0.mlp.up_proj.scales"
-    path, header, data_start = out._src[name]
+    _, header, data_start = out._src[name]
     begin = header[name]["data_offsets"][0]
     data[data_start + begin] ^= 0xFF
     pack_path.write_bytes(bytes(data))
+
+
+def test_verify_merge_catches_merged_corruption(merge_pack, tmp_path):
+    dst = tmp_path / "merged_c"
+    block_map = merge_blocks(merge_pack, dst, 0, 1, "promotion")
+    _flip_tensor_byte(dst, "language_model.model.layers.0.mlp.up_proj.scales")
     report = verify_merge(merge_pack, dst, block_map, 0, 1, "promotion")
     assert not report["ok"]
+
+
+def test_verify_merge_catches_survivor_corruption(merge_pack, tmp_path):
+    dst = tmp_path / "merged_s"
+    block_map = merge_blocks(merge_pack, dst, 0, 1, "promotion")
+    _flip_tensor_byte(dst, "language_model.model.layers.3.mlp.up_proj.weight")
+    report = verify_merge(merge_pack, dst, block_map, 0, 1, "promotion")
+    assert not report["ok"] and report["mismatched"]
+
+
+def test_verify_merge_catches_dropped_override(merge_pack, tmp_path):
+    import json as _json
+
+    dst = tmp_path / "merged_o"
+    block_map = merge_blocks(merge_pack, dst, 0, 1, "promotion")
+    cfg = _json.loads((dst / "config.json").read_text())
+    del cfg["quantization"]["language_model.model.layers.0.mlp.up_proj"]
+    (dst / "config.json").write_text(_json.dumps(cfg))
+    report = verify_merge(merge_pack, dst, block_map, 0, 1, "promotion")
+    assert not report["ok"]
+
+
+def test_index_total_size(merge_pack, tmp_path):
+    import json as _json
+
+    dst = tmp_path / "merged_t"
+    merge_blocks(merge_pack, dst, 0, 1, "promotion")
+    idx = _json.loads((dst / "model.safetensors.index.json").read_text())
+    out = PackReader(dst)
+    actual = sum(
+        info["data_offsets"][1] - info["data_offsets"][0] for info in out.header.values()
+    )
+    assert idx["metadata"]["total_size"] == actual
 
 
 def test_merge_blocks_validation(merge_pack, tmp_path):

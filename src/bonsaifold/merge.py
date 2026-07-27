@@ -204,6 +204,17 @@ def merge_blocks(src_pack, dst_pack, i, j, operator, chunk_rows=4096):
             src.header[pj]["dtype"], src.header[pj]["shape"]
         ):
             raise ValueError(f"pair dtype/shape mismatch on {name}")
+    # symmetric check: a tensor present ONLY in the absorbed block would
+    # otherwise vanish silently (unreachable for real same-type blocks,
+    # but cheap to refuse loudly)
+    expected_j = {
+        _partner(b + sfx, i, j) for b in bases_i for sfx in (".weight", ".scales", ".biases")
+    } | {_partner(n, i, j) for n in fp_i}
+    extra_j = {n for n in src.header if block_owner(n) == j} - expected_j
+    if extra_j:
+        raise ValueError(
+            f"block {j} has tensors with no block-{i} counterpart: {sorted(extra_j)[:5]}"
+        )
 
     block_map = {old: new for new, old in enumerate(k for k in range(n) if k != j)}
 
@@ -258,7 +269,11 @@ def verify_merge(src_pack, dst_pack, block_map, i, j, operator):
     """Merge-aware integrity check (fold.verify_byte_identity fails on merge
     packs by design): survivors byte-identical under reindexed names, merged
     tensors exactly re-derivable from the source pair, config consistent.
-    Returns a report dict; report["ok"] is the verdict."""
+    Returns a report dict; report["ok"] is the verdict.
+
+    Note: recompute_exact re-runs THIS module's kernels, so it certifies
+    determinism and pack integrity, not kernel correctness — the independent
+    oracle for the algebra lives in experiments/merge/verify_algebra.py."""
     kernel, out_bits = OPERATORS[operator]
     src, dst = PackReader(src_pack), PackReader(dst_pack)
     bases_i, fp_i = _block_tensor_kinds(src, i)
@@ -291,6 +306,7 @@ def verify_merge(src_pack, dst_pack, block_map, i, j, operator):
         if out_bits == 1:
             checks["biases_invariant"] = np.array_equal(
                 b, (-(s.astype(np.float32)) / 2).astype(np.float16))
+            checks["no_override"] = new_base not in dst.config.get("quantization", {})
         else:
             checks["biases_invariant"] = np.array_equal(b, np.negative(s))
             over = dst.config.get("quantization", {}).get(new_base)
