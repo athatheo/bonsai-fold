@@ -1,0 +1,30 @@
+{
+ "pair": [
+  4,
+  5
+ ],
+ "operators": {
+  "sign_election": {
+   "build_s": 3.9,
+   "verify_s": 2.8,
+   "verify_ok": true,
+   "survivors_checked": 2120,
+   "gen_tokens": 200,
+   "decode_tps": 71.2,
+   "peak_gb": 4.46,
+   "pack_gb": 5.069,
+   "sample_tail": "ause of its shorter wavelength.\n    *   *Sentence 2:* This scattered blue light is what our eyes see when looking at the sky, while the longer wavelengths pass through to reach the ground.\n4.  **Refine the sentences for clarity and flow (Constraint Check: Two Sentences):**\n    *   *Draft 1:* The sky"
+  },
+  "promotion": {
+   "build_s": 1.9,
+   "verify_s": 2.0,
+   "verify_ok": true,
+   "survivors_checked": 2120,
+   "gen_tokens": 200,
+   "decode_tps": 70.6,
+   "peak_gb": 4.51,
+   "pack_gb": 5.117,
+   "sample_tail": "e light bounces around in all directions, making the sky appear blue.\n\n3.  **Drafting sentences (Iterative process for conciseness and accuracy):**\n    *   *Draft 1:* Sunlight appears white but contains all colors of the rainbow, and as it enters Earth's atmosphere, gas molecules scatter the shorter"
+  }
+ }
+}
