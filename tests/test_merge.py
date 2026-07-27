@@ -114,6 +114,11 @@ def test_kernel_input_validation():
         sign_election(Q_A, S_A, B_A, Q_B[:, :4], S_B, B_B, group_size=4)
     with pytest.raises(ValueError, match="not 1-bit"):
         promotion(Q_A + 1, S_A, B_A, Q_B, S_B, B_B, group_size=4)
+    with pytest.raises(ValueError, match="not 1-bit"):  # negative codes too
+        promotion(Q_A.astype(np.int8) - 1, S_A, B_A, Q_B, S_B, B_B, group_size=4)
+    with pytest.raises(ValueError, match="rows"):
+        sign_election(Q_A, np.vstack([S_A, S_A]), np.vstack([B_A, B_A]),
+                      Q_B, np.vstack([S_B, S_B]), np.vstack([B_B, B_B]), group_size=4)
     with pytest.raises(ValueError, match="invariant"):
         sign_election(Q_A, S_A, np.negative(S_A), Q_B, S_B, B_B, group_size=4)
     # read-only inputs (PackReader arrays are np.frombuffer) must not be mutated

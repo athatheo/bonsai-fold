@@ -46,13 +46,17 @@ def _validate_pair(codes_a, scales_a, biases_a, codes_b, scales_b, biases_b, gro
     shapes = {scales_a.shape, scales_b.shape, biases_a.shape, biases_b.shape}
     if len(shapes) != 1:
         raise ValueError(f"scales/biases shape mismatch: {shapes}")
+    if codes_a.shape[:-1] != scales_a.shape[:-1]:
+        raise ValueError(
+            f"codes rows {codes_a.shape[:-1]} != scales rows {scales_a.shape[:-1]}"
+        )
     if codes_a.shape[-1] != scales_a.shape[-1] * group_size:
         raise ValueError(
             f"codes cols {codes_a.shape[-1]} != groups {scales_a.shape[-1]} * {group_size}"
         )
     for c in (codes_a, codes_b):
-        if c.max() > 1:
-            raise ValueError("source codes not 1-bit (max code > 1)")
+        if c.min() < 0 or c.max() > 1:
+            raise ValueError("source codes not 1-bit (values outside {0,1})")
     for s, b in ((scales_a, biases_a), (scales_b, biases_b)):
         expect = (-(s.astype(np.float32)) / 2).astype(np.float16)
         if not np.array_equal(b, expect):
