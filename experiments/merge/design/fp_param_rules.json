@@ -1,0 +1,49 @@
+{
+ "param_rules": [
+  {
+   "param": "linear_attn.A_log (shape (48,), per value-head, stored F16, runtime fp32 via cast_predicate)",
+   "rule": "Arithmetic mean in A_log space: A_log_m = (A_log_1 + A_log_2)/2, computed in fp32, cast to f16. Equivalently the geometric mean of decay rates lambda = exp(A_log).",
+   "justification": "The verified formula is g_t = exp(-exp(A_log)*softplus(a_t+dt_bias)) (gated_delta.py compute_g), so lambda = exp(A_log) is a positive multiplicative rate whose functional meaning is the memory half-life 1/lambda; measured cross-block spread is multiplicative (lambda = 0.263 in block 0 vs up to 1.76 in block 1, a 6.7x ratio). The log-space mean is the unique average symmetric under the rate<->timescale reparameterization, preserves lambda > 0, and places the merged half-life at the geometric midpoint; arithmetic averaging of lambda itself is dominated by the fast-forgetting head (mean(0.26, 1.76) = 1.01, nearly the fast endpoint) and destroys long-range memory heads. By convexity of exp, exp(mean(A_log)) <= mean(lambda), so the merged head forgets no faster than the rate-average \u2014 a bounded, one-sided bias toward retaining memory."
+  },
+  {
+   "param": "linear_attn.dt_bias (shape (48,), per value-head, F16)",
+   "rule": "Arithmetic mean: dt_bias_m = (dt_bias_1 + dt_bias_2)/2, fp32 accumulate, cast to f16.",
+   "justification": "dt_bias enters strictly additively with the in_proj_a logits inside softplus (dt_t = softplus(a_t + dt_bias)), so pre-activation logit space is exactly the parameterization where it acts linearly; arithmetic mean is the exact function-space average whenever the merged in_proj_a approximates the average of the two blocks' a-logits. Measured values span +-2.4, i.e., partly in softplus's curved region, so by Jensen (softplus convex) the merged dt slightly underestimates the mean dt \u2014 the error is second-order in the blocks' difference and biases toward slower forgetting, the same benign direction as the A_log rule."
+  },
+  {
+   "param": "linear_attn.conv1d.weight (shape (10240, 4, 1) in pack = MLX depthwise layout, kernel 4, groups=conv_dim, no bias, F16)",
+   "rule": "Arithmetic mean elementwise per (channel, tap) in the stored MLX layout: W_m = (W_1 + W_2)/2, fp32 accumulate, cast to f16. MUST use the same per-row combination as the merged in_proj_qkv rule (if that rule selects rows from one donor instead of averaging, select the matching conv rows from the same donor).",
+   "justification": "The depthwise causal conv is a purely linear FIR operator per channel, so the elementwise kernel mean is exactly the average of the two blocks' linear operators applied to a shared input; no tap-sum normalization exists or is needed. Channel c is welded to output row c of in_proj_qkv (the conv runs on that projection's output), so channel correspondence is inherited from the quantized qkv merge and the conv rule must mirror it row-by-row. Post-conv, q/k channels pass through a weightless per-head rms_norm (qwen3_5.py lines 180-181) which absorbs per-head uniform scale error from averaging; v channels feed the delta rule directly, so their kernel means carry full weight \u2014 still linear, still exact under the shared-input premise."
+  },
+  {
+   "param": "linear_attn.norm.weight (RMSNormGated gain, shape (128,) = head_v_dim, shared across all 48 v-heads, F16)",
+   "rule": "Arithmetic mean: w_m = (w_1 + w_2)/2, fp32 accumulate, cast to f16.",
+   "justification": "The gated norm computes silu(z) * (rms_norm(head_out) * w) (Qwen3NextRMSNormGated + _precise_swiglu in qwen3_next.py), which is exactly linear in w for fixed gate and normalized activation, so the mean gain realizes the mean of the two blocks' post-norm maps. Because rms_norm standardizes its input's scale, both blocks' gains live on a common scale (measured mean ~0.87 in block 0), making the arithmetic average well-conditioned. Residual scale ambiguity with the quantized out_proj merge (w and out_proj appear only as a product) contributes only a second-order cross-term."
+  },
+  {
+   "param": "input_layernorm.weight and post_attention_layernorm.weight (shape (5120,), F16) \u2014 LINEAR-attention pairs",
+   "rule": "Arithmetic mean: gamma_m = (gamma_1 + gamma_2)/2, fp32 accumulate, cast to f16.",
+   "justification": "RMSNorm output gamma * x_hat is exactly linear in gamma for a fixed normalized input x_hat, and the merge premise (adjacent redundant blocks see a slowly-varying residual stream, hence near-identical x_hat) makes parameter averaging equal function averaging to first order. The pack stores unshifted gains (verified: means ~0.79-1.24, not zero-centered), and arithmetic averaging also commutes with mlx-lm sanitize()'s +1.0 shift convention, so the rule is representation-independent \u2014 average the stored tensors directly."
+  },
+  {
+   "param": "input_layernorm.weight and post_attention_layernorm.weight \u2014 FULL-attention pairs",
+   "rule": "Arithmetic mean, identical to the linear-block rule: gamma_m = (gamma_1 + gamma_2)/2, fp32 accumulate, cast to f16.",
+   "justification": "Full-attention DecoderLayers use plain nn.RMSNorm with the same multiplicative-gain semantics (qwen3_5.py lines 218-221), so the same exact-linearity-in-gamma argument applies unchanged. Verified block 3 gains are also stored unshifted (mean 1.24)."
+  },
+  {
+   "param": "self_attn.q_norm.weight and self_attn.k_norm.weight (shape (256,) = head_dim, shared across heads, F16) \u2014 FULL-attention pairs only",
+   "rule": "Arithmetic mean: fp32 accumulate, cast to f16. Conditional on the merged q_proj/k_proj preserving head-channel correspondence.",
+   "justification": "These are standard per-channel RMSNorm gains applied to each head's q/k pre-RoPE, exactly linear in the gain for fixed normalized input, so the mean gain averages the two blocks' q/k shaping maps. They are shared across heads, so no per-head alignment is needed within the gain itself, but the 256 channel positions are defined relative to q_proj/k_proj output layout and must match the quantized projection merge."
+  }
+ ],
+ "linear_pairs_mergeable": true,
+ "caveats": [
+  "Head/row alignment is the binding constraint, not the averaging math: A_log and dt_bias are per-value-head (48,), and conv1d rows are per qkv-channel; their index-i entries only correspond across blocks if the quantized merge rule for in_proj_a/in_proj_b/in_proj_qkv/out_proj also treats index i as corresponding. merge.py must apply the SAME per-head/per-row combination scheme to FP params as to the quantized tensors (average with average, donor-select with donor-select). Empirically block 0's A_log is exactly constant across heads (-1.3359) so it is alignment-free, but block 1's is not (lambda in [0.57, 1.76]) \u2014 the caveat is real for general pairs.",
+  "A_log/dt_bias parameterize a nonlinear recurrence, not a feedforward map: parameter averaging averages per-token log-decay, not the sequence-level function. Pairs whose per-head lambda ratios are large (>~3x) get a merged timescale matching neither block; prefer pairs with small per-head |A_log_1 - A_log_2| and gate every merged linear pair through the existing KL screen before acceptance.",
+  "Both chosen means bias one-sidedly toward slower forgetting (Jensen on exp for A_log, on softplus for dt_bias): merged states retain memory slightly longer than the true average. Systematic, not random \u2014 watch for long-context degradation specifically in merged-pair screens.",
+  "All FP tensors are stored F16 in the pack (including A_log, despite mlx-lm's cast_predicate keeping it fp32 at runtime); compute all merges in fp32 (or fp64) and cast the merged tensor to f16 so the merged block is format-native. Surviving blocks' tensors remain byte-identical per the hard rule; merged tensors are new, which the rule permits.",
+  "Pack key prefix is language_model.model.layers.N. and conv1d is already in MLX layout (10240, 4, 1); do not apply the sanitize() moveaxis or +1 norm shift to pack tensors in merge.py.",
+  "The in-block gated norm's justification assumes the quantized in_proj_z (gate) merge is sane; the silu(z) gate multiplies the normed output elementwise, so a badly merged z-projection can mask or amplify FP-param merge quality \u2014 evaluate the pair as a unit, not param-by-param.",
+  "dt_bias averaging is exact only insofar as the merged in_proj_a output approximates the mean of the two blocks' a-logits; if the quantized a-projection merge deviates strongly from averaging, consider re-deriving dt_bias_m to match resting decay instead: choose dt_bias_m so that lambda_m*softplus(dt_bias_m) = mean_i(lambda_i*softplus(dt_bias_i)) (closed-form via inverse softplus), still training-free."
+ ]
+}

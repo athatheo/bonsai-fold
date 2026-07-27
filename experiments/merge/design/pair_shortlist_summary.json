@@ -1,0 +1,73 @@
+{
+ "top_pairs": [
+  {
+   "i": 4,
+   "j": 5,
+   "type": "linear_attention",
+   "mean_cos": 0.1531,
+   "rationale": "Rank 1. Adjacent (gap 1, cleanest algebra), 4th-best non-degenerate cos. Both in k8 set; two lowest BIs in the network (0.0208/0.0248); single KLs 0.0047/0.0038 on-policy and 0.038/0.042 off-policy. Enables matched merge[4,5] vs drop[4]/drop[5]/k-set comparisons."
+  },
+  {
+   "i": 18,
+   "j": 20,
+   "type": "linear_attention",
+   "mean_cos": 0.3178,
+   "rationale": "Rank 2. Highest non-degenerate cos in the scan (ceiling ~0.32) = most shared computation. Flags: gap 2 spanning full-attn block 19; block 18 BI 0.140 (3rd highest); neither member has measured single KL. High-risk/high-signal probe \u2014 merge preserves computation where drop would not."
+  },
+  {
+   "i": 17,
+   "j": 18,
+   "type": "linear_attention",
+   "mean_cos": 0.1671,
+   "rationale": "Rank 3. Adjacent; block 17 measured cheap (KL 0.0049 on / 0.0166 off, BI 0.035). Block 18 (BI 0.140) is the risky member \u2014 merging is the gentler way to touch it. Safer sibling of the 18-20 probe."
+  },
+  {
+   "i": 60,
+   "j": 61,
+   "type": "linear_attention",
+   "mean_cos": 0.1821,
+   "rationale": "Rank 4. Adjacent, benign BIs (0.048/0.051), away from untouchable block 63. Blocks 60-62 form a correlated late-network cluster (60-62 cos +0.095, 61-62 +0.187); safest entry. No single-drop KL measured yet."
+  },
+  {
+   "i": 61,
+   "j": 62,
+   "type": "linear_attention",
+   "mean_cos": 0.1866,
+   "rationale": "Rank 5. Best gap-1 cos outside the block-0 pair, but downranked vs 60-61: block 62 BI 0.085 (top-10) and sits directly before high-BI block 63 (BI 0.226). No single KLs measured."
+  },
+  {
+   "i": 1,
+   "j": 4,
+   "type": "linear_attention",
+   "mean_cos": 0.3154,
+   "rationale": "Rank 6. Second-highest cos but heavily flagged: block 1 is on the suspicious list with the highest measured off-policy single KL (0.113 vs 0.0076 on-policy); gap 3 spans suspicious block 2 (BI 0.132) and full-attn block 3; early network shows push-pull (1-2 cos -0.386). Flagged long-shot only."
+  },
+  {
+   "i": 5,
+   "j": 8,
+   "type": "linear_attention",
+   "mean_cos": 0.1238,
+   "rationale": "Rank 7. Both in k8, both measured cheap (KLs 0.0039/0.0035 on, 0.042/0.031 off; BIs 0.025/0.025) \u2014 strong matched-comparison value. But gap 3 must commute past linear block 6 (BI 0.102) and full-attn block 7; flag the gap hard."
+  },
+  {
+   "i": 13,
+   "j": 14,
+   "type": "linear_attention",
+   "mean_cos": 0.0958,
+   "rationale": "Rank 8. Adjacent; block 13 in k8 and measured cheap (KL 0.0037 on / 0.0177 off, BI 0.026); block 14 unmeasured (BI 0.058). Modest cos but clean algebra and half-matched to existing drop data."
+  }
+ ],
+ "anti_candidates": [
+  "1-2 (gap 1, cos -0.386): block 2's update anti-correlates with block 1's \u2014 merging would cancel computation; block 2 BI 0.132 is on the suspicious list. Worst non-block-0 pair.",
+  "6-8 (gap 2, cos -0.299): block 6 (BI 0.102) pushes opposite to block 8; do not merge across this pair.",
+  "8-10 (gap 2, cos -0.269): confirms an alternating push-pull pattern in blocks 2-14 \u2014 gap-2 pairs there are all negative (2-4 -0.257, 4-6 -0.226, 10-12 -0.147, 12-14 -0.130); gap-2 merges in this region are contraindicated."
+ ],
+ "notes": [
+  "Full table written to /Users/atheocharis/repos/bonsai-fold/experiments/merge/pair_shortlist.json (shortlist with per-member BI, on/off-policy single KLs, k8 overlap, flags; plus excluded pairs, anti-candidates, selection principles).",
+  "All 93 scanned pairs are linear_attention: full-attn blocks sit at stride 4 (indices 3,7,...,63), so no same-type full pair exists with gap <= 3. Block 15 (k8 member, full-attn) therefore has no eligible merge partner.",
+  "The 0-1 pair has the highest cos overall (+0.646) but is excluded: block 0 has BI 0.90 and is untouchable. Its mirror 0-2 is -0.641 (block 2 largely cancels the 0-1 update), explaining the fragile early-network structure.",
+  "Mid-network gap-1 pairs among k8 members are near-orthogonal (8-9 +0.038, 12-13 +0.027): members individually cheap to drop, but a merge buys little over a drop there \u2014 left off the top 8 deliberately.",
+  "Off-policy single KL runs ~4-15x on-policy for the same block; block 1 is the extreme outlier (0.0076 on vs 0.113 off), which is the main reason 1-4 is demoted despite cos +0.315.",
+  "Non-degenerate cos ceiling is low (~0.32, pair 18-20) vs the fp-merging literature regime; expect merges to beat drops modestly at best, so prioritize pairs 4-5 / 5-8 / 13-14 where matched drop baselines already exist."
+ ]
+}

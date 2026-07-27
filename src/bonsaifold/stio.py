@@ -178,6 +178,15 @@ def unpack_codes(packed_u32, bits):
     return codes.reshape(*packed_u32.shape[:-1], -1)
 
 
+def pack_codes(codes, bits):
+    """Exact inverse of unpack_codes: integer codes in [0, 2**bits) ->
+    LSB-first packed uint32 words."""
+    per_word = 32 // bits
+    c = codes.astype(np.uint32).reshape(*codes.shape[:-1], -1, per_word)
+    shifts = np.arange(per_word, dtype=np.uint32) * bits
+    return (c << shifts).sum(axis=-1, dtype=np.uint32)
+
+
 def infer_bits(weight_shape, scales_shape, group_size):
     """Bits per weight from a packed U32 weight [rows, packed_cols] and its
     scales [rows, cols/group_size]."""
