@@ -1,6 +1,6 @@
 # bonsai-fold — working rules
 
-Training-free depth compression (block dropping, format-native block merging) of PrismML's Bonsai 27B. 1-bit is the primary arm; ternary is the comparison arm and fallback. See docs/RESEARCH_PLAN.md and docs/BONSAI_FACTS.md.
+Training-free depth compression (block dropping, format-native block merging) of PrismML's Bonsai 27B. 1-bit is the ONLY arm — the ternary comparison arm (H2/H3) was cut by Thanasis on 2026-07-28; do not download or evaluate the ternary pack. (2-bit-format merged blocks *inside* the 1-bit model, via the Phase 3 promotion merge, are not the ternary arm and remain in scope.) See docs/RESEARCH_PLAN.md and docs/BONSAI_FACTS.md.
 
 ## Hard constraints
 - **Never alter surviving weight values.** Operators may delete blocks or produce merged blocks via the defined closed-form rules, but weights of surviving (unmerged) blocks are byte-identical to the originals. No training, no fine-tuning, no calibration-based weight updates of any kind.
