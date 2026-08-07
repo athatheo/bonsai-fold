@@ -1,0 +1,51 @@
+{
+ "vocab_size": 248320,
+ "distinct_tokens_used": 26493,
+ "total_tokens_counted": 552516,
+ "tokens_by_source": {
+  "calibration_set": 90814,
+  "probes_onpolicy": 109291,
+  "probes_offpolicy": 312067,
+  "minibench_prompts": 40344
+ },
+ "template_special_tokens": 9,
+ "unused_rows": 221827,
+ "unused_rows_saved_mb": 319.4,
+ "keep_cuts": [
+  {
+   "keep_rows": 200000,
+   "corpus_coverage": 1.0,
+   "deleted_rows": 48320,
+   "saved_mb": 69.6
+  },
+  {
+   "keep_rows": 150000,
+   "corpus_coverage": 1.0,
+   "deleted_rows": 98320,
+   "saved_mb": 141.6
+  },
+  {
+   "keep_rows": 100000,
+   "corpus_coverage": 1.0,
+   "deleted_rows": 148320,
+   "saved_mb": 213.6
+  },
+  {
+   "keep_rows": 64000,
+   "corpus_coverage": 1.0,
+   "deleted_rows": 184320,
+   "saved_mb": 265.4
+  },
+  {
+   "keep_rows": 26493,
+   "corpus_coverage": 1.0,
+   "deleted_rows": 221827,
+   "saved_mb": 319.4
+  }
+ ],
+ "caveats": [
+  "usage measured on our frozen English/math/code distribution only",
+  "model GENERATIONS beyond the frozen completions are not counted",
+  "input-side unseen tokens break hard on trimmed embed; output-side trim only restricts emissions \u2014 trim design must treat the two sides separately"
+ ]
+}
