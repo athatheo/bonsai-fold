@@ -1,0 +1,774 @@
+[
+ [
+  {
+   "method": "FP8-E4M3 scale quantization (NVFP4-style block scales)",
+   "source": "NVIDIA NVFP4 (developer.nvidia.com/blog/introducing-nvfp4-for-efficient-and-accurate-low-precision-inference; docs.nvidia.com Transformer Engine NVFP4); QLoRA uses FP8 for constants (arxiv.org/abs/2305.14314)",
+   "mechanism": "Round each f16 group scale to fp8-e4m3, plus one f32 per-tensor scale to renormalize dynamic range into e4m3's +/-448 (exactly NVFP4's hierarchical scale scheme, applied to our g128 1-bit groups instead of fp4 blocks). Kernels decode e4m3->f16 inline (few ALU ops or a 256-entry LUT).",
+   "training_free": "YES \u2014 pure re-rounding of existing scales; no data, no gradients, no calibration.",
+   "inference_native": "YES with a small kernel patch \u2014 the fp8 scale is what the qmm kernel reads. MLX mainline already decodes e4m3 scales in its nvfp4 mode, so the decode path exists to copy into the 1-bit affine kernel.",
+   "metal_feasible": "YES, kernel-trivial in the patched MLX fork: swap the half scale load for a byte load + e4m3 decode. Precedent code in mlx nvfp4 mode.",
+   "est_savings": "Scales 0.125->0.0625 bpw; saves 0.0625 bpw = 210.9 MB = 5.56% of the 3.797 GB model (50% of the 421.9 MB scale metadata). New total 1.0625 bpw.",
+   "notes": "CONSTRAINT-CROSSING (rule 4): modifies stored scale values; max relative rounding error 2^-4 = 6.25% per scale (3 mantissa bits), typical RMS ~2-3%. In a 1-bit format every dequantized weight is sign*scale+bias, so scale error perturbs all 128 weights of the group directly \u2014 expect measurable within-format KL, must be benchmarked like a fold. Ceiling context: deleting ALL scale metadata caps at 11.1% of bytes. Caveat: stated format is f16 scale+bias per 128 (arithmetic 1.25 bpw, quoted 1.125) \u2014 if a separate f16 group bias exists, every method here applies to it identically and absolute savings double (~422 MB at 8-bit for scale+bias)."
+  },
+  {
+   "method": "Double quantization of scales (QLoRA-style DQ: int8/fp8 scales + second-level f32 per 256 groups)",
+   "source": "QLoRA, Dettmers et al. 2023, Sec. 'Double Quantization' (arxiv.org/abs/2305.14314); bitsandbytes implementation",
+   "mechanism": "Treat the 210.9M f16 scales as a tensor; blockwise (256 scales/block) affine-quantize them to 8-bit after subtracting per-block min, keeping one f32 second-level scale (+min) per block. Kernel does a two-level dequant: fetch u8 scale, multiply by the block's f32 second-level constant.",
+   "training_free": "YES \u2014 min/max statistics over existing scales only; QLoRA's DQ needs no calibration data.",
+   "inference_native": "YES with kernel patch \u2014 bitsandbytes' 4-bit inference kernels consume DQ'd constants directly; same structure portable to MLX qmm (one extra scalar fetch per 256 groups, amortized to noise).",
+   "metal_feasible": "YES, modest: add second-level constant buffer + one fused multiply in the 1-bit qmm kernel of the fork. llama.cpp proves two-level scale dequant runs fine in Metal.",
+   "est_savings": "Scales 0.125->0.0635 bpw; saves 0.0615 bpw = 207.6 MB = 5.47% of model bytes. New total 1.0635 bpw. (QLoRA's quoted 0.373 bpw saving was for 4-bit g64 f32 scales; our f16 g128 baseline yields the smaller number.)",
+   "notes": "CONSTRAINT-CROSSING: re-rounds scale values (256 levels per block; error small unless scales within a 256-group block span a huge range \u2014 check per-tensor scale histograms first, experiments/census). Slightly worse ratio than flat fp8 but better accuracy when scale distributions are wide, since the second level adapts per block. Same 1-bit sensitivity caveat as fp8 scales."
+  },
+  {
+   "method": "GGUF k-quant superblock scheme adapted to 1-bit (6-bit sub-scales + one f16 super-scale per 8 groups)",
+   "source": "llama.cpp k-quants (Q4_K/Q6_K design; apxml.com GGUF format docs; zeroentropy.dev/concepts/gguf; kaitchup.substack.com k-quants guide)",
+   "mechanism": "Group 8 consecutive g128 scales into a 1024-weight superblock; store one f16 super-scale (max) plus 6-bit integer sub-scales relative to it: s_i = q6_i * s_super/63. This is exactly Q4_K's double-quantized-scales trick with our group geometry.",
+   "training_free": "YES \u2014 max + rounding over existing scales.",
+   "inference_native": "YES \u2014 this is llama.cpp's shipping on-disk format; kernels consume it directly with no dense intermediate.",
+   "metal_feasible": "YES \u2014 the strongest Apple Silicon precedent of all options: llama.cpp's Metal kernels already do this exact two-level scale decode on M-series GPUs. Porting the pattern into the fork's 1-bit qmm is a contained change.",
+   "est_savings": "6 + 16/8 = 8 bits/group: 0.125->0.0625 bpw; saves 0.0625 bpw = 210.9 MB = 5.56% of model bytes. New total 1.0625 bpw.",
+   "notes": "CONSTRAINT-CROSSING: modifies scales, but gently \u2014 6-bit linear sub-scale gives ~0.8% max error near the superblock max (worse for small scales in a superblock with outlier max). Likely the best accuracy-per-saved-byte of the 8-bit-class options and the least kernel risk. Composes orthogonally with block dropping/merging (metadata shrinks with whatever blocks survive)."
+  },
+  {
+   "method": "SpQR-style bilevel int3 quantization of quantization statistics",
+   "source": "SpQR, Dettmers et al. (arxiv.org/abs/2306.03078, ICLR 2024): 3-bit scales/zeros in second-level groups of 16 sharing f16 second-level scale+zero",
+   "mechanism": "Asymmetric min-max quantize the f16 scales themselves to 3-bit integers; every 16 scale-codes share an f16 second-level scale and f16 zero-point. Our biases (zeros) could be handled identically per the SpQR recipe.",
+   "training_free": "YES \u2014 min/max over existing statistics (SpQR's outlier/weight parts need calibration, but the bilevel-statistics component alone does not).",
+   "inference_native": "YES with kernel work \u2014 SpQR ships fused GPU kernels consuming the bilevel format; nothing dense is materialized.",
+   "metal_feasible": "PLAUSIBLE, more intricate than the 8-bit options: 3-bit unpack + two-level dequant in the 1-bit qmm kernel. Within 'modest kernel changes' but the fiddliest of the list.",
+   "est_savings": "3 + 32/16 = 5 bits/group: 0.125->0.0391 bpw; saves 0.0859 bpw = 290.0 MB = 7.64% of model bytes. New total 1.0391 bpw.",
+   "notes": "CONSTRAINT-CROSSING with the largest value distortion of the practical options (8 levels per 16-scale window). SpQR validated this at 3-4-bit weights near-losslessly; at 1 bpw the scales carry ALL magnitude information, so damage must be measured within-format before trusting it. Best compression short of dictionary-4bit."
+  },
+  {
+   "method": "HQQ metadata quantization (deployed precedent: 8-bit scales g128, 8-bit zero-points)",
+   "source": "HQQ, Badri & Shaji, Dropbox (dropbox.github.io/hqq_blog; github.com/dropbox/hqq quantize.py: quant_scale=8-bit group-128, quant_zero=8-bit)",
+   "mechanism": "HQQ's meta-data option: quantize scales to int8 with group-size 128 over the scale tensor and zeros to int8 \u2014 i.e. shipping, calibration-free double quantization in a production library since 2023-2024. Only the metadata step applies to us; HQQ's weight solver must NOT be run (it would alter weights).",
+   "training_free": "YES \u2014 explicitly calibration-free; closed-form rounding of existing metadata.",
+   "inference_native": "YES in HQQ's own backends (torch/CUDA fused); for us same status as DQ: needs the MLX fork kernel to consume int8 scales + per-128 f16/f32 second-level constants.",
+   "metal_feasible": "YES, modest \u2014 structurally identical kernel change to the QLoRA-DQ row.",
+   "est_savings": "8 + 16/128 = 8.125 bits/group: 0.125->0.0635 bpw; saves ~0.0615 bpw = ~207 MB = 5.5% of model bytes.",
+   "notes": "CONSTRAINT-CROSSING (modifies scale/bias values). Value of this entry is precedent: proves 8-bit metadata over 1-bit-class weights is field-tested (HQQ supports 1-bit weight mode with quantized metadata). Their reported quality loss from metadata quantization at low bits was small but nonzero; they chose g128 over the scales specifically to bound it."
+  },
+  {
+   "method": "E8M0 power-of-two scales (OCP Microscaling / MXFP-style)",
+   "source": "OCP MX spec via MXFP4 literature (emergentmind.com/topics/microscaling-fp4-quantization; NVFP4-vs-MXFP4 comparisons, spheron.network guide; MLX mxfp4/mxfp8 modes, ml-explore docs)",
+   "mechanism": "Replace each f16 scale with an 8-bit pure exponent (power of two); dequant becomes an exponent add / bit-shift, no multiply.",
+   "training_free": "YES \u2014 nearest-power-of-two rounding.",
+   "inference_native": "YES \u2014 this is the one format mainline MLX already consumes natively (mxfp4/mxfp8 modes use e8m0 shared scales).",
+   "metal_feasible": "YES, the most kernel-trivial of all: e8m0 decode already exists in upstream MLX Metal kernels; also note mx modes carry NO bias, so adapting to our affine (scale+bias) 1-bit groups still needs the fork.",
+   "est_savings": "0.125->0.0625 bpw; saves 0.0625 bpw = 210.9 MB = 5.56% of model bytes.",
+   "notes": "CONSTRAINT-CROSSING and the WORST accuracy option: nearest-power-of-two rounding has up to ~33% relative scale error (literature consistently shows e8m0 losing to e4m3 scales; MR-GPTQ closes the gap only via rotations, which are weight-modifying and off-limits). For a 1-bit model where scale is the only magnitude signal, expect the largest within-format damage. Report for completeness; recommend against."
+  },
+  {
+   "method": "Shared/dictionary scales (per-tensor k-means codebook + 8-bit or 4-bit index; LUT kernel)",
+   "source": "LUT/codebook kernel literature: SqueezeLLM (arxiv.org/abs/2306.07629, k-means codebooks, calibration-free variant); 'Highly Optimized Kernels and Fine-Grained Codebooks for LLM Inference' (arxiv.org/abs/2501.00032) for codebook-kernel viability",
+   "mechanism": "Cluster each tensor's ~M group scales with k-means (k=256 or 16); store per-group index + tiny f16 codebook (512 B or 32 B per tensor). Kernel resolves scale via LUT held in threadgroup/constant memory \u2014 one extra indexed load.",
+   "training_free": "YES \u2014 k-means over existing scale values only; selection/clustering, no data, no gradients.",
+   "inference_native": "YES \u2014 codebook-lookup kernels count as native per the task rules, and LUT-in-shared-memory kernels are proven on GPUs and Arm; nothing dense is materialized.",
+   "metal_feasible": "YES, trivial: a 256-entry half LUT fits easily in Metal threadgroup/constant memory; adding one lookup to the fork's 1-bit qmm is a small patch.",
+   "est_savings": "k=256/8-bit index: saves 0.0625 bpw = 210.9 MB = 5.56% (new 1.0625 bpw). k=16/4-bit index: saves 0.0938 bpw = 316.4 MB = 8.33% of model bytes (new 1.0312 bpw) \u2014 the biggest saving on this list.",
+   "notes": "Generally CONSTRAINT-CROSSING (snaps scales to centroids), BUT this is the one method with a potentially NON-crossing lossless special case: f16 scales have limited distinct bit patterns, and if a tensor's empirical distinct-scale count is <=256 (or <=65536 for a shared cross-tensor dictionary), the dictionary re-encoding is byte-exact value-preserving \u2014 pure storage relayout, fully inside rule 4. Cheap to check now from the existing census: count unique f16 scale values per tensor. At 4-bit/k=16 error grows; validate within-format."
+  },
+  {
+   "method": "NF-scale / quantile 8-bit coding of scales (NormalFloat-style code for the scale distribution)",
+   "source": "Quantile quantization + NF4 machinery from QLoRA (arxiv.org/abs/2305.14314), applied to metadata; equivalent in kernel terms to the dictionary row",
+   "mechanism": "Build a 256-entry code from the empirical quantiles (or fitted log-normal quantiles) of each tensor's scale distribution instead of linear int8 levels; store 8-bit code per group + 256-entry f16 decode table. Group scales are approximately log-normal, so quantile spacing beats linear int8/fp8 on SQNR at equal bits.",
+   "training_free": "YES \u2014 quantiles of existing scales; no calibration data.",
+   "inference_native": "YES \u2014 identical kernel to the dictionary/codebook row (256-entry LUT); NF4 decode-by-LUT is standard practice in bitsandbytes kernels.",
+   "metal_feasible": "YES, trivial (same LUT patch as dictionary scales).",
+   "est_savings": "0.125->0.0625 bpw (+512 B/tensor table); saves 0.0625 bpw = 210.9 MB = 5.56% of model bytes.",
+   "notes": "CONSTRAINT-CROSSING (re-rounds scales to quantile levels), but expected lowest distortion among the flat-8-bit family \u2014 strictly dominates linear int8 and usually fp8-e4m3 for log-normal scale distributions, at identical kernel cost. Practically it is the dictionary method with a smarter codebook; a k-means codebook (previous row) is MSE-optimal and should be preferred unless quantile construction is wanted for its distribution-free simplicity. Summary across all rows: hard ceiling 11.1% of bytes (421.9 MB) if scale metadata vanished entirely; realistic training-free range 5.5-8.3%; every option except the lossless-dictionary special case violates the weight-value-preservation rule and must be gated on within-format damage benchmarks (folded-vs-unfolded protocol), with the DSpark drafter already disabled per project rules."
+  }
+ ],
+ [
+  {
+   "method": "Static vocabulary trimming (multilingual-to-target-language row deletion of embed + lm_head, tokenizer pruned to match)",
+   "source": "Ushio et al., EMNLP 2023 Findings (arxiv.org/abs/2305.15020, aclanthology.org/2023.findings-emnlp.981); SqueezeBits blog (blog.squeezebits.com/vocabulary-trimming-methods); KaihuaTang/Qwen-Tokenizer-Pruner (github.com/KaihuaTang/Qwen-Tokenizer-Pruner); jordddan/Pruning-LLMs",
+   "mechanism": "Rank the 248320 tokens by frequency on a target-language/domain corpus (or Unicode-script filter), keep top-k plus all special tokens and the 256 byte-level base tokens; delete the complementary rows from BOTH embedding and lm_head, prune the BPE merge rules whose products were deleted (maintaining merge closure), and remap token ids consistently across tokenizer/embed/lm_head. Qwen-Tokenizer-Pruner does exactly this for Qwen-family byte-level BPE (Bonsai's base is Qwen3.6-27B per docs/BONSAI_FACTS.md) and offers a 'lossless' mode with an old-vs-new tokenizer equivalence check on a support corpus.",
+   "training_free": "YES \u2014 pure row selection/deletion; no gradients, no calibration-based weight updates. Corpus frequency counting is selection, not optimization of weight values.",
+   "inference_native": "YES \u2014 surviving rows stay byte-identical 1-bit g128 (groups run along hidden dim: 5120/128 = 40 groups per row, so each vocab row is a self-contained run of u32 sign words + f16 scale/bias pairs; row deletion is pure slicing, no repacking). The trimmed matrices are consumed by the exact same quantized kernels.",
+   "metal_feasible": "YES \u2014 vendored MLX fork has nn.QuantizedEmbedding (native quantized lookup) and quantized matmul with arbitrary row count; keep trimmed vocab a multiple of 128 for alignment safety. No kernel changes needed.",
+   "est_savings": "Embed+lm_head = ~357 MB of the 4.21 GB language pack (untied, 2 x 179 MB at 1.125 bpw). Keep 80k rows: ~242 MB saved; keep 64k: ~265 MB; keep 32k: ~311 MB (~6-7% of pack). Plus proportional lm_head GEMV cut per decode token (small % of 27B decode; SqueezeBits' 1.585x decode speedup was on 1B tied-embedding models where embeddings dominate \u2014 expect low-single-digit % speedup here, memory is the real win).",
+   "notes": "Measured quality: Ushio VT \u2014 trimming mT5/XLM-R to a 35% compression rate kept original QA/QG performance (39% NLI, 55% sentiment), sometimes exceeding the untrimmed model. SqueezeBits \u2014 up to ~40% frequency-based trim with stable English/Korean benchmark scores. Tokenizer interaction (the crux): INPUT side crashes only if the tokenizer can still emit a deleted id, so either prune merges coherently (byte-level BPE falls back to shorter subtokens; all text stays encodable because the 256 byte tokens are the alphabet floor) or use lossless mode guaranteeing identical tokenization on the support corpus. OUTPUT side never crashes \u2014 deleted rows are simply ungenerable and the softmax silently renormalizes. Never delete: chat-template/thinking-tag specials (Bonsai convention item 7) or byte tokens (needed to emit arbitrary unicode). Caveat for our harness: off-policy KL vs the unfolded baseline needs an id-permutation map to align logits; commit the remap table with the pack. Best fit of all surveyed methods with bonsai-fold constraints; orthogonal to block dropping (composes additively with H4 merges)."
+  },
+  {
+   "method": "Output-side-only lm_head row trimming (frequency-ranked static subset; input embeddings and tokenizer untouched)",
+   "source": "FR-Spec, ACL 2025 (arxiv.org/abs/2502.14856, github.com/thunlp/FR-Spec); VocabTrim (arxiv.org/abs/2506.22694); classic NMT vocabulary selection (L'Hostis et al. 2016)",
+   "mechanism": "Delete only lm_head rows for tokens outside a frequency-ranked subset (FR-Spec uses top-32k of a 128k+ vocab); the full tokenizer and full input embedding matrix are kept, so every input encodes exactly as before and the model retains full multilingual understanding \u2014 only its GENERATION vocabulary shrinks. FR-Spec/VocabTrim apply this to speculative-decoding drafters; the same row selection applies directly to the target model's lm_head.",
+   "training_free": "YES \u2014 frequency-ranked row selection, no weight modification (both papers are explicitly retraining-free).",
+   "inference_native": "YES \u2014 same row-slicing argument as full trimming; surviving lm_head rows byte-identical 1-bit g128.",
+   "metal_feasible": "YES \u2014 smaller quantized GEMV with existing kernels; nothing new needed.",
+   "est_savings": "lm_head only: 179 MB total; keep 64k rows saves ~133 MB, keep 32k saves ~156 MB. Logit GEMV compute per decode token cut 74-87% (FR-Spec reports 75% LM-head compute reduction at top-32k).",
+   "notes": "Safest first step and the cleanest answer to the input-vs-output asymmetry: zero tokenizer risk, zero input-side unseen-token handling, no id remapping on the input path (keep original ids, only compact the lm_head with an output-id map). IMPORTANT distribution caveat: FR-Spec preserves the exact output distribution only because the full target model verifies drafts \u2014 that exactness does NOT transfer to us since bonsai-fold disables speculative decoding on folded models (DSpark drafter constraint); a standalone trimmed lm_head renormalizes probability over surviving rows, so it is lossy-but-tiny for frequency-selected subsets (long-tail token mass). Evidence the tail is negligible: FR-Spec's premise that vocabulary usage is heavily long-tailed; VocabTrim shows drafter acceptance rates largely preserved after trimming. Deleted-token effect at output: those tokens can never be sampled \u2014 verify thinking-tag and template specials retained. Damage should be gated with the project's within-format KL harness against the 4-bit-KV noise floor (0.0009/0.0023 nats, Table 6)."
+  },
+  {
+   "method": "Dynamic vocabulary-restricted decoding (VocabTailor-style hybrid: per-input dynamic + task-static lm_head subset, computed via gathered quantized matmul)",
+   "source": "VocabTailor (arxiv.org/abs/2508.15229)",
+   "mechanism": "Keep tokenizer and embedding intact (embedding lookup is cheap/sparse; VocabTailor offloads it to CPU); at runtime compute logits only over a union of (a) token ids present in the current input/prompt and (b) an offline-profiled task-specific static set \u2014 exploiting 'lexical locality'. No weights are modified or deleted from disk; the restriction is applied at the matmul.",
+   "training_free": "YES \u2014 only offline dataset profiling to build the static set; no weight changes at all.",
+   "inference_native": "YES \u2014 implementable as a row-gather over the untouched 1-bit lm_head; the vendored MLX fork already ships gather_qmm (vendor/mlx/benchmarks/python/gather_qmm_bench.py), so gathered quantized matmul over selected rows is an existing Metal kernel, not new backend work.",
+   "metal_feasible": "YES \u2014 gather_qmm exists in the fork; modest glue code only. On the 64 GB M4 Max, CPU-offload of embeddings is unnecessary \u2014 the win here is compute, not memory.",
+   "est_savings": "0 bytes on disk (weights untouched \u2014 strongest possible weight-value preservation); up to ~90% of lm_head GEMV FLOPs per decode token at ~10% effective vocab. Peak-memory savings only matter on smaller devices.",
+   "notes": "Measured (Llama-3.2-1B, Qwen-1.7B class): code completion 53.87% Pass@1 at 11.2% vocab (naive static-only pruning collapses to 8.1%); information extraction F1 62.7 at 0.08% vocab vs 38.4 full (restriction acted as beneficial constraint); MT EN-ZH improved at 12.5% vocab; summarization/math undegraded at 16-55% retention; tolerance threshold tau=0.01 bounds worst-case loss. Input/output asymmetry is the paper's core insight: input side must stay full (tokenizer + embeddings) because unseen input tokens are common; output side tolerates aggressive restriction because generation draws from a small locality. Task-conditional, not general chat \u2014 fits benchmark-style evals better than open-ended use. Also renormalizes the output distribution (same caveat as static output trimming)."
+  },
+  {
+   "method": "Embedding matrix sharing / post-hoc weight tying (replace lm_head with embedding rows or vice versa to store one matrix instead of two)",
+   "source": "Press & Wolf 2017 (Using the Output Embedding to Improve LMs); 'Weight Tying Biases Token Embeddings Towards the Output Space' (arxiv.org/abs/2603.26663)",
+   "mechanism": "Tied models store one matrix used for both input lookup and output projection. Bonsai is UNTIED (docs/BONSAI_FACTS.md: embeddings/LM head ~2.5B = two separate 1.27B matrices), so the only training-free move is post-hoc substitution of one matrix for the other.",
+   "training_free": "YES in mechanics (copy/substitute), but see notes \u2014 it is effectively a wholesale value replacement of one matrix.",
+   "inference_native": "YES trivially (same format, one matrix).",
+   "metal_feasible": "YES trivially.",
+   "est_savings": "Would save ~179 MB (one full matrix) \u2014 but unusable.",
+   "notes": "RULED OUT on measured evidence, report as negative result. The 2026 tying-bias study shows untied models learn near-orthogonal input vs output spaces (tied matrices align with untied OUTPUT matrices at mean cosine 0.719, but untied input vs output matrices show limited similarity even after fitting a linear map) \u2014 substituting one for the other in an untied model destroys either input encoding or next-token prediction. Also constraint-crossing in spirit: the substituted role receives entirely wrong 'values'. FLAGGED: value-modifying-equivalent and quality-catastrophic; do not spend GPU time on it beyond, at most, one cheap KL sanity probe if a table row is wanted."
+  },
+  {
+   "method": "Low-rank / tensor-train embedding factorization (TensorGPT TT-decomposition; ALBERT-style SVD factorization of embed/lm_head)",
+   "source": "TensorGPT (arxiv.org/abs/2307.00526); ALBERT (Lan et al. 2020) for the SVD-factorization pattern",
+   "mechanism": "Replace the [vocab x hidden] matrix with low-rank or Matrix-Product-State factors reconstructed at lookup time. TensorGPT converts each token embedding to an MPS via closed-form tensor-train decomposition (no gradient training).",
+   "training_free": "TensorGPT: YES (closed-form TTD, no fine-tuning). SVD variants: YES in closed form, though most published pipelines add recovery fine-tuning.",
+   "inference_native": "NO for bonsai-fold \u2014 factors must be computed on DEQUANTIZED f16 embeddings, so the stored form is FP factor cores, not the 1-bit g128 format the kernels consume; re-quantizing factors to 1-bit is a second lossy value modification with no published evidence at this scale. Input-side lookup (reconstruct one row per token) could be made cheap, but the lm_head side needs either dense reconstruction per step (a decompress-to-dense step, explicitly disallowed) or new factored-projection Metal kernels (beyond 'modest kernel changes').",
+   "metal_feasible": "NOT without new kernels for MPS-form projection; no existing MLX/Metal support.",
+   "est_savings": "Reference only: 39-66x embedding-layer compression on GPT-2/CerebrasGPT scale with comparable task performance at ~2-3x compression (some settings beat baseline). Numbers are from FP models under ~1B params; unvalidated at 27B/1-bit.",
+   "notes": "FLAGGED: constraint-crossing on (2) inference-native and (4) value preservation \u2014 every reconstructed embedding is an approximation of the original values, and interaction between TT approximation error and 1-bit quantization error is uncharacterized. Report for completeness; do not implement."
+  },
+  {
+   "method": "Hash / compositional / Kronecker embeddings (shared-parameter embedding tables)",
+   "source": "Svenstrup et al. 2017 (Hash Embeddings, NeurIPS); Kronecker byte-level embeddings (arxiv.org/abs/2605.29459)",
+   "mechanism": "Represent each token as a learned combination of a small shared pool of component vectors selected by hash functions (or Kronecker-structured byte-level factors), so the table size is decoupled from vocab size.",
+   "training_free": "NO \u2014 the component vectors and importance weights must be learned; there is no closed-form conversion from an existing dense (let alone 1-bit) embedding matrix.",
+   "inference_native": "N/A (fails constraint 1 first); would also need custom lookup kernels.",
+   "metal_feasible": "N/A.",
+   "est_savings": "N/A (order-of-magnitude table reductions in from-scratch training regimes only).",
+   "notes": "EXCLUDED outright by the training-free hard constraint. Listed so the survey is complete and nobody re-litigates it later."
+  },
+  {
+   "method": "Practical playbook for row deletion vs the Bonsai tokenizer (cross-cutting engineering notes for whichever trim variant is chosen)",
+   "source": "Synthesis of the above + repo facts (docs/BONSAI_FACTS.md; vendor/mlx); Qwen-Tokenizer-Pruner for the Qwen-specific procedure",
+   "mechanism": "Bonsai inherits Qwen3.6's byte-level BPE. Input-side safety invariant: an embedding row may be deleted only if the (possibly pruned) tokenizer can never emit its id \u2014 guaranteed by keeping the 256 byte-alphabet tokens plus maintaining merge closure (delete every merge producing a deleted token and every merge downstream of it); text containing trimmed tokens then encodes as more, shorter tokens (mild, familiar-to-model segmentation shift; Qwen-Tokenizer-Pruner's lossless mode verifies encode-equivalence on a support corpus). Output-side invariant: lm_head row deletion is always crash-safe; it silently renormalizes the softmax and makes deleted tokens ungenerable \u2014 so byte tokens and all chat-template/thinking-tag specials must survive or the model loses the ability to emit arbitrary unicode / follow the template. Update SPECIAL_START_ID-style config offsets after remapping (Qwen-pruner gotcha).",
+   "training_free": "YES (procedure, not a method).",
+   "inference_native": "YES \u2014 g128 groups lie along hidden dim (40 groups per 5120-wide row), so vocab-dim row slicing never splits a quantization group; surviving rows are byte-identical. Keep the trimmed vocab a multiple of 128 for kernel alignment comfort.",
+   "metal_feasible": "YES \u2014 nn.QuantizedEmbedding + standard/gathered quantized matmul all present in the vendored MLX fork.",
+   "est_savings": "See per-method rows; combined ceiling ~311 MB (~7% of 4.21 GB pack) at 32k retained vocab, both matrices.",
+   "notes": "Evaluation-harness caveats specific to bonsai-fold: (1) within-format KL comparisons vs the unfolded 1-bit baseline require an id-alignment map after any remap (compare in original-id space); (2) on-policy generation evals must confirm thinking-mode tags still open/close (sampling: temp 0.7, top-p 0.95, top-k 20, thinking on); (3) speculative decoding is already disabled on folded models, so no drafter/vocab interaction to manage; (4) vocab trimming composes with block dropping/merging \u2014 memory savings are additive and independent, matching pending task #10 (orthogonal-axis compression, width/vocab censuses); (5) recommended damage gate: forward-KL vs unfolded on the standard corpora, judged against the 4-bit-KV noise floor (0.0009 on-policy / 0.0023 off-policy nats)."
+  }
+ ],
+ [
+  {
+   "method": "MLX native sparse matmul kernels (N:M, CSR, general) \u2014 status check",
+   "source": "https://github.com/ml-explore/mlx/issues/2728 (closed won't-fix); https://github.com/ml-explore/mlx/pull/2796 (closed unmerged May 2026); https://github.com/ml-explore/mlx/issues/148 (merged into #2728)",
+   "mechanism": "N/A \u2014 none exist. Issue #2728 '[Feature] Kernels for sparse matmuls' was marked won't-fix by maintainer zcbenz (Mar 2026) citing JAX's abandoned jax.experimental.sparse as precedent ('no active development on sparse matrix in other frameworks'), closed May 2026. PR #2796 implemented sparse_matmul_csr with a working Metal backend (tested M2 Pro) but was closed unmerged \u2014 maintainer: 'proper support for sparse APIs would require considerable refactoring.' No N:M kernels exist or are planned anywhere in MLX.",
+   "training_free": "n/a",
+   "inference_native": "n/a",
+   "metal_feasible": "Upstream MLX: no, and explicitly won't-fix as of Mar 2026. The rejected #2796 CSR Metal kernel code exists and could be salvaged into our patched fork, but it targets f32/f16 dense values, not the packed 1-bit format.",
+   "est_savings": "none available off the shelf",
+   "notes": "Definitive answer to the headline question: upstream MLX has no sparse matmul story and has formally declined one. Anything sparse on our stack must come from our own fork patches."
+  },
+  {
+   "method": "mx.block_masked_mm (MLX built-in block-masked matmul)",
+   "source": "https://ml-explore.github.io/mlx/build/html/python/_autosummary/mlx.core.block_masked_mm.html",
+   "mechanism": "Matmul where 32x32 or 64x64 blocks are masked out and skipped. This is MLX's only shipping block-sparse compute primitive.",
+   "training_free": "yes (a mask is pure selection)",
+   "inference_native": "NO for our model \u2014 it consumes dense f16/f32 operands only. There is no quantized variant: it cannot read the u32-packed 1-bit + g128 scale/bias format, so using it would require dequantize-to-dense (violates constraint 2). Also mask-style: masked blocks are still stored, so zero memory savings.",
+   "metal_feasible": "yes, it ships in MLX Metal today \u2014 but only for dense tensors",
+   "est_savings": "0 bytes; compute-only, and unusable on quantized weights without a new masked-qmm kernel",
+   "notes": "Confirms MLX/Metal can do block-skip matmul in principle. A 'block_masked_qmm' marrying this with quantized.h's QuantizedBlockLoader does not exist and would be our kernel work (see g128 group-sparsity finding)."
+  },
+  {
+   "method": "gather_mm / gather_qmm (MLX quantized gather matmul, ex block_sparse_qmm)",
+   "source": "https://github.com/ml-explore/mlx/pull/1124 (BlockSparseQMM); https://github.com/ml-explore/mlx/pull/2040; deepwiki.com/ml-explore/mlx/7.2-metal-backend-implementation (GatherQMM section)",
+   "mechanism": "Index-gathered quantized matmul built for MoE routing: selects whole weight matrices/slices by index and runs the fused 1-bit-capable quantized kernel on them. Despite the original 'block_sparse_qmm' name, it is matrix-granularity selection, not intra-matrix sparsity.",
+   "training_free": "yes (index selection)",
+   "inference_native": "yes \u2014 operates directly on the packed quantized format",
+   "metal_feasible": "yes, shipping in MLX Metal today, including for quantized weights",
+   "est_savings": "none for weight compression per se; relevant only if we ever express folded blocks as a gathered subset of stored blocks",
+   "notes": "The only 'sparse-named' kernel family in MLX that actually composes with our 1-bit format. Granularity is far too coarse for weight sparsity, but it is the existence proof that selection-style kernels over the quantized format are native on this stack."
+  },
+  {
+   "method": "mlx-sparse (third-party COO/CSR/CSC package for MLX)",
+   "source": "https://github.com/waleed-sh/mlx-sparse (announced in mlx#2728/#148 threads, May 2026); https://mlx-sparse.readthedocs.io",
+   "mechanism": "MLX-native sparse array containers with sparse-dense and sparse-sparse ops; C++ CPU/Accelerate backends, Metal kernels only 'when and where available'. Early beta, single-author, APIs unstable, no CUDA.",
+   "training_free": "yes (it's a linear-algebra package)",
+   "inference_native": "no for us \u2014 stores f32/f16 values; no composition with MLX's quantized format, no N:M, not built for LLM decode paths",
+   "metal_feasible": "partially (some Metal kernels), but not production-grade and not quantization-aware",
+   "est_savings": "n/a",
+   "notes": "The only living sparse-MLX code as of mid-2026. Useful as reference Metal sparse-kernel code if we build our own, not as a deployment path for a 27B 1-bit decoder."
+  },
+  {
+   "method": "Sparse-BitNet (MSR, Mar 2026) \u2014 joint 1.58-bit + N:M sparsity",
+   "source": "arXiv:2603.05168; https://www.microsoft.com/en-us/research/publication/sparse-bitnet-1-58-bit-llms-are-naturally-friendly-to-semi-structured-sparsity/; https://github.com/AAzdi/Sparse-BitNet",
+   "mechanism": "Trains BitNet with dynamic 6:8 (primary) or 2:4 N:M masks recomputed every step from FP master weights ('we train Sparse-BitNet from scratch, optimizing the master weights end-to-end'). Key result: 1.58-bit models tolerate N:M far better than FP (2:4: +5.7% normalized PPL vs +18.8% for BF16). Speedup <=1.30x via an in-house 6:8 sparse operator on NVIDIA A100/B200.",
+   "training_free": "NO \u2014 requires sparse pretraining or dense-to-sparse schedules; the paper shows late/post-hoc sparsification degrades badly and offers no post-training recipe. Hard fail on constraint 1.",
+   "inference_native": "yes on their stack (custom sparse operator), but that stack is CUDA",
+   "metal_feasible": "no \u2014 kernels are NVIDIA-only; Apple M4 GPUs have no sparse tensor units and Metal/MPS exposes no N:M path",
+   "est_savings": "<=1.30x speedup on NVIDIA; memory saving ~0 at these bit-widths (see next finding)",
+   "notes": "No successors/follow-ups found yet (paper is ~5 months old, models 0.5B-3B). The transferable nugget for us is the accuracy claim only: extreme-low-bit weights are unusually robust to structured masking \u2014 mild supporting evidence for our deletion-based program, not a deployable method."
+  },
+  {
+   "method": "N:M semi-structured sparsity applied to 1-bit weights (any variant) \u2014 arithmetic dead-end",
+   "source": "own analysis from the pack format (u32 sign bits + f16 scale/bias per g128, ~1.125 bpw)",
+   "mechanism": "Storage accounting: dense 1-bit costs 4 bits per 4 weights. 2:4 sparse costs 2 sign bits + position metadata: 4 bits with NVIDIA-style 2-bit-per-survivor encoding (6 total), or log2(C(4,2))=2.58 bits at the information-theoretic optimum (4.58 total). Either way >= 4 bits dense. 6:8: 6 sign bits + log2(C(8,6))=4.8 bits = 10.8 vs 8 dense. At ~1 bpw the mask metadata costs more than the weights it removes.",
+   "training_free": "yes (magnitude/Wanda-style mask selection would be training-free)",
+   "inference_native": "no encoding exists that is both smaller than dense and consumable by any Apple Silicon kernel",
+   "metal_feasible": "no \u2014 and even with kernels it would be pointless: memory savings are NEGATIVE, and the remaining upside (compute skip) is worthless because M4 Max decode is memory-bandwidth-bound and Apple GPUs have no sparse tensor units",
+   "est_savings": "negative memory delta (~+15-50% on the sign payload depending on encoding); ~0 latency",
+   "notes": "This is the decisive argument, independent of the kernel gap: semi-structured sparsity is self-defeating at 1 bpw. Sparsity only pays on this format at granularities where deleted units carry their own scale/bias metadata \u2014 i.e., whole g128 groups, rows, or larger (next two findings)."
+  },
+  {
+   "method": "128-aligned structured width pruning (MLP-neuron / head / vocab-row deletion, Wanda/FLAP-style scoring)",
+   "source": "Wanda arXiv:2306.11695 (https://github.com/locuslab/wanda); FLAP arXiv:2312.11983; alignment analysis: own, from pack format",
+   "mechanism": "Delete entire MLP intermediate channels in 128-aligned blocks: drops whole rows of gate/up_proj (each row's packed u32 words + g128 scales are self-contained) and the matching 128-aligned K-groups of down_proj (group-aligned, so packed words + their f16 scale/bias delete cleanly). Head_dim-aligned attention-head deletion and vocab-row deletion of the 1-bit embedding/lm_head (248320 rows) work the same way. Result is simply SMALLER DENSE 1-bit matrices in the exact same format \u2014 surviving bytes byte-identical. Rank channels with weight-only stats (group-scale magnitudes) or Wanda-style activation norms from forward passes.",
+   "training_free": "yes \u2014 pure deletion/selection; calibration (if used) only ranks what to delete, never updates weights. Fully weight-value-preserving.",
+   "inference_native": "yes \u2014 stock mx.quantized_matmul consumes the smaller matrices; nothing to decompress, no mask, no metadata",
+   "metal_feasible": "YES, today, with ZERO kernel changes \u2014 the only sparsity-adjacent form with this property on our stack",
+   "est_savings": "MLP is ~3*5120*17408*64 \u2248 17.1B of ~27B params (~63% of the ~3.8 GB pack). Pruning 12.5-25% of intermediate channels (17408 -> 15232/13056) saves ~8-16% of total bytes with proportional decode-bandwidth speedup; embeddings+lm_head are another ~9.4% of bytes, so task-dependent vocab pruning of 50% adds ~4.7%. Within-format damage unknown \u2014 must be measured against the unfolded 1-bit baseline.",
+   "notes": "VERDICT CANDIDATE #1. Orthogonal to and stackable with block dropping/merging. Only constraint nuance: Wanda-style activation scoring uses calibration forward passes \u2014 selection only, arguably compliant, but flag the choice in the lab notebook; the pure weight-only variant (rank by g128 scale magnitude) avoids the question entirely."
+  },
+  {
+   "method": "Intra-matrix g128 group sparsity via custom masked/compacted qmv-qmm (novel; no prior art found)",
+   "source": "own design; kernel substrate: mlx/backend/metal/kernels/quantized.h (QuantizedBlockLoader, qmv/qvm/qmm variants \u2014 see deepwiki.com/ml-explore/mlx/7.2), our patched MLX fork",
+   "mechanism": "Delete whole quantization groups (128 sign bits + f16 scale + f16 bias \u2248 160 bits each) anywhere in a matrix; store surviving groups compacted with a per-row group-index list (or 1 bit/group bitmap \u2248 0.8% overhead). Kernel change: the K-loop iterates the survivor list instead of a dense range \u2014 structurally similar to what QVM/QMM split-K loops already do. Deletion-only, survivors byte-identical.",
+   "training_free": "yes \u2014 group selection by scale magnitude and/or calibration activation norms (selection only)",
+   "inference_native": "yes IF we write the kernel \u2014 the compacted form is what the kernel consumes directly; no dense reconstruction",
+   "metal_feasible": "plausibly, as a 'modest kernel change' to our fork (new loop bound + indirection in qmv/qmm); but it is genuinely novel \u2014 no implementation exists in MLX, llama.cpp, MPS, or any paper we found, so we'd be writing and validating it ourselves",
+   "est_savings": "\u2248 group-sparsity fraction of the affected layers' bytes (metadata ~1%); 25% group sparsity in MLP \u2248 16% of model bytes, plus bandwidth-proportional decode speedup since decode is memory-bound",
+   "notes": "VERDICT CANDIDATE #2 \u2014 the finer-grained sibling of width pruning, needing real kernel work. Recommend only if 128-aligned width pruning saturates first. Accuracy risk: a deleted group zeroes 128 contiguous input contributions including the affine bias term; damage profile unstudied anywhere."
+  },
+  {
+   "method": "TEAL / CATS / SparseInfer \u2014 training-free activation sparsity",
+   "source": "TEAL arXiv:2408.14690 (ICLR 2025), https://github.com/fasterdecoding/teal; CATS arXiv:2404.08763; SparseInfer arXiv:2411.12692; PowerInfer SOSP'24",
+   "mechanism": "Threshold hidden-state magnitudes at runtime (TEAL: 40-50% model-wide sparsity, thresholds set from calibration histograms), then use sparse GEMV kernels that skip weight loads for zeroed channels; 1.53-1.8x decode speedups with Triton/CUDA kernels. Weights completely untouched.",
+   "training_free": "yes (TEAL/CATS; PowerInfer and LLM-in-a-flash style predictor approaches are NOT \u2014 trained predictors, ReLU-family models \u2014 excluded)",
+   "inference_native": "weights stay in native packed form, but the speedup requires sparse-gather GEMV kernels that do not exist for Metal/MLX \u2014 no port found anywhere (llama.cpp Metal computes FFNs dense; SparseInfer/PowerInfer are CUDA/CPU)",
+   "metal_feasible": "would require custom fork kernels; worse, our u32-packed K-dim means skip granularity is 32-128 weights, so realizable sparsity (and speedup) drops well below TEAL's per-element numbers",
+   "est_savings": "0 bytes \u2014 model size unchanged; hypothetical 1.2-1.5x decode latency if a group-granular Metal kernel were built",
+   "notes": "Compliant with every constraint on paper (weights byte-identical) but delivers no compression, which is bonsai-fold's actual objective. Report as latency-only, low-priority; the same kernel investment spent on finding #8 buys memory AND latency."
+  },
+  {
+   "method": "SparseGPT / one-shot 2:4 pruning pipelines (prune-then-quantize stacks, Sparse-Marlin deployment)",
+   "source": "SparseGPT arXiv:2301.00774; vLLM llm-compressor 2:4+W4A16 example (docs.vllm.ai/projects/llm-compressor); Sparse-Marlin kernels (CUDA)",
+   "mechanism": "One-shot layer-wise sparse regression: prunes to 2:4 and RECONSTRUCTS surviving weights using second-order calibration statistics; standard stacks prune the FP model first, quantize second; deployment kernels (Sparse-Marlin, cuSPARSELt) are NVIDIA sparse-tensor-core only.",
+   "training_free": "nominally (no gradient steps), but SparseGPT's weight reconstruction is calibration-based weight optimization \u2014 FLAGGED constraint-crossing on both constraint 1 and the weight-preservation rule. Wanda-selection-only variants avoid this but then collapse into finding #6's metadata dead-end.",
+   "inference_native": "only on NVIDIA sparse tensor cores",
+   "metal_feasible": "no \u2014 no Metal kernels exist, no Apple hardware support, and we start from an already-1-bit model (the pipelines assume FP input; we have no FP weights and FP baselines are out of scope anyway)",
+   "est_savings": "~50% weight-count on FP models in their setting; not transferable to our stack",
+   "notes": "Reportable lineage only. Every practical semi-structured deployment path in 2025-2026 (llm-compressor, Sparse-Marlin, NVIDIA ASP) terminates in Ampere+ sparse tensor cores; none has an Apple analogue."
+  },
+  {
+   "method": "Core ML / ANE sparse weight compression (apple coremltools opt-pruning) \u2014 Apple's only shipping sparse path",
+   "source": "https://github.com/apple/coremltools docs-guides/source/opt-pruning-api.md",
+   "mechanism": "Magnitude pruning + sparse weight storage in the Core ML model format; the ANE runtime decodes sparse weights with real latency/size benefits on recent chips. Composable with palettization/quantization inside Core ML's own format.",
+   "training_free": "yes (post-training magnitude pruning variant exists)",
+   "inference_native": "yes, within Core ML/ANE",
+   "metal_feasible": "NO for us \u2014 this is a different backend (Core ML compiler + ANE runtime), not our patched MLX/Metal fork; adopting it means porting Bonsai's 1-bit g128-affine format into Core ML, i.e., exactly the 'whole new backend' constraint 3 prohibits",
+   "est_savings": "n/a on our stack",
+   "notes": "Included to answer 'any Metal sparse-inference work?' precisely: Apple's sparsity investment went into Core ML/ANE, not Metal compute or MLX. Nothing to salvage for bonsai-fold."
+  },
+  {
+   "method": "VERDICT \u2014 deployable sparsity on the MLX/Metal 1-bit stack",
+   "source": "synthesis of all findings above",
+   "mechanism": "Three-part answer. (a) Kernels: MLX has no N:M/CSR/general sparse matmul and has formally won't-fixed the request (mlx#2728, Mar 2026); its only sparse-ish primitives are block_masked_mm (dense-only) and gather_qmm (matrix-granularity MoE selection). Apple's Metal/MPS exposes no sparse matmul and M4 GPUs have no sparse tensor hardware; Apple's sparsity work lives in Core ML/ANE, a different backend. (b) Semi-structured: N:M on ~1 bpw weights is arithmetically self-defeating \u2014 position metadata (2.6-4 bits per 4 weights) costs as much as or more than the 1-bit weights it removes, so even perfect kernels would yield negative memory savings on a bandwidth-bound decoder. Sparse-BitNet, the one paper marrying 1-bit and N:M, requires sparse pretraining and NVIDIA kernels. (c) Activation sparsity (TEAL) is training-free and weight-preserving but saves zero bytes and has no Metal port.",
+   "training_free": "see per-method rows",
+   "inference_native": "see per-method rows",
+   "metal_feasible": "exactly one form is deployable WITHOUT kernel work: 128-aligned structured deletion (MLP-intermediate channels, attention heads, vocab rows) \u2014 it degenerates to smaller dense matrices in the unchanged 1-bit format, consumed by stock quantized_matmul, surviving weights byte-identical. One more form (g128 group sparsity with a compacted-loop qmv/qmm) is feasible as a modest patch to our fork but is novel engineering with no prior art.",
+   "est_savings": "realistic near-term: ~8-16% of pack bytes from 12.5-25% aligned MLP-width pruning (+~5% optional vocab pruning), stackable with block dropping/merging; damage to be measured within-format per project rules",
+   "notes": "Recommendation: pursue 128-aligned width pruning as the sparsity arm (fits every hard constraint, zero kernel risk, complements depth compression); hold g128 group sparsity in reserve; drop N:M, activation sparsity, and all CUDA-lineage pipelines from consideration. Sources: github.com/ml-explore/mlx issues/2728, pull/2796, pull/1124, pull/2040; ml-explore.github.io block_masked_mm docs; arXiv 2603.05168, 2408.14690, 2411.12692, 2306.11695, 2301.00774; github.com/waleed-sh/mlx-sparse; github.com/apple/coremltools; github.com/fasterdecoding/teal; github.com/locuslab/wanda."
+  }
+ ],
+ [
+  {
+   "method": "Wanda-sp (structured Wanda, per-channel/head aggregation)",
+   "source": "https://arxiv.org/abs/2306.11695 (Wanda); structured adaptation defined in FLAP paper https://arxiv.org/abs/2312.11983",
+   "mechanism": "Saliency = sum over the channel/head of |W_ij|*||X_j||_2 from a small calibration forward pass; delete lowest-scoring MLP channels / attention heads outright. Pure selection, zero weight updates.",
+   "training_free": "YES - calibration forward passes only, no gradients, no updates",
+   "inference_native": "YES - result is just a smaller standard model; MLX quantized kernels consume it unchanged",
+   "metal_feasible": "YES - output-row deletion is trivial in the g128 packed format (drop packed row + its scale/bias groups); input-dim deletion must be 128-group aligned (see gap-analysis row)",
+   "est_savings": "10-20% of block params (~0.35-0.7 GB of the ~3.8 GB pack) before steep FP-model damage; headroom on an already-1-bit model unknown - measure within-format per project rules",
+   "notes": "The baseline width criterion; FLAP's own comparisons show it is the weakest of the family. Compute saliency on dequantized effective weights (sign*scale+bias per g128 group), not raw sign bits."
+  },
+  {
+   "method": "FLAP (Fluctuation-based Adaptive Structured Pruning), AAAI 2024",
+   "source": "https://arxiv.org/abs/2312.11983 ; code https://github.com/CASIA-IVA-Lab/FLAP",
+   "mechanism": "Fluctuation metric: sample variance of each input feature weighted by squared column norm - low-variance channels have outputs recoverable by a constant. Adaptive global structure search sets per-layer/per-module ratios. Then optional bias compensation adds mean-activation*pruned-weights as a bias term.",
+   "training_free": "YES - 3-5 min on one GPU, no retraining",
+   "inference_native": "YES",
+   "metal_feasible": "YES - selection+deletion identical mechanics to Wanda-sp; bias compensation only needs a bias vector on linear layers (MLX supports bias)",
+   "est_savings": "10-30% structured ratios on LLaMA with best retraining-free quality of its generation; clearly beats LLM-Pruner and Wanda-sp without any recovery",
+   "notes": "PARTIAL FLAG: bias compensation is a calibration-derived NEW parameter - surviving weights stay byte-identical, but it adds values the original model never had. Decision needed: run selection-only (pure), or accept the added-bias variant as a flagged arm. The adaptive ratio-allocation piece is criterion-agnostic and reusable."
+  },
+  {
+   "method": "MultiPruner (Intel Labs, extends BlockPruner)",
+   "source": "https://arxiv.org/abs/2501.09949 ; code in github.com/IntelLabs/Hardware-Aware-Automated-Machine-Learning",
+   "mechanism": "Iterative multidimensional training-free pruning: first residual blocks (depth), then MLP channels, then attention heads, under one global budget; candidates ranked by calibration perplexity/loss. Pure deletion, no reconstruction.",
+   "training_free": "YES",
+   "inference_native": "YES",
+   "metal_feasible": "YES - directly composable with bonsai-fold's existing block-drop machinery; head removal must keep GQA q:kv ratio integral; channel removal 128-aligned",
+   "est_savings": "Reported to beat prior training-free methods at ~22% compression with better zero-shot accuracy",
+   "notes": "Closest published analog to bonsai-fold's trajectory (depth axis exhausted, width added on top). Its iterative search means many candidate evaluations - chunk under the 2h job limit; our existing KL-vs-parent harness is the natural inner metric."
+  },
+  {
+   "method": "DIET (dimension-wise global pruning via task-importance voting)",
+   "source": "https://arxiv.org/abs/2603.23985",
+   "mechanism": "Profile activation magnitudes on ~100 samples per task across several tasks; majority-vote the per-task importance rankings into one global dimension mask. Pure mask/selection.",
+   "training_free": "YES - explicitly no training or heavy precompute",
+   "inference_native": "YES",
+   "metal_feasible": "YES - same deletion mechanics",
+   "est_savings": "At 20% structured sparsity on Gemma-2 2B, ~10% average accuracy over prior structured SOTA; persists across scales",
+   "notes": "Cheap orthogonal upgrade: multi-domain calibration voting counters single-calibration-set bias (a documented failure mode). Applicable to whichever saliency criterion we adopt - vote across our existing eval domains."
+  },
+  {
+   "method": "CoCurve (cross-module co-pruning curvature)",
+   "source": "https://arxiv.org/abs/2607.17568",
+   "mechanism": "Second-order Taylor of token-level KL between frozen model and masked copy gives a Fisher matrix; off-diagonals capture co-pruning interactions (two individually weak units jointly indispensable). Full MxM interaction recovered from M forward passes, no gradients; one budgeted quadratic program selects the joint set of heads + FFN channel groups. No weight changes, no recovery.",
+   "training_free": "YES - calibration-only, fine-tuning-free, gradient-free",
+   "inference_native": "YES",
+   "metal_feasible": "YES - forward passes run in stock MLX; the QP is CPU-side scipy",
+   "est_savings": "Abstract gives no headline ratio; claims consistent gains over independent ranking at equal budgets",
+   "notes": "Philosophically matches bonsai-fold's Phase-1 finding that deletion interactions are non-additive (k-set results). The masked-forward Fisher estimation is nearly identical in cost shape to our off-policy KL singles chain - strongest candidate for the selection engine."
+  },
+  {
+   "method": "Gate-Norm (data-free attention-sublayer pruning)",
+   "source": "https://arxiv.org/abs/2512.20636",
+   "mechanism": "Weight-only criterion ranking attention sublayers by query-key coupling norm; delete the least-coupled whole attention sublayers (MLP stays). No calibration data, no forward passes, no weight modification, no special kernels.",
+   "training_free": "YES - fully data-free, runs in under a second",
+   "inference_native": "YES - deleting an attn sublayer is a config + surgery change, like our block drops but finer",
+   "metal_feasible": "YES - trivially",
+   "est_savings": "8-16 of 40 attn sublayers removed on LLaMA-13B within ~2% zero-shot, 1.30x throughput. On Bonsai attention is a modest byte fraction, so mostly a latency win plus a few % params",
+   "notes": "Adds a third granularity between whole-block drop and head pruning: attn-only removal. Verify the coupling criterion on dequantized 1-bit weights (sign*scale+bias) - untested on extreme quantization. DSpark speculative-decoding disable rule already covers the layer-index hazard."
+  },
+  {
+   "method": "CAP (Causal Attribution Pruning of attention heads)",
+   "source": "https://arxiv.org/abs/2606.19350",
+   "mechanism": "For each head, estimate expected degradation when the head is masked during forward passes on a small reasoning calibration set; causal head-level scores guide pruning. Forward-only, no gradients, no weight updates (head-scoring stage is usable standalone for pure head deletion).",
+   "training_free": "YES",
+   "inference_native": "YES for whole-head deletion",
+   "metal_feasible": "YES - masked-forward scoring is exactly our off-policy ablation pattern",
+   "est_savings": "Claims reasoning preservation at matched ratios (abstract gives no hard numbers)",
+   "notes": "Reasoning-preservation focus fits thinking-mode Bonsai (temp 0.7 / thinking on). Its weight-level second stage is finer than we need; use the head-attribution stage only."
+  },
+  {
+   "method": "COMPACT (vocab pruning + FFN channel pruning)",
+   "source": "https://arxiv.org/abs/2509.06836",
+   "mechanism": "Prunes rare vocabulary rows from embedding + lm_head, and FFN intermediate channels scored by common-token-weighted activations; keeps a standard transformer, runnable in stock engines. Selection/deletion only.",
+   "training_free": "YES",
+   "inference_native": "YES - explicitly designed for standard-architecture output (their critique of SliceGPT)",
+   "metal_feasible": "YES - embedding/lm_head rows are independent in the g128 packed format, so vocab-row deletion is byte-exact; needs a tokenizer-id remap table at load",
+   "est_savings": "Bonsai embed+head = 2 x 248320 x 5120 = 2.54B params = ~0.36 GB at 1.125 bpw (~9% of pack). Halving the unusually large 248K vocab saves ~0.18 GB plus a ~2x lm_head matmul speedup per token",
+   "notes": "Directly aligned with the pending 'width/vocab censuses' task. Risk: multilingual/rare-token capability loss is invisible to English perplexity - pick within-format eval sets carefully."
+  },
+  {
+   "method": "RAP (RoPE-Aligned KV-channel pruning)",
+   "source": "https://arxiv.org/abs/2602.02599",
+   "mechanism": "Delete least-useful Wk/Wv output channels in RoPE-aligned pairs (whole rotation pairs) to shrink KV head_dim, keeping positional semantics intact. Deletion-based; abstract mentions no fine-tuning.",
+   "training_free": "YES (apparent; verify in full text)",
+   "inference_native": "PARTIAL - attention must run with reduced KV dim and a RoPE frequency-index map; not stock MLX attention",
+   "metal_feasible": "PARTIAL - Wk/Wv row deletion is format-native, but the RoPE index map + reduced head_dim needs a modest patch in our MLX fork",
+   "est_savings": "30% KV-cache reduction with preserved accuracy on 3B-14B Llama/Mistral/Qwen; weight savings minor",
+   "notes": "Wins KV memory (long-context headroom on the 64GB box), not pack size. Composes with quantization per the paper. Verify Bonsai uses standard RoPE and check q/k head_dim before scoping."
+  },
+  {
+   "method": "SliceGPT (rotation + slicing) - REJECTED",
+   "source": "https://arxiv.org/abs/2401.15024",
+   "mechanism": "Folds PCA orthogonal rotations into every weight matrix, then slices rows/columns of the rotated weights.",
+   "training_free": "YES nominally, but it rewrites every surviving weight value",
+   "inference_native": "NO for us - rotated weights are dense FP and cannot be re-expressed in the frozen 1-bit sign+scale+bias format without requantizing (a weight update); also breaks HF/vLLM compat per COMPACT",
+   "metal_feasible": "N/A",
+   "est_savings": "20-30% on FP models (reference only)",
+   "notes": "CONSTRAINT-CROSSING, unrescuable: violates byte-identical surviving weights by construction. The whole rotation family (QuaRot-style descendants) is excluded for the same reason."
+  },
+  {
+   "method": "Reconstruction family: STAT / CORP / Olica / LIAR / OSSCAR - FLAGGED",
+   "source": "https://arxiv.org/abs/2406.00061 (STAT), https://arxiv.org/abs/2602.05243 (CORP), https://arxiv.org/abs/2506.08436 (Olica), https://arxiv.org/abs/2407.13331 (LIAR), https://arxiv.org/abs/2403.12983 (OSSCAR)",
+   "mechanism": "Delete heads/channels, then closed-form update the remaining weights (ridge regression, matrix factorization, layer-wise reconstruction) so retained units absorb the removed units' function.",
+   "training_free": "Nominally yes (no gradient descent), but all perform calibration-based weight UPDATES - rejected under our definition",
+   "inference_native": "Updated weights are FP and would need requantization to 1-bit - a second violation",
+   "metal_feasible": "N/A as-is",
+   "est_savings": "Typically 1-3 ppl points better than pure selection at 20-30% ratios (FP models)",
+   "notes": "CONSTRAINT-CROSSING (calibration-based weight optimization). Reportable value: their selection-vs-reconstruction ablations quantify exactly what pure selection gives up; some saliency halves are reusable standalone."
+  },
+  {
+   "method": "SlimLLM - FLAGGED (borderline)",
+   "source": "https://arxiv.org/abs/2505.22689",
+   "mechanism": "Holistic whole-channel/whole-head importance (not summed element scores) + layer-wise adaptive ratios + linear-regression recovery of the output matrix.",
+   "training_free": "Selection stage yes; recovery stage is a calibration-based weight update",
+   "inference_native": "YES if recovery is skipped",
+   "metal_feasible": "YES for the selection stage",
+   "est_savings": "SOTA claims on LLaMA at unspecified ratios (with recovery)",
+   "notes": "FLAG the regression-recovery step; the holistic head/channel importance metric itself is selection-only and directly reusable as an alternative criterion to FLAP's."
+  },
+  {
+   "method": "Numerical Pruning (AAAI 2025) - FLAGGED",
+   "source": "https://arxiv.org/abs/2412.12441",
+   "mechanism": "Training-free Newton-method numerical scores for Attention/MLP structures, plus a compensation algorithm that modifies remaining weights.",
+   "training_free": "Scores yes; compensation is a weight update",
+   "inference_native": "YES if compensation skipped",
+   "metal_feasible": "YES for scoring+deletion only",
+   "est_savings": "SOTA claims for autoregressive LMs and image generators (with compensation)",
+   "notes": "Same pattern as SlimLLM: usable scores, constraint-crossing recovery. Run score-only if adopted."
+  },
+  {
+   "method": "LLM-Pruner - REJECTED",
+   "source": "https://arxiv.org/abs/2305.11627",
+   "mechanism": "Gradient/Taylor saliency over coupled structure groups, then LoRA recovery fine-tune.",
+   "training_free": "NO in practice - quality depends on LoRA recovery (training); gradient saliency also needs backward passes",
+   "inference_native": "n/a",
+   "metal_feasible": "NO - backward through u32-packed 1-bit MLX weights needs STE machinery we don't have; LoRA violates no-training rule outright",
+   "est_savings": "20% with recovery on FP models (reference only)",
+   "notes": "Historically important, practically excluded. FLAP already beats it without any training."
+  },
+  {
+   "method": "PBS2P (Progressive Binarization with Semi-Structured Pruning) - FLAGGED, quantized-specific",
+   "source": "https://arxiv.org/abs/2502.01705",
+   "mechanism": "Post-training framework integrating binarization WITH semi-structured pruning; jointly optimizes binarization parameters (scales) to minimize combined pruning+quantization error; coarse-to-fine ratio search.",
+   "training_free": "Post-training but optimizes binarization parameters on calibration data - calibration-based weight-value optimization",
+   "inference_native": "Semi-structured (N:M-style) sparsity inside binary weights would need new Metal kernels; not width reduction",
+   "metal_feasible": "NO without significant kernel work",
+   "est_savings": "Beats binary PTQ baselines in ppl/accuracy (co-designed setting)",
+   "notes": "CONSTRAINT-CROSSING and co-designed (it makes the binary model rather than pruning a frozen one). Its evidentiary value: binarized LLMs tolerate meaningful structured sparsity."
+  },
+  {
+   "method": "Sparse-BitNet - REJECTED (training-time) but key evidence",
+   "source": "https://arxiv.org/abs/2603.05168",
+   "mechanism": "Joint 1.58-bit quantization + dynamic N:M sparsification during training; finds 1.58-bit BitNet is NATURALLY MORE COMPATIBLE with N:M sparsity than full-precision models.",
+   "training_free": "NO - training-time method",
+   "inference_native": "n/a for us",
+   "metal_feasible": "n/a",
+   "est_savings": "n/a (reference)",
+   "notes": "The headline finding is the useful part: width/sparsity redundancy survives extreme quantization, and extreme-quantized models may tolerate structured removal BETTER than FP ones. Supports the hypothesis behind width-pruning Bonsai-1bit; cite as motivation, not method."
+  },
+  {
+   "method": "Dynamic activation sparsity on group-quantized weights - orthogonal option",
+   "source": "https://arxiv.org/abs/2511.04477",
+   "mechanism": "Exploits per-input runtime activation sparsity: zigzag-patterned group-quantization layout + specialized sparse GEMV kernel + compact runtime index gathering. Weights entirely untouched.",
+   "training_free": "YES - and perfectly weight-preserving (nothing deleted or changed)",
+   "inference_native": "The quantized layout is what kernels consume, but requires reordering the packed layout and a new GEMV kernel",
+   "metal_feasible": "PARTIAL - substantial Metal kernel work in our MLX fork (sparse GEMV + zigzag layout); more than 'modest'",
+   "est_savings": "Up to 1.55x decode throughput; ZERO memory savings",
+   "notes": "Not compression - a latency-only sibling. Park unless decode speed becomes the bottleneck; note the paper's warning that naive sparsity interacts badly with group-wise quantization (our g128 format), which also cautions any non-aligned width deletion."
+  },
+  {
+   "method": "GAP ANALYSIS + format-native synthesis for bonsai-fold",
+   "source": "Synthesis of all searches (no direct prior art found for training-free width pruning of an already-1-bit pack; nearest works PBS2P/GQSA/Sparse-BitNet all co-design or train)",
+   "mechanism": "The g128 affine 1-bit format defines the natural pruning units: (a) OUTPUT-row deletion (any linear) is byte-exact - drop the packed row + its scale/bias groups; (b) INPUT-dim deletion is byte-exact ONLY in 128-aligned bundles, else groups would mix weights under one shared scale/bias (a value change). Bonsai aligns perfectly: intermediate 17408 = 136 x 128 bundles per MLP; hidden 5120 = 40 x 128, so if head_dim=128, whole-head deletion (q/k/v rows + the head's aligned o_proj column-group) is byte-exact. Saliency per bundle = sum of per-channel scores.",
+   "training_free": "YES by construction",
+   "inference_native": "YES - pruned model is a standard smaller MLX quantized model; stock kernels, config-only changes (n_heads, intermediate_size), GQA ratio kept integral",
+   "metal_feasible": "YES - likely zero kernel changes; only pack-surgery code (mirrors existing block-merge surgery)",
+   "est_savings": "Stacked ceiling on the ~3.8 GB pack: MLP bundles 10-20% of ~2.4 GB MLP bytes (0.24-0.48 GB) + heads/attn-sublayers few % + vocab halving ~0.18 GB = plausible 0.4-0.7 GB on top of depth folding, all byte-exact",
+   "notes": "Recommended recipe: FLAP fluctuation or SlimLLM-style holistic scores at 128-bundle granularity, DIET multi-domain voting, CoCurve-style interaction-aware joint selection via masked-forward KL (reuses Phase-1 harness), MultiPruner-style iterative depth+width budget. Publishable gap: nobody has shown training-free, byte-exact width pruning of a 1-bit pack. All damage numbers must be measured within-format (folded-1bit vs unfolded-1bit) per project rules."
+  }
+ ],
+ [
+  {
+   "method": "Tile-level ANS lossless weight compression (\"Approaching Shannon Bound with Lossless LLM Weight Compression\")",
+   "source": "arXiv 2606.15789 (2026); integrated into SGLang",
+   "mechanism": "Asymmetric Numeral Systems entropy coding of weight tiles, with decompression aligned to GPU GEMM tiling so kernels consume the compressed stream on the fly (no dense materialization). Reported bit-rates within 0.01-0.1 bits of Shannon limit; works on bf16 down to int4/AWQ formats; finds effective entropy 2-10x below nominal bitwidth.",
+   "training_free": "YES \u2014 lossless, zero weight-value change, no calibration. Fully satisfies constraint (1) and (4): surviving bytes decode bit-identically.",
+   "inference_native": "YES \u2014 tile decode fused into the matmul path, not load-time decompression.",
+   "metal_feasible": "No existing Metal/MLX port (CUDA/SGLang only). Port = ANS decode in threadgroup memory fused into our patched-MLX 1-bit dequant kernel; moderate effort, more than a table lookup but no new backend.",
+   "est_savings": "On Bonsai 1-bit: sign bits are near max-entropy if +/- balanced, so gains concentrate in the f16 scale+bias metadata (~32 of 160 bits per g128 group). Realistic 4-12% total (~1.25 -> ~1.10-1.20 bpw); more only if sign words prove correlated.",
+   "notes": "Best constraint fit of anything found: the ONLY family that is simultaneously training-free, inference-native, and weight-value-preserving. Cheap prerequisite: a census job measuring empirical entropy of Bonsai's u32 sign words and f16 scale/bias exponents would bound the payoff before any kernel work."
+  },
+  {
+   "method": "DFloat11 (Dynamic-Length Float)",
+   "source": "arXiv 2504.11651, NeurIPS 2025; github.com/LeanModels/DFloat11",
+   "mechanism": "Huffman-codes the low-entropy exponent bits of BF16 weights (~11 bits effective, ~30% smaller); hierarchical LUTs in GPU SRAM + two-phase kernel + transformer-block-granularity decompression; outputs bit-for-bit identical to original.",
+   "training_free": "YES \u2014 lossless, no calibration, no value change.",
+   "inference_native": "YES \u2014 decode happens inside GPU kernels during inference (block-level, on the fly).",
+   "metal_feasible": "CUDA only today; no Metal/MLX port found. The SRAM-LUT + two-phase scheme maps to Metal threadgroup memory; moderate effort. Simpler variant: apply the exponent-Huffman idea only to Bonsai's f16 scale/bias tensors.",
+   "est_savings": "Format is BF16-specific, so direct reuse touches only our f16 group scales/biases (~0.25 of 1.25 bpw); ~30% of that slice = ~5-7% total model size.",
+   "notes": "Strong existence proof that entropy-coded weights + direct-decode kernels are practical at generation-time throughput. Constraint-clean (lossless). Main limitation for us: our mass is in sign bits, not floats."
+  },
+  {
+   "method": "EntroLLM \u2014 entropy coding over already-quantized weights",
+   "source": "arXiv 2505.02380 (2025)",
+   "mechanism": "Huffman coding layered on existing uint4/uint8 PTQ weights plus a parallel segmented decoding strategy for weight retrieval at inference on edge GPUs (Jetson); 30% savings over uint8, 65% claim vs uint4 baselines; 32-147% faster on memory-limited devices.",
+   "training_free": "YES for the coding stage \u2014 explicitly retraining-free, wraps an existing quantized model (the closest published analog to compressing an already-1-bit pack).",
+   "inference_native": "Mostly \u2014 parallel segment decode at retrieval time; paper is vague on full fusion vs per-layer staging; flag for verification before relying on it.",
+   "metal_feasible": "No Metal kernels; segmented-parallel Huffman decode is portable to Metal with moderate effort (similar shape to DFloat11 port).",
+   "est_savings": "On 1-bit signs likely <5% unless Bonsai's sign stream is skewed/correlated; metadata slice same as DFloat11 (~5-7%). Their big ratios come from uint8/uint4 redundancy that a 1-bit format has already squeezed out.",
+   "notes": "Useful as method template, not as drop-in: validates 'entropy-code an existing quantized pack, decode in kernel' on edge hardware. Constraint-clean if applied losslessly."
+  },
+  {
+   "method": "STBLLM \u2014 structured sign sparsity (N:M) for sub-1-bit binary LLMs",
+   "source": "arXiv 2408.01803, ICLR 2025; github.com/pprp/STBLLM",
+   "mechanism": "Prunes binarized weights to per-layer N:M patterns using a Standardized Importance metric (weight magnitude x input feature norm) with Hessian-based salient/non-salient partitioning; non-salient regions get tailored re-binarization; 0.55 bpw at ppl 11.07 (3x better than BiLLM); custom CUDA sparse-tensor-core kernel.",
+   "training_free": "PARTIAL \u2014 no gradient steps, but selection needs calibration activations/Hessian, and the non-salient-aware re-binarization RE-QUANTIZES surviving values. FLAG: crosses the never-alter-surviving-weights rule. A stripped variant (pure N:M sign deletion, scales refit closed-form) would be selection-only but is not what the paper evaluates.",
+   "inference_native": "YES \u2014 sparse packed format consumed directly by their CUDA kernel.",
+   "metal_feasible": "Unproven. Apple GPUs have no sparse tensor cores; a mask-guided binary GEMV in Metal is writable (modest-moderate), but N:M mask storage and gather overhead eat into gains at GEMV batch-1.",
+   "est_savings": "Headline ~50% (1.1 -> 0.55 bpw). Realistic on Bonsai after mask overhead and no-FP-magnitudes handicap: ~25-35%, with real damage risk.",
+   "notes": "Biggest practical blocker: SI metric needs FP magnitudes; our pack has only signs + scale/bias, so importance must come from activation statistics \u2014 calibration-based SELECTION (arguably allowed under 'selection is OK', but flag for Thanasis). Most relevant sub-1-bit paper for an already-binary model."
+  },
+  {
+   "method": "BTC-LLM \u2014 binary codebook over sign-vector clusters",
+   "source": "arXiv 2506.12040, ACL 2026",
+   "mechanism": "(a) learnable invertible scaling+rotation aligns binarized weights with FP distribution; (b) 'Flash Binary Codebook' clusters recurring binary vectors into compact indices (sign-based centroid updates), eliminating sparse masks; 0.7-1.11 bpw; 0.8-bit LLaMA-2-13B at -3.1% accuracy, 1.6x speedup vs FP16 on standard hardware.",
+   "training_free": "NO \u2014 the transformation is gradient-optimized. FLAG. However, the codebook half alone (cluster g-length sign patterns from our existing u32 words, store indices) is runnable training-free on Bonsai \u2014 but assigning a centroid pattern to a group REPLACES its sign vector, so it is value-modifying; flag as constraint-crossing either way.",
+   "inference_native": "YES \u2014 index -> codebook lookup at inference, no sparse-mask management; designed for standard hardware.",
+   "metal_feasible": "No Metal port, but codebook-LUT dequant is the best-proven kernel class on Apple GPUs (llama.cpp IQ quants, EXL4 port). A g128-or-smaller sign-pattern LUT kernel in our MLX fork is modest effort.",
+   "est_savings": "~20-35% (1.125 -> ~0.8 bpw) IF sign patterns cluster; payoff is measurable in advance by clustering Bonsai's actual sign words offline.",
+   "notes": "The codebook-only ablation is the interesting question for us: how much does it lose without the learnable transform? Paper doesn't isolate it favorably. Cheap offline experiment: histogram Bonsai's 32-bit sign words per layer \u2014 if the distribution is near-uniform, both codebook and entropy routes are dead."
+  },
+  {
+   "method": "NanoQuant \u2014 low-rank binary factorization, sub-1-bit",
+   "source": "arXiv 2602.06694 (Feb 2026)",
+   "mechanism": "W ~ s1 . (U+-1 V+-1^T) . s2 \u2014 two rank-r sign matrices plus channel scales; 0.55-1.0 bpw with all overheads (Llama-2-70B: 138 GB -> 5.75 GB); custom CUDA binary GEMV/GEMM consume packed format directly.",
+   "training_free": "NO \u2014 128-sample calibration, Hessian-aware preconditioning, ADMM init, block-wise reconstruction, scale refinement. FLAG: calibration-based optimization, and it requires the original FP weights, which do not exist for Bonsai (1-bit pack only).",
+   "inference_native": "YES \u2014 packed binary factors consumed natively, no unpacking.",
+   "metal_feasible": "No Metal port; binary GEMV is simple to write in Metal (modest), but moot given constraint failures.",
+   "est_savings": "N/A for Bonsai \u2014 cannot be constructed from a 1-bit-only pack.",
+   "notes": "Included for completeness as the 2026 sub-1-bit SOTA line; structurally inapplicable to this project."
+  },
+  {
+   "method": "QMoE \u2014 sub-1-bit dictionary-coded format with fused decode",
+   "source": "arXiv 2310.16795 (Frantar & Alistarh; precedes 2024 window but foundational)",
+   "mechanism": "GPTQ-ternarizes MoE experts then applies fixed-dictionary coding of natural sparsity, hitting <1 bpw on SwitchTransformer-scale MoEs; per-layer compressed format decoded by fused CUDA kernels at inference.",
+   "training_free": "NO \u2014 GPTQ calibration modifies values. Also effectively ternary + MoE-specific; Bonsai is dense and the ternary arm is cut.",
+   "inference_native": "YES \u2014 first published sub-1-bit direct-decode format.",
+   "metal_feasible": "No; CUDA-only and MoE-structured. Not worth porting for a dense model.",
+   "est_savings": "N/A for Bonsai.",
+   "notes": "Historical anchor for 'sub-1-bit with native kernels is possible'; its gains ride on ternary zero-runs, which a dense balanced-sign 1-bit format lacks."
+  },
+  {
+   "method": "AQLM \u2014 additive multi-codebook vector quantization",
+   "source": "arXiv 2401.06118, ICML 2024",
+   "mechanism": "Sums of codebook vectors per group (~2-2.5 bpw effective); codebooks learned by gradient descent on calibration data plus end-to-end block fine-tuning; CUDA/Triton GPU kernels + Numba CPU.",
+   "training_free": "NO \u2014 gradient-based codebook learning and fine-tuning. FLAG on both (1) and (4). Also requires FP weights (unavailable).",
+   "inference_native": "YES on CUDA (codebook-lookup matvec kernels); no Metal/MLX kernels exist.",
+   "metal_feasible": "Feasible in principle (LUT kernels port fine) but pointless here.",
+   "est_savings": "NEGATIVE for Bonsai \u2014 AQLM's ~2 bpw landing zone is above our 1.125 bpw base; re-quantizing a 1-bit model through it is not meaningful.",
+   "notes": "Listed because the task asked; verdict is clean rejection: fails training-free, needs FP source weights, and would enlarge the model."
+  },
+  {
+   "method": "QuIP# \u2014 E8 lattice codebook + incoherence processing",
+   "source": "arXiv 2402.04396, ICML 2024",
+   "mechanism": "Random Hadamard incoherence transform, then hardware-symmetric E8 lattice codebook at 2 bpw; calibration-based rounding plus fine-tuning for SOTA numbers; fast CUDA decode via codebook symmetry.",
+   "training_free": "NO \u2014 calibration + fine-tuning; value-modifying; needs FP weights.",
+   "inference_native": "YES on CUDA; no Metal kernels (its descendants \u2014 llama.cpp IQ formats \u2014 do have Metal kernels).",
+   "metal_feasible": "Codebook decode: proven portable by the IQ-format lineage. Moot for construction reasons.",
+   "est_savings": "NEGATIVE for Bonsai (2 bpw > 1.125 bpw base).",
+   "notes": "Same structural rejection as AQLM. Relevant only as the intellectual ancestor of Metal-capable codebook kernels."
+  },
+  {
+   "method": "QTIP trellis quantization + EXL3/EXL4 Metal port",
+   "source": "arXiv 2406.11235 (NeurIPS 2024); github.com/Infatoshi/exllama-ish (Apple Silicon exllamav3 port)",
+   "mechanism": "Trellis-coded quantization with a procedural 'bitshift' codebook \u2014 decode is computed, not table-fetched, so ultra-high-dimensional codebooks cost no SRAM; EXL4 format port ships REAL Metal kernels (simdgroup_matrix GEMV + fast Walsh-Hadamard) on Apple Silicon at ~4 bpw.",
+   "training_free": "NO \u2014 calibration-based construction (+optional fine-tuning); value-modifying; needs FP weights. FLAG.",
+   "inference_native": "YES \u2014 and uniquely, Metal-native inference already EXISTS via the community port.",
+   "metal_feasible": "PROVEN \u2014 the one codebook family with working Apple Silicon GPU kernels outside llama.cpp.",
+   "est_savings": "N/A as compressor for Bonsai (lands at 2-4 bpw from FP weights).",
+   "notes": "Value to us is purely as an engineering existence proof: procedural-codebook decode + Hadamard at decode-time run fine on M-series GPUs, derisking any custom LUT/trellis kernel we might add to the MLX fork."
+  },
+  {
+   "method": "llama.cpp IQ1_S / IQ1_M grid-codebook formats",
+   "source": "ggml-org/llama.cpp (2024); ggml discussion #5617; manpage llama-quantize",
+   "mechanism": "1.5625 / 1.75 bpw grid/codebook formats descended from QuIP#-style lattices; construction requires an importance matrix ('result will be garbage' without) and codebook search with scale refits; production Metal, CUDA, CPU kernels.",
+   "training_free": "NO \u2014 imatrix calibration drives codebook assignment and values are re-quantized. FLAG. Needs FP weights.",
+   "inference_native": "YES \u2014 Metal kernels ship today (note: IQ decode was historically slow on Apple Silicon vs K-quants, discussion #5617).",
+   "metal_feasible": "EXISTS \u2014 but in GGML, a different backend; porting just the dequant tables + matvec into our patched MLX fork would be modest.",
+   "est_savings": "NEGATIVE \u2014 1.5625 bpw > Bonsai's 1.125 bpw. Reference point only.",
+   "notes": "Main takeaway: sub-2-bit codebook decode on Metal is production reality, but every such format sits ABOVE our current bpw. Nothing in the GGUF zoo goes below 1 bpw for binary weights."
+  },
+  {
+   "method": "Any-Precision LLM \u2014 bit-plane packed nested codebook",
+   "source": "arXiv 2402.10517, ICML 2024",
+   "mechanism": "Stores an 8-bit SqueezeLLM-style non-uniform quantized parent; lower precisions (3-7 bit) are prefixes of the bit-plane stack, one memory store serves all widths; custom CUDA GEMV reads bit-planes directly.",
+   "training_free": "NO \u2014 parent codebook is Fisher-information-weighted k-means fit on calibration data (calibration-based optimization); value-modifying; needs FP weights.",
+   "inference_native": "YES on CUDA (bit-plane GEMV).",
+   "metal_feasible": "Portable in principle; moot.",
+   "est_savings": "NONE for Bonsai \u2014 a 1-bit model is already the bottom bit-plane; there is no sub-plane to strip. The mechanism has no sub-1-bit analog.",
+   "notes": "Task asked explicitly; verdict: category mismatch \u2014 it multiplexes precisions, it does not compress below the lowest one."
+  },
+  {
+   "method": "Ternary radix packing (llama.cpp TQ1_0 ~1.69 bpw; bitnet.cpp I2_S/TL1/TL2)",
+   "source": "ggml-org/llama.cpp TQ types; microsoft/BitNet bitnet.cpp (2024)",
+   "mechanism": "Lossless radix repacking of ternary weights (5 trits per byte etc.) with LUT-based CPU mpGEMM kernels (ARM incl. Apple CPUs via NEON; Metal support absent/limited).",
+   "training_free": "YES (pure repacking) \u2014 but doubly out of scope: the ternary arm was cut 2026-07-28, and the mechanism does not transfer.",
+   "inference_native": "YES on CPU; not on Metal.",
+   "metal_feasible": "Would need new kernels; irrelevant.",
+   "est_savings": "ZERO for Bonsai \u2014 binary weights have no radix slack: 1 bit per sign IS the packing floor. Sub-1-bit for a binary model can only come from sparsity, codebooks, or entropy coding (rows above).",
+   "notes": "Included to close out the 'sub-1-bit packing of binary/ternary' bullet: the ternary trick (log2(3)=1.585<2) has no binary analog."
+  },
+  {
+   "method": "SeedLM \u2014 LFSR pseudo-random seed reconstruction",
+   "source": "arXiv 2410.10714, ICLR 2025 (Apple ML Research)",
+   "mechanism": "Per-block seed drives an LFSR generating a random basis; block ~ linear combo with a few stored coefficients; 3-4 bpw; data-free; trades compute for memory traffic; FPGA demo ~4x over FP16.",
+   "training_free": "YES \u2014 explicitly data-free and calibration-free (rare!). But value-modifying (approximation) \u2014 FLAG on (4) \u2014 and fitting seeds needs the original FP weights, so it cannot be applied to the 1-bit pack.",
+   "inference_native": "YES in concept (regenerate-in-kernel); only FPGA implementation published, no GPU/Metal kernels.",
+   "metal_feasible": "Plausible (Apple authorship; LFSR + small GEMM per block is Metal-friendly) but nothing exists; and 3-4 bpw is far above our base.",
+   "est_savings": "NEGATIVE for Bonsai.",
+   "notes": "Conceptually interesting neighbor (training-free compression with compute-for-memory trade) but wrong operating point and wrong input format for this project."
+  },
+  {
+   "method": "Q-Palette \u2014 fractional-bit quantizer suite (trellis/vector/scalar)",
+   "source": "arXiv 2509.20214, NeurIPS 2025; github.com/snu-mllab/Q-Palette",
+   "mechanism": "Family of fractional-bit quantizers (trellis-coded near distortion-optimal down through fast scalar) with optimized CUDA kernels across bitwidths; mixed-scheme per-layer bit allocation; ~36% faster decoding vs NF baselines.",
+   "training_free": "NO \u2014 weight-only PTQ with calibration; value-modifying; needs FP weights.",
+   "inference_native": "YES on CUDA; no Metal.",
+   "metal_feasible": "Kernels portable with effort (trellis decode proven on Metal via EXL4 port); moot for construction reasons.",
+   "est_savings": "N/A \u2014 operating range ~2-4 bpw, above our base.",
+   "notes": "Reference for what fractional-bit kernel engineering looks like in 2025; rejected on the same three grounds as AQLM/QuIP#/QTIP."
+  }
+ ],
+ [
+  {
+   "method": "Sublayer-granular dropping (MHA and MLP pruned independently): BlockPruner / FinerCut / data-free attention-layer pruning",
+   "source": "BlockPruner arXiv:2406.10594 (ACL Findings 2025); FinerCut arXiv:2405.18218; 'Data-Free Pruning of Self-Attention Layers in LLMs' arXiv:2512.20636 (Dec 2025); He et al. 'Not All Attention Is Needed'",
+   "mechanism": "Treat each block's attention sublayer and MLP sublayer as separate deletion candidates instead of dropping whole transformer blocks. Selection via perplexity/KL on calibration text (BlockPruner: iterative greedy; FinerCut: output-change minimization; 2512.20636: fully data-free identity-similarity criterion). Residual stream makes removal a pure module skip.",
+   "training_free": "YES. Deletion-only; selection uses calibration text (or none for the data-free variant). No gradients, no weight updates.",
+   "inference_native": "YES. Surviving weights byte-identical, format untouched; MLX just skips the module (same as existing block-drop operator, finer granularity).",
+   "metal_feasible": "Trivial \u2014 no kernel changes at all; config/module-list edit in the MLX model class.",
+   "est_savings": "Attention sublayer of Bonsai ~16 MB/block vs ~54 MB for a whole block (MLP ~38 MB). FinerCut reports 42% of attention sublayers removable in Llama3-70B at ~99% performance without fine-tuning; mid/late-layer attention is the most redundant. Plausibly 300-600 MB on the ~3.8 GB pack beyond whole-block budget at equal damage.",
+   "notes": "Best single fit for bonsai-fold that a whole-block-only sweep would miss: adds 'drop-attn' / 'drop-mlp' operators orthogonal to the H4 merges. Fully value-preserving. Caveat: dropping attention changes KV-cache layout per layer (must keep DSpark drafter disabled, already project policy)."
+  },
+  {
+   "method": "EvoPress-style evolutionary search over per-block compression profiles",
+   "source": "EvoPress arXiv:2410.14649 (ICML 2025, IST-DASLab, code: github.com/IST-DASLab/EvoPress); GeLaCo arXiv:2507.10059 (evolutionary layer-collapse search with module-wise similarity fitness, Pareto frontier over compression x quality)",
+   "mechanism": "Search (evolutionary, low sample complexity, provable convergence) over which blocks to drop / which spans to merge / which tensors get which format, scored on a small calibration set. Key empirical finding: per-layer error is NOT monotonic or additive \u2014 profiles with lower summed per-layer error can be worse end-to-end, so greedy/one-shot metric ranking (BI, cosine, per-block KL) is provably suboptimal.",
+   "training_free": "YES. Pure configuration search; weights untouched. Calibration data used only for scoring candidates.",
+   "inference_native": "YES. Output is just a drop/merge profile executed by existing operators.",
+   "metal_feasible": "Yes \u2014 it is a driver loop around existing MLX eval; fits the 2h-job constraint if generations are batched and fitness uses cheap KL on short sequences.",
+   "est_savings": "No new bytes by itself; EvoPress reports state-of-the-art quality at fixed drop budgets vs metric-ranked dropping \u2014 i.e., more blocks removable at the same damage threshold.",
+   "notes": "Directly reusable to co-optimize the joint space bonsai-fold already has (drop + sign-election merge + promotion merge per span). GeLaCo is the closest published relative of the H4 merge search. Counterpoint worth reading first: arXiv:2604.24938 below."
+  },
+  {
+   "method": "Calibration-configuration dominance in depth pruning (methodology result)",
+   "source": "'Rethinking Layer Redundancy: Calibration Matters More Than Search in LLM Depth Pruning' arXiv:2604.24938 (2026)",
+   "mechanism": "Empirical study across LLM families: the calibration data configuration (domain, length, amount) changes which layers look redundant far more than the choice of search/importance algorithm; under fixed calibration, simple one-shot selection converges to what complex searches find.",
+   "training_free": "YES (analysis of training-free pipelines).",
+   "inference_native": "N/A \u2014 methodology, not a compressor.",
+   "metal_feasible": "N/A.",
+   "est_savings": "Indirect: better drop-set choice at zero added compute by diversifying calibration text before investing in fancier search.",
+   "notes": "Cheap, immediately actionable check for the existing on-policy vs off-policy KL chains: sweep calibration domain/length before trusting any block ranking. Tension with EvoPress's claim that search matters \u2014 worth one controlled experiment on Bonsai."
+  },
+  {
+   "method": "Vocabulary trimming: delete unused/rare token rows from 1-bit embedding and lm_head",
+   "source": "VocabTrim arXiv:2506.22694; SqueezeBits 'Vocabulary Trimming' blog (blog.squeezebits.com/vocabulary-trimming-methods); VocabTailor arXiv:2508.15229; Compact arXiv:2509.06836",
+   "mechanism": "Vocab 248,320 is multilingual-sized; token frequencies are Zipfian and 'dead' tokens (unused scripts/languages) never fire. Delete their rows from the quantized embedding and lm_head, remap token ids in tokenizer + config. Row deletion respects g128 packing (groups run along the 5120 hidden dim within a row), so surviving rows are byte-identical.",
+   "training_free": "YES. Pure row selection/deletion from corpus token statistics; no weight values touched.",
+   "inference_native": "YES. Smaller lookup table and smaller logits GEMM \u2014 strictly faster decode (lm_head is memory-bound at 248k vocab).",
+   "metal_feasible": "Trivial \u2014 smaller tensors, zero kernel changes. Tokenizer remap is pure Python.",
+   "est_savings": "Embed + lm_head = 2 x 248,320 x 5120 = 2.54B params \u2248 9.4% of the 27B \u2248 ~358 MB at 1.125 bpw. Trimming 60-70% of vocab (English-centric eval) saves ~215-250 MB (~6% of pack) plus decode speedup.",
+   "notes": "This is the 'orthogonal axis' item in pending task #10. Caveats: (a) OOV text degrades unless byte-fallback tokens are kept \u2014 always keep byte/ASCII tokens and special tokens; (b) folded-vs-unfolded comparisons must use the same trimmed tokenizer on both sides to stay within-format; (c) token-frequency census over the eval corpora is a cheap first experiment."
+  },
+  {
+   "method": "Structured width pruning of MLP intermediate channels in multiples of 128",
+   "source": "FLAP (arXiv:2312.11983, AAAI 2024, retraining-free structured pruning); Compact arXiv:2509.06836 (joint vocab + FFN-channel pruning); Wanda arXiv:2306.11695 (importance = |W| x activation norm); 'Function-Aware Neuron Grouping' arXiv:2512.23014",
+   "mechanism": "Rank the 17,408 MLP intermediate channels per block by activation-aware importance (calibration forward passes only); delete lowest channels as whole rows of up/gate projections and matching columns of down_proj. Deleting in multiples of 128 keeps down_proj's g128 input-dim groups intact so surviving groups stay byte-identical (rows of up/gate are trivially safe).",
+   "training_free": "YES if selection-only (Wanda/FLAP-style scoring). FLAP's optional bias compensation is a closed-form weight edit \u2014 skip it or FLAG it.",
+   "inference_native": "YES. Just smaller K/N dims; MLX quantized matmul handles any K that is a multiple of the group size.",
+   "metal_feasible": "Yes, no kernel change if deletions are 128-aligned on the down_proj input dim; otherwise a repack (byte-level shuffle, value-preserving) is needed.",
+   "est_savings": "MLP = 3 x 5120 x 17408 per block \u2248 65% of block bytes. Pruning 12.5% of channels (2176 = 17 groups of 128) model-wide \u2248 8% of MLP bytes \u2248 ~250 MB, tunable per block (combine with per-block KL sensitivity).",
+   "notes": "Second orthogonal axis in task #10. Interacts with depth ops: width-prune the blocks you keep, drop the ones you don't. Attention head pruning is the same idea but collides with RoPE/GQA layout \u2014 check Bonsai head config in the census first."
+  },
+  {
+   "method": "LaCo layer-collapse merging (prior art for the promotion merge family)",
+   "source": "LaCo arXiv:2402.11187 ('Reserving-Differences-while-Seeking-Common'); MKA (manifold-based knowledge alignment merging, arXiv:2405.16039 family)",
+   "mechanism": "Collapse a span of consecutive layers into one by folding parameter differences of later layers into an anchor layer (closed-form weight arithmetic), candidate spans chosen by representation similarity.",
+   "training_free": "YES (closed-form merge, similarity-based selection).",
+   "inference_native": "Only if the merged result is representable in a native format. Raw delta-addition of two g128-affine 1-bit tensors yields up to 4 values per position \u2014 exactly the regime bonsai-fold's 2-bit promotion merge formalizes. Generic FP averaging/LaCo output is NOT 1-bit-representable \u2192 requantization \u2192 FLAG.",
+   "metal_feasible": "Promotion-merge variant already runs in the project's patched MLX; generic LaCo would need dense fallback (out of scope).",
+   "est_savings": "Same as block dropping per collapsed span, with lower damage than deletion on mid-depth spans (LaCo: ~25-30% layer reduction keeping most benchmark performance on Llama-2).",
+   "notes": "Mainly useful as citable prior art positioning H4's sign-election/promotion merges; MKA's similarity-based span selection is a drop-in alternative candidate generator. FLAG any variant that leaves the closed-form/native-format rules."
+  },
+  {
+   "method": "ReplaceMe: replace a pruned block span with a closed-form linear transform",
+   "source": "arXiv:2505.02819 (NeurIPS 2025, code: github.com/mts-ai/ReplaceMe)",
+   "mechanism": "Estimate a single linear map (least squares / optimal transport on calibration activations) approximating the removed span's residual update, then fold it into an adjacent projection matrix. Up to ~25% depth pruning retaining ~90% performance, no training.",
+   "training_free": "YES in their sense (closed-form estimation, no gradients) \u2014 but it is calibration-based construction of new weight values.",
+   "inference_native": "FLAG. Folding the map into a surviving 1-bit tensor requires requantization (breaks byte-identical rule). Keeping it as a standalone f16 5120x5120 matrix is value-preserving for survivors but costs 52.4 MB \u2014 roughly one whole block's bytes \u2014 so it only pays when one LT replaces a multi-block span (2+ blocks \u2248 108+ MB).",
+   "metal_feasible": "Standalone-LT variant: trivial (one extra dense matmul in MLX). Folded variant: no.",
+   "est_savings": "Net ~54 MB per (2-block span \u2192 1 LT), scaling with span length; damage reportedly much lower than bare dropping at equal depth removed.",
+   "notes": "Report FLAGGED: constraint-crossing under the strict 'no calibration-based weight construction' reading, even though gradient-free. If ever allowed, the standalone-LT form preserves all surviving weights byte-identically and slots in as a third operator besides drop and merge."
+  },
+  {
+   "method": "EoRA: training-free low-rank compensation of compression damage",
+   "source": "arXiv:2410.21271 (NVIDIA, ICLR-W 2026, code: github.com/NVlabs/EoRA)",
+   "mechanism": "Project the output error introduced by compression (here: block drops/merges) onto the eigenspace of input activations and derive closed-form low-rank adapters (minutes, small calibration set, no gradients) that are added in parallel to surviving layers. Recovers e.g. +4-11 points on reasoning tasks for aggressively compressed Llama models.",
+   "training_free": "YES (SVD/eigendecomposition only, no fine-tuning) \u2014 but adapters are new calibration-derived parameters; original weights untouched.",
+   "inference_native": "YES. Extra rank-r f16 matmul alongside the 1-bit matmul; MLX expresses this natively (LoRA-style path).",
+   "metal_feasible": "Trivial \u2014 standard dense ops, no kernel work.",
+   "est_savings": "NEGATIVE bytes: rank-64 pair on one 5120x5120 linear \u2248 1.3 MB f16. Buys damage headroom that converts into 1-3 extra droppable blocks (~54-160 MB net) if compensation recovers enough KL.",
+   "notes": "FLAG for project-rule review: it does not alter surviving weights (letter of the rule holds) but adds calibration-derived parameters, which brushes against 'no calibration-based weight updates'. Cleanest use: compensate only merged/dropped spans and report with/without."
+  },
+  {
+   "method": "Double quantization of the g128 scale/bias metadata (k-quant superblock trick)",
+   "source": "QLoRA double quantization arXiv:2305.14314; llama.cpp k-quants (6-bit sub-scales + per-superblock f16, github.com/ggml-org/llama.cpp tools/quantize); EntroLLM arXiv:2505.02380",
+   "mechanism": "The f16 scale+bias per 128 weights is the pack's overhead (0.125-0.25 bpw of the 1.125 bpw effective \u2014 i.e., 11-20% of all bytes). Quantize scales/biases to 8 bits per group with one f16 meta-scale per superblock of 16-32 groups, exactly as GGUF k-quants do.",
+   "training_free": "YES, data-free (pure rounding of existing metadata).",
+   "inference_native": "YES with a modest kernel change: one extra multiply in the dequant path of the patched MLX 1-bit kernel.",
+   "metal_feasible": "Yes \u2014 small, localized edit to the existing fork's dequant inner loop; k-quants prove the pattern on every backend.",
+   "est_savings": "Halves metadata: ~5-10% of total pack bytes (~200-400 MB region on a 3.8 GB pack) with typically negligible quality cost at 8-bit scales.",
+   "notes": "FLAGGED value-modifying: dequantized weight values shift slightly (scale rounding), violating byte-identical weight preservation. Within-format damage is measurable with the existing KL harness. The single biggest 'deployment-format community' trick applicable to this pack."
+  },
+  {
+   "method": "Lossless entropy coding of weight planes with on-the-fly decode (DFloat11 / EntroLLM / ZipNN family)",
+   "source": "DFloat11 arXiv:2504.11651 (NeurIPS 2025, github.com/LeanModels/DFloat11); EntroLLM arXiv:2505.02380; ZipNN (Hershcovitch et al. 2025); ECF8 (Yang et al. 2025)",
+   "mechanism": "Entropy-code low-entropy weight representations (BF16 exponents, skewed quantized codes) and decode inside the inference kernel (custom CUDA Huffman/LUT decoders). ~30% lossless for BF16 models.",
+   "training_free": "YES, lossless variants are perfectly value-preserving.",
+   "inference_native": "On CUDA yes; on Metal NO \u2014 no such kernels exist for MLX, and a warp-cooperative Huffman decoder is beyond 'modest kernel changes'. ZipNN is load-time decompress-to-dense \u2192 violates constraint (2) outright (disk-only benefit).",
+   "metal_feasible": "Not today; substantial Metal kernel project.",
+   "est_savings": "Near zero on the dominant plane anyway: 1-bit sign planes of a trained model are near-maximum entropy (see Sign Lock-In below), so only the f16 scale/bias sidecar compresses \u2014 maybe 20-40% of the 11-20% metadata share \u2248 2-8% of pack, before kernel cost.",
+   "notes": "Mostly EXCLUDED by constraints (2)/(3). One free by-product worth doing: a cheap entropy census of Bonsai's sign planes and scale/bias planes (gzip/zstd ratio per tensor) to (a) confirm signs are incompressible, (b) detect any exactly duplicated scale/bias patterns that could be deduped losslessly at file level."
+  },
+  {
+   "method": "Sign Lock-In: sign planes bottleneck sub-bit compression (negative result, saves effort)",
+   "source": "arXiv:2602.17063 (Feb 2026); QMoE arXiv:2310.16795 as the contrasting case",
+   "mechanism": "Evidence that trained weight-sign configurations persist from random init and are statistically near-incompressible \u2014 the sign plane is the irreducible object 1-bit formats store. QMoE's sub-1-bit dictionary coding only works because sparse MoE experts have hyper-compressible (near-zero-dominated) quantized weights; dense Bonsai does not.",
+   "training_free": "N/A (analysis).",
+   "inference_native": "N/A.",
+   "metal_feasible": "N/A.",
+   "est_savings": "Zero \u2014 its value is ruling out the 'entropy-code the sign bits' direction for a dense 1-bit model before anyone spends a week on it.",
+   "notes": "Below 1 bit/weight on this model, the only honest levers are structural (fewer weights: depth, width, vocab) or metadata (scales) \u2014 which is precisely bonsai-fold's thesis. Good citation for the paper's related-work section."
+  },
+  {
+   "method": "SeedLM: weights as LFSR pseudo-random seeds + closed-form coefficients",
+   "source": "Apple, ICLR 2025, arXiv:2410.10714, machinelearning.apple.com/research/seedlm-compressing",
+   "mechanism": "Per weight block, search an LFSR seed whose generated basis, linearly combined with a few quantized coefficients (least squares, data-free), reconstructs the block; kernels regenerate weights on the fly, trading compute for memory traffic. 3-4 bpw on Llama-3 70B at parity with calibration methods.",
+   "training_free": "YES (data-free, closed-form).",
+   "inference_native": "In principle (FPGA demos); no Metal/MLX kernels exist \u2014 LFSR-regeneration matmul is a new kernel family, more than a modest change.",
+   "metal_feasible": "Not without significant kernel work, ironically despite being Apple research.",
+   "est_savings": "Not applicable at 1.125 bpw base: SeedLM targets 3-4 bpw from FP16; approximating existing 1-bit sign planes with sub-1-bit seeds would be severe lossy re-approximation. Only conceivable niche: compressing the f16 scale sidecar (~unexplored).",
+   "notes": "FLAGGED value-modifying and effectively EXCLUDED for this base model; included because it is the one Apple-native 'exotic format' a Metal-focused reviewer will ask about."
+  },
+  {
+   "method": "Cross-layer weight sharing / shared-basis reconstruction (MASA, Basis Sharing, DeltaLLM)",
+   "source": "MASA arXiv:2508.04581; Basis Sharing (ICLR 2025, openreview.net/forum?id=gp32jvUquq); DeltaLLM arXiv:2501.18596; 'Cross-layer Attention Sharing' arXiv:2408.01890",
+   "mechanism": "Represent many layers' matrices as combinations of shared dictionary atoms / SVD bases (+ per-layer coefficients or low-rank deltas), storing the shared part once.",
+   "training_free": "MASA/Basis Sharing: gradient-free decomposition but calibration-derived and value-modifying. DeltaLLM: requires training the deltas \u2192 fails constraint (1) outright.",
+   "inference_native": "NO for a 1-bit pack: reconstruction produces dense FP weights (decompress-to-dense at runtime) and the shared-basis product cannot be expressed in the g128 1-bit format.",
+   "metal_feasible": "No native path; would need a new kernel family plus dense intermediates.",
+   "est_savings": "Papers claim 20-50% on FP models; effectively 0 available here.",
+   "notes": "EXCLUDED on constraints (1)/(2). The only surviving relative is exact dedup: if any two quantized tensors are byte-identical (e.g., after merges), store once and alias in safetensors \u2014 lossless, trivially native, but expected hit rate ~0 outside deliberate ties."
+  },
+  {
+   "method": "Tied / shared embedding-unembedding and per-tensor format mixing (deployment-community tricks)",
+   "source": "ExecuTorch use_shared_embedding + 4-bit g32 embedding quant (docs.pytorch.org/executorch, examples/models/llama); llama.cpp --token-embedding-type / --leave-output-tensor / k-quant mixes; MLX mixed_2_6-style quant_predicate recipes (github.com/ml-explore/mlx-examples PR#1132)",
+   "mechanism": "(a) Tie lm_head to the embedding table and store once; (b) give embedding/lm_head/first/last blocks different formats than the trunk via per-tensor format predicates.",
+   "training_free": "(a) YES mechanically, but Bonsai's embed and lm_head are presumably not weight-tied, so tying = replacing one with the other \u2192 value-modifying FLAG and likely large damage; worth a one-line census check for near-duplication first. (b) YES \u2014 but only promotion (more bits) is possible from a 1-bit base, which grows the pack.",
+   "inference_native": "YES for both \u2014 MLX QuantizedEmbedding already supports as_linear reuse (tied path), and per-tensor formats are native.",
+   "metal_feasible": "Trivial.",
+   "est_savings": "(a) ~179 MB (one full 248k x 5120 1-bit matrix) IF tables were tied/near-identical \u2014 must verify with a cosine/byte census before believing; (b) zero-to-negative bytes, quality lever only.",
+   "notes": "The census (embed vs lm_head similarity, per-row norms) is a 10-minute job on existing tooling and settles (a) definitively. If Bonsai shipped untied (likely for a 27B), record the negative result and move on."
+  },
+  {
+   "method": "Depth pruning harms test-time scaling / long CoT disproportionately (evaluation caveat)",
+   "source": "'When Fewer Layers Break More Chains' arXiv:2510.22228 (Oct 2025)",
+   "mechanism": "Empirical: layer-pruned models degrade far more on long chain-of-thought and test-time-scaling regimes than on short-form benchmarks; damage is invisible to perplexity/short-KL metrics.",
+   "training_free": "N/A (evaluation finding).",
+   "inference_native": "N/A.",
+   "metal_feasible": "N/A.",
+   "est_savings": "None \u2014 it caps how much depth removal survives honest evaluation.",
+   "notes": "Directly relevant because project policy runs Bonsai with thinking mode ON: the anchor mini-bench should include at least one long-reasoning task, or the KL-chain results will overstate how many blocks are safely droppable. Cheap to add to the existing mini-bench chain."
+  },
+  {
+   "method": "Retraining-based recovery after pruning (perimeter marker: excluded)",
+   "source": "'A Free Lunch in LLM Compression: Revisiting Retraining after Pruning' arXiv:2510.14444; 'Reassessing Layer Pruning in LLMs' (2024); Minitron/Puzzle/Nemotron line (NVIDIA)",
+   "mechanism": "All post-2025 SOTA depth-compression numbers that beat training-free methods do it via cheap retraining/distillation after pruning.",
+   "training_free": "NO \u2014 categorically excluded by constraint (1).",
+   "inference_native": "\u2014",
+   "metal_feasible": "\u2014",
+   "est_savings": "\u2014",
+   "notes": "Listed only to mark the sweep perimeter: when comparing bonsai-fold results against literature, filter out these hybrids or the training-free numbers will look artificially weak. Also excluded on the same ground: SliceGPT/SVD-LLM/ASVD/CALDERA (calibration-optimized weight rewrites, dense outputs incompatible with the 1-bit format)."
+  }
+ ]
+]
