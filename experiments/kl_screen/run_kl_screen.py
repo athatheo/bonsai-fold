@@ -31,7 +31,7 @@ from pathlib import Path
 import mlx.core as mx
 import mlx.nn as nn
 
-from bonsaifold.loader import drop_view, load_bonsai
+from bonsaifold.loader import drop_view, load_bonsai, sublayer_view
 from bonsaifold.probes import load_probe_set, probe_fingerprint
 
 CHUNK = 256  # positions per float32 softmax chunk
@@ -63,10 +63,17 @@ def main():
         default=[],
         help="comma-separated block indices; repeat per candidate",
     )
+    ap.add_argument(
+        "--drop-sub",
+        action="append",
+        default=[],
+        help="sublayer-drop candidate: tokens a<idx>/m<idx> joined by '+', "
+        "e.g. 'a58' or 'a58+a38+m4'; repeat per candidate",
+    )
     ap.add_argument("--candidate-pack", action="append", default=[])
     args = ap.parse_args()
-    if not args.drop and not args.candidate_pack:
-        ap.error("give at least one --drop or --candidate-pack")
+    if not args.drop and not args.drop_sub and not args.candidate_pack:
+        ap.error("give at least one --drop, --drop-sub or --candidate-pack")
 
     probes = load_probe_set(args.probes)  # fails fast BEFORE model load
     fingerprint = probe_fingerprint(probes)
@@ -94,7 +101,11 @@ def main():
 
     # candidate names are derivable without the model: skip the ~5GB load
     # (and mlx startup) when every (candidate, item) pair is checkpointed
-    names = [f"drop[{spec}]" for spec in args.drop] + list(args.candidate_pack)
+    names = (
+        [f"drop[{spec}]" for spec in args.drop]
+        + [f"sub[{spec}]" for spec in args.drop_sub]
+        + list(args.candidate_pack)
+    )
     if all((n, item["id"]) in done for n in names for item in probes["items"]):
         print(f"{out} already complete")
         return
@@ -104,6 +115,13 @@ def main():
         (f"drop[{spec}]", drop_view(ref_model, [int(i) for i in spec.split(",")]))
         for spec in args.drop
     ]
+    for spec in args.drop_sub:
+        da, dm = [], []
+        for tokn in spec.split("+"):
+            (da if tokn[0] == "a" else dm if tokn[0] == "m" else None).append(int(tokn[1:]))
+        candidates.append(
+            (f"sub[{spec}]", sublayer_view(ref_model, drop_attn=da, drop_mlp=dm))
+        )
     for pack in args.candidate_pack:
         candidates.append((pack, load_bonsai(pack)[0]))
 
