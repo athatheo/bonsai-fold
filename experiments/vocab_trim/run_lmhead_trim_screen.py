@@ -71,6 +71,7 @@ def main():
     saved_mb = rows_deleted * (5120 * 1.125 / 8 + 2 * 2 * 40) / 1e6  # packed row + scales/biases
 
     stats = []
+    mass_acc = mx.zeros((VOCAB,), dtype=mx.float32)  # model-emitted mass per token
     for item in probes["items"]:
         ids = item["token_ids"]
         logits = model(mx.array([ids]))
@@ -79,9 +80,10 @@ def main():
         for s in range(0, n, CHUNK):
             x = logits[:, s : s + CHUNK].astype(mx.float32)
             p = mx.softmax(x, axis=-1)
+            mass_acc = mass_acc + p.sum(axis=(0, 1))
             dropped = (p * (1 - keep_mx)).sum(-1)  # [1, T]
             am = mx.argmax(x, axis=-1)
-            mx.eval(dropped, am)
+            mx.eval(dropped, am, mass_acc)
             d = np.array(dropped, copy=False)[0]
             dm_sum += float(d.sum()); dm_max = max(dm_max, float(d.max()))
             nll_sum += float(-np.log1p(-np.clip(d, 0, 1 - 1e-9)).sum())
@@ -111,6 +113,23 @@ def main():
     (OUT / f"lmhead_trim_screen_{name}.json").write_text(json.dumps(report, indent=1))
     (OUT / "keep_list.json").write_text(json.dumps({"keep": keep}))
     print(json.dumps({k: v for k, v in report.items() if k != "items"}, indent=1))
+
+    # ---- v2 keep-set design data: model-emitted mass ranking ----
+    mass = np.array(mass_acc, copy=False).astype(np.float64)
+    mass /= mass.sum()
+    order = np.argsort(-mass)
+    cum = np.cumsum(mass[order])
+    cuts = {}
+    for target in (1e-3, 1e-4, 1e-5, 1e-6):
+        k = int(np.searchsorted(cum, 1 - target) + 1)
+        k_pad = k + (-k) % 128
+        cuts[f"dropped_mass<={target:g}"] = {
+            "keep_rows": k_pad,
+            "saved_mb": round((VOCAB - k_pad) * (5120 * 1.125 / 8 + 160) / 1e6, 1),
+        }
+    np.save(OUT / f"model_mass_{name}.npy", mass)
+    (OUT / f"mass_rank_cuts_{name}.json").write_text(json.dumps(cuts, indent=1))
+    print("v2 mass-ranked cuts:", json.dumps(cuts, indent=1))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,18 @@
+{
+ "dropped_mass<=0.001": {
+  "keep_rows": 6144,
+  "saved_mb": 213.1
+ },
+ "dropped_mass<=0.0001": {
+  "keep_rows": 53504,
+  "saved_mb": 171.4
+ },
+ "dropped_mass<=1e-05": {
+  "keep_rows": 184576,
+  "saved_mb": 56.1
+ },
+ "dropped_mass<=1e-06": {
+  "keep_rows": 236416,
+  "saved_mb": 10.5
+ }
+}
