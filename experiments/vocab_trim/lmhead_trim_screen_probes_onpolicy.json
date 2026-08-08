@@ -1,0 +1,821 @@
+{
+ "probes": {
+  "seed": 20260715,
+  "tokenizer_pack": "/Users/atheocharis/repos/bonsai-fold/models/Bonsai-27B-mlx-1bit",
+  "target_tokens": 2048,
+  "completion_pack": "/Users/atheocharis/repos/bonsai-fold/models/Bonsai-27B-mlx-1bit",
+  "completion_max_tokens": 1024,
+  "completion_seed": 20260715,
+  "complete": true
+ },
+ "probe_fingerprint": "f47ad8da24426755",
+ "keep_rows": 26496,
+ "rows_deleted": 221824,
+ "saved_mb": 195.2,
+ "mean_dropped_mass": 0.002576707215493627,
+ "max_dropped_mass": 0.9703478217124939,
+ "mean_nll_inflation_nats": 0.0032343608091704745,
+ "mean_argmax_dropped_frac": 0.0008089818188681458,
+ "items": [
+  {
+   "id": "math-probe-257",
+   "tokens": 1058,
+   "mean_dropped_mass": 0.002167497134735508,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0024952122434139224,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-409",
+   "tokens": 1093,
+   "mean_dropped_mass": 0.0018769508041952688,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.002256839129688646,
+   "argmax_dropped_frac": 0.0009149130832570906
+  },
+  {
+   "id": "math-probe-246",
+   "tokens": 931,
+   "mean_dropped_mass": 0.005155519787402209,
+   "max_dropped_mass": 0.8651941418647766,
+   "mean_nll_inflation_nats": 0.006954784840185327,
+   "argmax_dropped_frac": 0.0010741138560687433
+  },
+  {
+   "id": "math-probe-331",
+   "tokens": 1086,
+   "mean_dropped_mass": 0.0009965596784465359,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0011754316557799063,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-100",
+   "tokens": 1249,
+   "mean_dropped_mass": 0.005696874592092344,
+   "max_dropped_mass": 0.854332685470581,
+   "mean_nll_inflation_nats": 0.007908052043784992,
+   "argmax_dropped_frac": 0.0024019215372297837
+  },
+  {
+   "id": "math-probe-391",
+   "tokens": 1125,
+   "mean_dropped_mass": 0.0017851279175115956,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.002031386775482032,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-342",
+   "tokens": 1061,
+   "mean_dropped_mass": 0.001549174748431333,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.001831850591734487,
+   "argmax_dropped_frac": 0.000942507068803016
+  },
+  {
+   "id": "math-probe-024",
+   "tokens": 1137,
+   "mean_dropped_mass": 0.004823233910038471,
+   "max_dropped_mass": 0.9397876858711243,
+   "mean_nll_inflation_nats": 0.007120412915577275,
+   "argmax_dropped_frac": 0.002638522427440633
+  },
+  {
+   "id": "math-probe-192",
+   "tokens": 1073,
+   "mean_dropped_mass": 0.002698621382040231,
+   "max_dropped_mass": 0.8529837131500244,
+   "mean_nll_inflation_nats": 0.004185506395252642,
+   "argmax_dropped_frac": 0.001863932898415657
+  },
+  {
+   "id": "math-probe-238",
+   "tokens": 1080,
+   "mean_dropped_mass": 0.0020536370402960864,
+   "max_dropped_mass": 0.7493749260902405,
+   "mean_nll_inflation_nats": 0.002881999125842143,
+   "argmax_dropped_frac": 0.000925925925925926
+  },
+  {
+   "id": "math-probe-155",
+   "tokens": 1088,
+   "mean_dropped_mass": 0.0028217247283250533,
+   "max_dropped_mass": 0.5985203385353088,
+   "mean_nll_inflation_nats": 0.0035957315601134565,
+   "argmax_dropped_frac": 0.001838235294117647
+  },
+  {
+   "id": "math-probe-414",
+   "tokens": 1072,
+   "mean_dropped_mass": 0.0036352543714595264,
+   "max_dropped_mass": 0.5603389143943787,
+   "mean_nll_inflation_nats": 0.004182701893915325,
+   "argmax_dropped_frac": 0.0018656716417910447
+  },
+  {
+   "id": "math-probe-305",
+   "tokens": 1069,
+   "mean_dropped_mass": 0.0022405204614728926,
+   "max_dropped_mass": 0.8911088705062866,
+   "mean_nll_inflation_nats": 0.003793574401466707,
+   "argmax_dropped_frac": 0.0018709073900841909
+  },
+  {
+   "id": "math-probe-484",
+   "tokens": 1070,
+   "mean_dropped_mass": 0.0016600622316805002,
+   "max_dropped_mass": 0.705231785774231,
+   "mean_nll_inflation_nats": 0.0023263376924235407,
+   "argmax_dropped_frac": 0.0009345794392523365
+  },
+  {
+   "id": "math-probe-252",
+   "tokens": 1060,
+   "mean_dropped_mass": 0.0018281677966269683,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0021106696766713317,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-427",
+   "tokens": 1082,
+   "mean_dropped_mass": 0.0015771919707040338,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.001795668542423189,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-059",
+   "tokens": 1083,
+   "mean_dropped_mass": 0.003689340951259997,
+   "max_dropped_mass": 0.6580566167831421,
+   "mean_nll_inflation_nats": 0.0045169607743909814,
+   "argmax_dropped_frac": 0.0009233610341643582
+  },
+  {
+   "id": "math-probe-039",
+   "tokens": 1061,
+   "mean_dropped_mass": 0.001108399136169681,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0013020634589328156,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-437",
+   "tokens": 1135,
+   "mean_dropped_mass": 0.0031916736309223763,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.003648623102036867,
+   "argmax_dropped_frac": 0.000881057268722467
+  },
+  {
+   "id": "math-probe-341",
+   "tokens": 1048,
+   "mean_dropped_mass": 0.0018464692064937744,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0021059500792895564,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-480",
+   "tokens": 1095,
+   "mean_dropped_mass": 0.001442959957403135,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0016960796929861857,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-121",
+   "tokens": 1055,
+   "mean_dropped_mass": 0.0018540167331395415,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.002120942850619272,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-389",
+   "tokens": 1170,
+   "mean_dropped_mass": 0.005151306755012936,
+   "max_dropped_mass": 0.8059066534042358,
+   "mean_nll_inflation_nats": 0.006595612025190877,
+   "argmax_dropped_frac": 0.0017094017094017094
+  },
+  {
+   "id": "math-probe-316",
+   "tokens": 1080,
+   "mean_dropped_mass": 0.002798900008201599,
+   "max_dropped_mass": 0.5226770043373108,
+   "mean_nll_inflation_nats": 0.003342043084126932,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-354",
+   "tokens": 1054,
+   "mean_dropped_mass": 0.0016384579293810756,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0019245006355682922,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-489",
+   "tokens": 1098,
+   "mean_dropped_mass": 0.003174547176216076,
+   "max_dropped_mass": 0.9538929462432861,
+   "mean_nll_inflation_nats": 0.00551692760120721,
+   "argmax_dropped_frac": 0.0018214936247723133
+  },
+  {
+   "id": "math-probe-310",
+   "tokens": 1106,
+   "mean_dropped_mass": 0.0030620239504948123,
+   "max_dropped_mass": 0.6898012757301331,
+   "mean_nll_inflation_nats": 0.0037540363486364458,
+   "argmax_dropped_frac": 0.0009041591320072332
+  },
+  {
+   "id": "math-probe-213",
+   "tokens": 1102,
+   "mean_dropped_mass": 0.0012396193101424082,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0014269448860722532,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-280",
+   "tokens": 1079,
+   "mean_dropped_mass": 0.0014106660837046906,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0016232378978499724,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-393",
+   "tokens": 1116,
+   "mean_dropped_mass": 0.0034002483919209478,
+   "max_dropped_mass": 0.5574188828468323,
+   "mean_nll_inflation_nats": 0.004087747655488471,
+   "argmax_dropped_frac": 0.0008960573476702509
+  },
+  {
+   "id": "math-probe-023",
+   "tokens": 1062,
+   "mean_dropped_mass": 0.0013082500024507498,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0015131417660151387,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-079",
+   "tokens": 1056,
+   "mean_dropped_mass": 0.0011216565621769846,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0013262343828418207,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-433",
+   "tokens": 1050,
+   "mean_dropped_mass": 0.001884523600844356,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.002188921599244211,
+   "argmax_dropped_frac": 0.0009523809523809524
+  },
+  {
+   "id": "math-probe-137",
+   "tokens": 1055,
+   "mean_dropped_mass": 0.0027149926124568763,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.003057643140928811,
+   "argmax_dropped_frac": 0.0009478672985781991
+  },
+  {
+   "id": "math-probe-141",
+   "tokens": 1094,
+   "mean_dropped_mass": 0.004872580717779165,
+   "max_dropped_mass": 0.6203477382659912,
+   "mean_nll_inflation_nats": 0.0058463649718700425,
+   "argmax_dropped_frac": 0.002742230347349177
+  },
+  {
+   "id": "math-probe-312",
+   "tokens": 1060,
+   "mean_dropped_mass": 0.003639226997236036,
+   "max_dropped_mass": 0.8814098238945007,
+   "mean_nll_inflation_nats": 0.005310319374614167,
+   "argmax_dropped_frac": 0.0009433962264150943
+  },
+  {
+   "id": "math-probe-330",
+   "tokens": 1071,
+   "mean_dropped_mass": 0.0025016399468147446,
+   "max_dropped_mass": 0.652565062046051,
+   "mean_nll_inflation_nats": 0.0031065065088707097,
+   "argmax_dropped_frac": 0.0009337068160597573
+  },
+  {
+   "id": "math-probe-156",
+   "tokens": 1244,
+   "mean_dropped_mass": 0.003941280833202926,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0044578456849913885,
+   "argmax_dropped_frac": 0.002411575562700965
+  },
+  {
+   "id": "math-probe-036",
+   "tokens": 1063,
+   "mean_dropped_mass": 0.0013340401695329373,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0015411513406557301,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-044",
+   "tokens": 1098,
+   "mean_dropped_mass": 0.0032569296753037387,
+   "max_dropped_mass": 0.6268976926803589,
+   "mean_nll_inflation_nats": 0.0042363553289290114,
+   "argmax_dropped_frac": 0.0018214936247723133
+  },
+  {
+   "id": "math-probe-182",
+   "tokens": 1067,
+   "mean_dropped_mass": 0.001489099887271273,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.001689172757378384,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-282",
+   "tokens": 1162,
+   "mean_dropped_mass": 0.00508146475288831,
+   "max_dropped_mass": 0.8329867124557495,
+   "mean_nll_inflation_nats": 0.006606402039117534,
+   "argmax_dropped_frac": 0.0017211703958691911
+  },
+  {
+   "id": "math-probe-169",
+   "tokens": 1060,
+   "mean_dropped_mass": 0.004665296076673944,
+   "max_dropped_mass": 0.5544509291648865,
+   "mean_nll_inflation_nats": 0.005598561917343792,
+   "argmax_dropped_frac": 0.002830188679245283
+  },
+  {
+   "id": "math-probe-468",
+   "tokens": 1067,
+   "mean_dropped_mass": 0.0015854098455781685,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0018304020513338212,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-271",
+   "tokens": 1065,
+   "mean_dropped_mass": 0.0010400427225539942,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.001224217078093212,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-222",
+   "tokens": 1178,
+   "mean_dropped_mass": 0.006078874113604249,
+   "max_dropped_mass": 0.9236059784889221,
+   "mean_nll_inflation_nats": 0.00924730037792834,
+   "argmax_dropped_frac": 0.003395585738539898
+  },
+  {
+   "id": "math-probe-157",
+   "tokens": 1080,
+   "mean_dropped_mass": 0.003287144583925881,
+   "max_dropped_mass": 0.9498245716094971,
+   "mean_nll_inflation_nats": 0.005905346678466433,
+   "argmax_dropped_frac": 0.001851851851851852
+  },
+  {
+   "id": "math-probe-350",
+   "tokens": 1045,
+   "mean_dropped_mass": 0.002930839552263324,
+   "max_dropped_mass": 0.7538082599639893,
+   "mean_nll_inflation_nats": 0.003838050907308405,
+   "argmax_dropped_frac": 0.0009569377990430622
+  },
+  {
+   "id": "math-probe-436",
+   "tokens": 1075,
+   "mean_dropped_mass": 0.0019945167318571274,
+   "max_dropped_mass": 0.50935298204422,
+   "mean_nll_inflation_nats": 0.0024261065155570935,
+   "argmax_dropped_frac": 0.0009302325581395349
+  },
+  {
+   "id": "math-probe-496",
+   "tokens": 1067,
+   "mean_dropped_mass": 0.0018186346359809315,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.002069934930271821,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-253",
+   "tokens": 577,
+   "mean_dropped_mass": 0.0020326573516289016,
+   "max_dropped_mass": 0.4517453610897064,
+   "mean_nll_inflation_nats": 0.0023774650009216634,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-231",
+   "tokens": 1098,
+   "mean_dropped_mass": 0.0014580878240814626,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0016734083615691283,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-314",
+   "tokens": 1097,
+   "mean_dropped_mass": 0.003005874732894689,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.003467323582826578,
+   "argmax_dropped_frac": 0.0018231540565177757
+  },
+  {
+   "id": "math-probe-185",
+   "tokens": 1051,
+   "mean_dropped_mass": 0.001517215168538361,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0017778006357592599,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-303",
+   "tokens": 1111,
+   "mean_dropped_mass": 0.0034746525928203743,
+   "max_dropped_mass": 0.5575938820838928,
+   "mean_nll_inflation_nats": 0.004003353504100219,
+   "argmax_dropped_frac": 0.0009000900090009
+  },
+  {
+   "id": "math-probe-171",
+   "tokens": 1083,
+   "mean_dropped_mass": 0.003387045982059019,
+   "max_dropped_mass": 0.9041436910629272,
+   "mean_nll_inflation_nats": 0.005035984421893611,
+   "argmax_dropped_frac": 0.0009233610341643582
+  },
+  {
+   "id": "math-probe-003",
+   "tokens": 1048,
+   "mean_dropped_mass": 0.004157624162115043,
+   "max_dropped_mass": 0.699733555316925,
+   "mean_nll_inflation_nats": 0.0054795125926816336,
+   "argmax_dropped_frac": 0.0019083969465648854
+  },
+  {
+   "id": "math-probe-196",
+   "tokens": 1057,
+   "mean_dropped_mass": 0.0017027693519557324,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.001911056912596652,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-236",
+   "tokens": 1086,
+   "mean_dropped_mass": 0.0013654069223785928,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0015521901273760348,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-233",
+   "tokens": 1140,
+   "mean_dropped_mass": 0.002203876180410908,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.002518204321856039,
+   "argmax_dropped_frac": 0.0008771929824561404
+  },
+  {
+   "id": "math-probe-081",
+   "tokens": 1083,
+   "mean_dropped_mass": 0.0025517055171430936,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0029285724291153122,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-189",
+   "tokens": 1528,
+   "mean_dropped_mass": 0.005909661205938934,
+   "max_dropped_mass": 0.5811223387718201,
+   "mean_nll_inflation_nats": 0.006607602407097699,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-114",
+   "tokens": 1109,
+   "mean_dropped_mass": 0.0017488606641954188,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0019874107428533307,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-353",
+   "tokens": 1084,
+   "mean_dropped_mass": 0.00451472110709526,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.00514465516752725,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-324",
+   "tokens": 1323,
+   "mean_dropped_mass": 0.006150845928189435,
+   "max_dropped_mass": 0.59192955493927,
+   "mean_nll_inflation_nats": 0.007311823506834646,
+   "argmax_dropped_frac": 0.0030234315948601664
+  },
+  {
+   "id": "math-probe-395",
+   "tokens": 1069,
+   "mean_dropped_mass": 0.0009484170097291427,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.001118267702733291,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-098",
+   "tokens": 1052,
+   "mean_dropped_mass": 0.0021335211473591485,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0024049763869628763,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-076",
+   "tokens": 1073,
+   "mean_dropped_mass": 0.003818226563297247,
+   "max_dropped_mass": 0.6291399598121643,
+   "mean_nll_inflation_nats": 0.004584789019206475,
+   "argmax_dropped_frac": 0.001863932898415657
+  },
+  {
+   "id": "math-probe-173",
+   "tokens": 1089,
+   "mean_dropped_mass": 0.0010023178931246994,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0011735512106187634,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-322",
+   "tokens": 1073,
+   "mean_dropped_mass": 0.002125098883170671,
+   "max_dropped_mass": 0.669349730014801,
+   "mean_nll_inflation_nats": 0.0027867024006037336,
+   "argmax_dropped_frac": 0.0009319664492078285
+  },
+  {
+   "id": "math-probe-459",
+   "tokens": 1113,
+   "mean_dropped_mass": 0.0013370616484922086,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0015280974302139645,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-127",
+   "tokens": 1048,
+   "mean_dropped_mass": 0.0015141318733484007,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.001716474391065026,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-380",
+   "tokens": 1064,
+   "mean_dropped_mass": 0.0014940017490858682,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.00169891892672828,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-180",
+   "tokens": 1054,
+   "mean_dropped_mass": 0.0023642992622336548,
+   "max_dropped_mass": 0.46701592206954956,
+   "mean_nll_inflation_nats": 0.0028246853611497403,
+   "argmax_dropped_frac": 0.0009487666034155598
+  },
+  {
+   "id": "math-probe-340",
+   "tokens": 1132,
+   "mean_dropped_mass": 0.003427599323090732,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.004075188202908519,
+   "argmax_dropped_frac": 0.00265017667844523
+  },
+  {
+   "id": "math-probe-333",
+   "tokens": 1099,
+   "mean_dropped_mass": 0.002098976494617306,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0023824496498099233,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-116",
+   "tokens": 1059,
+   "mean_dropped_mass": 0.0018054359026140655,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0021535963425709584,
+   "argmax_dropped_frac": 0.0009442870632672333
+  },
+  {
+   "id": "math-probe-172",
+   "tokens": 1064,
+   "mean_dropped_mass": 0.0022514634402433786,
+   "max_dropped_mass": 0.5210785269737244,
+   "mean_nll_inflation_nats": 0.0027068895108374605,
+   "argmax_dropped_frac": 0.0009398496240601503
+  },
+  {
+   "id": "math-probe-384",
+   "tokens": 1059,
+   "mean_dropped_mass": 0.0011967174977950603,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0013827050695718178,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-243",
+   "tokens": 1072,
+   "mean_dropped_mass": 0.0025069502481162103,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0029318387161439926,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-497",
+   "tokens": 1085,
+   "mean_dropped_mass": 0.0019333903484630146,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0022134452302884394,
+   "argmax_dropped_frac": 0.0009216589861751152
+  },
+  {
+   "id": "math-probe-383",
+   "tokens": 1070,
+   "mean_dropped_mass": 0.001396852125909841,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.001624574473945894,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-179",
+   "tokens": 1134,
+   "mean_dropped_mass": 0.0022073650660364504,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0024591799023868334,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-052",
+   "tokens": 1064,
+   "mean_dropped_mass": 0.0015774011328340248,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0018597122694714052,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-264",
+   "tokens": 1295,
+   "mean_dropped_mass": 0.007567180023424356,
+   "max_dropped_mass": 0.7429631948471069,
+   "mean_nll_inflation_nats": 0.009156339050497155,
+   "argmax_dropped_frac": 0.0015444015444015444
+  },
+  {
+   "id": "math-probe-454",
+   "tokens": 1156,
+   "mean_dropped_mass": 0.002230687482397525,
+   "max_dropped_mass": 0.9703478217124939,
+   "mean_nll_inflation_nats": 0.004637358793730012,
+   "argmax_dropped_frac": 0.0008650519031141869
+  },
+  {
+   "id": "math-probe-109",
+   "tokens": 1175,
+   "mean_dropped_mass": 0.0011375375932201426,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0013257273793854613,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-292",
+   "tokens": 1159,
+   "mean_dropped_mass": 0.0011409138229585593,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0013094219073072249,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-299",
+   "tokens": 1075,
+   "mean_dropped_mass": 0.0011775532470972732,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0013567057431697152,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-474",
+   "tokens": 1091,
+   "mean_dropped_mass": 0.0016630990368823712,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0018940966569508685,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-012",
+   "tokens": 1105,
+   "mean_dropped_mass": 0.0011338438215029185,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0013293629132919182,
+   "argmax_dropped_frac": 0.0009049773755656109
+  },
+  {
+   "id": "math-probe-267",
+   "tokens": 1228,
+   "mean_dropped_mass": 0.007481008282701822,
+   "max_dropped_mass": 0.7648451328277588,
+   "mean_nll_inflation_nats": 0.009597229938165372,
+   "argmax_dropped_frac": 0.004885993485342019
+  },
+  {
+   "id": "math-probe-241",
+   "tokens": 1076,
+   "mean_dropped_mass": 0.0018480256542591136,
+   "max_dropped_mass": 0.48933833837509155,
+   "mean_nll_inflation_nats": 0.002205570366018933,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-160",
+   "tokens": 1057,
+   "mean_dropped_mass": 0.002687645260184693,
+   "max_dropped_mass": 0.522920548915863,
+   "mean_nll_inflation_nats": 0.0032016977371758975,
+   "argmax_dropped_frac": 0.000946073793755913
+  },
+  {
+   "id": "math-probe-394",
+   "tokens": 1148,
+   "mean_dropped_mass": 0.0035514054180671322,
+   "max_dropped_mass": 0.5578049421310425,
+   "mean_nll_inflation_nats": 0.004329470709089566,
+   "argmax_dropped_frac": 0.002613240418118467
+  },
+  {
+   "id": "math-probe-346",
+   "tokens": 1067,
+   "mean_dropped_mass": 0.001596249285504927,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0018498316370544304,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-347",
+   "tokens": 1093,
+   "mean_dropped_mass": 0.0033002199578692853,
+   "max_dropped_mass": 0.6540972590446472,
+   "mean_nll_inflation_nats": 0.004440458173033238,
+   "argmax_dropped_frac": 0.0027447392497712718
+  },
+  {
+   "id": "math-probe-245",
+   "tokens": 1121,
+   "mean_dropped_mass": 0.0024406075989370575,
+   "max_dropped_mass": 0.8081656694412231,
+   "mean_nll_inflation_nats": 0.0034320612033425326,
+   "argmax_dropped_frac": 0.0008920606601248885
+  },
+  {
+   "id": "math-probe-498",
+   "tokens": 1093,
+   "mean_dropped_mass": 0.0013263248646766465,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0015248667707791158,
+   "argmax_dropped_frac": 0.0
+  },
+  {
+   "id": "math-probe-435",
+   "tokens": 1069,
+   "mean_dropped_mass": 0.0009469961023552324,
+   "max_dropped_mass": 0.4516717195510864,
+   "mean_nll_inflation_nats": 0.0011156670979186683,
+   "argmax_dropped_frac": 0.0
+  }
+ ]
+}

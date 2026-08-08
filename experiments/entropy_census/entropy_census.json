@@ -1,0 +1,28 @@
+{
+ "signs": {
+  "total_mb": 3361.7,
+  "entropy_bits_per_byte": 8.0,
+  "compressible_fraction": 0.0,
+  "potential_mb": 0.0
+ },
+ "scales": {
+  "total_mb": 420.2,
+  "entropy_bits_per_byte": 4.7721,
+  "compressible_fraction": 0.4035,
+  "potential_mb": 169.5,
+  "lane_entropy_example": {
+   "low_byte": 5.0,
+   "high_byte": 1.964
+  }
+ },
+ "biases": {
+  "total_mb": 420.2,
+  "entropy_bits_per_byte": 4.7207,
+  "compressible_fraction": 0.4099,
+  "potential_mb": 172.2,
+  "lane_entropy_example": {
+   "low_byte": 5.0,
+   "high_byte": 1.964
+  }
+ }
+}
