@@ -70,3 +70,66 @@ def test_verify_catches_missing_and_extra(tmp_path, mini_pack):
     del bad_map[2]
     report = verify_byte_identity(mini_pack, dst, bad_map)
     assert not report["ok"] and report["extra"]
+
+
+def test_strip_bias_plane(tmp_path, mini_pack):
+    import numpy as np
+
+    from bonsaifold.fold import strip_bias_plane
+    from bonsaifold.stio import PackReader
+
+    dst = tmp_path / "nobias"
+    n = strip_bias_plane(mini_pack, dst)
+    src, out = PackReader(mini_pack), PackReader(dst)
+    # mini_pack has weight+scales pairs (quantized bases counted) but no
+    # .biases tensors, so nothing is dropped — pure pass-through copy
+    assert n == 8
+    # every kept tensor is byte-identical
+    for name in out.header:
+        assert out.read_raw(name) == src.read_raw(name)
+    assert out.config["text_config"]["bonsai_bias_plane"] == "derived"
+
+
+def test_strip_bias_plane_removes_bias_tensors(tmp_path):
+    import json
+
+    import numpy as np
+    from conftest import st_entry
+
+    from bonsaifold.fold import strip_bias_plane
+    from bonsaifold.stio import PackReader, write_safetensors
+
+    rng = np.random.default_rng(3)
+    d = tmp_path / "src"
+    d.mkdir()
+    entries = {}
+    scales = rng.uniform(0.5, 2.0, size=(8, 2)).astype(np.float16)
+    biases = (-(scales.astype(np.float32)) / 2).astype(np.float16)
+    base = "language_model.model.layers.0.mlp.up_proj"
+    entries[f"{base}.weight"] = st_entry(
+        rng.integers(0, 2**32, size=(8, 8), dtype=np.uint32)
+    )
+    entries[f"{base}.scales"] = st_entry(scales)
+    entries[f"{base}.biases"] = st_entry(biases)
+    entries["language_model.model.norm.weight"] = st_entry(
+        rng.standard_normal(16).astype(np.float16)
+    )
+    write_safetensors(d / "model.safetensors", entries)
+    (d / "config.json").write_text(json.dumps({
+        "model_type": "qwen3_5",
+        "quantization": {"group_size": 128, "bits": 1},
+        "text_config": {"model_type": "qwen3_5_text", "num_hidden_layers": 1,
+                        "layer_types": ["linear_attention"],
+                        "full_attention_interval": 4},
+    }))
+    dst = tmp_path / "nobias"
+    n = strip_bias_plane(d, dst)
+    assert n == 1
+    out = PackReader(dst)
+    assert f"{base}.biases" not in out.header
+    assert out.read_raw(f"{base}.weight") == entries[f"{base}.weight"]["raw"]
+    assert out.read_raw(f"{base}.scales") == scales.tobytes()
+    # loader-side derivation reproduces the stored biases bit-exactly
+    import mlx.core as mx
+    derived = (-(mx.array(scales).astype(mx.float32) / 2)).astype(mx.float16)
+    assert np.array_equal(np.array(derived, copy=False), biases)

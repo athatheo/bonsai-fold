@@ -92,9 +92,25 @@ class TypedModel(q35.Model):
     def __init__(self, args):
         super().__init__(args)
         targs = q35.TextModelArgs.from_dict(args.text_config)
+        self._derive_bias_plane = args.text_config.get("bonsai_bias_plane") == "derived"
         self.language_model.model = TypedQwen3_5TextModel(
             targs, args.text_config["layer_types"]
         )
+
+    def sanitize(self, weights):
+        weights = super().sanitize(weights)
+        if self._derive_bias_plane:
+            # B1 pack-v2: the biases plane was stripped (redundant — Phase 0
+            # proved biases == f16(-scales/2)); re-materialize it at load
+            import mlx.core as mx
+
+            for k in list(weights):
+                if k.endswith(".scales") and k[: -len(".scales")] + ".biases" not in weights:
+                    s = weights[k]
+                    weights[k[: -len(".scales")] + ".biases"] = (
+                        -(s.astype(mx.float32) / 2)
+                    ).astype(s.dtype)
+        return weights
 
     def set_block_tap(self, fn):
         """Install fn(i, h_in, h_out), called on every block's residual

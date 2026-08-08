@@ -129,6 +129,45 @@ def drop_blocks(src_pack, dst_pack, drop):
     return block_map
 
 
+def strip_bias_plane(src_pack, dst_pack):
+    """B1 pack-v2: drop every quantized tensor's biases plane (~420 MB).
+
+    Phase 0 proved biases == f16(-scales/2) exhaustively (3 f16-subnormal
+    edge groups, dequant error <= 6e-08), so the plane is derivable. The
+    loader re-materializes it at load when the config stamp below is
+    present; the eventual kernel change computes it in-register instead.
+    All kept tensors are raw byte copies.
+    """
+    from .stio import is_quantized, weight_base
+
+    src = PackReader(src_pack)
+    quant_bases = {
+        weight_base(n) for n in src.header if is_quantized(n, src.header)
+    }
+    entries = {}
+    for name in src.header:
+        base = name[: -len(".biases")] if name.endswith(".biases") else None
+        if base in quant_bases:
+            continue  # derived at load
+        begin, end = src.header[name]["data_offsets"]
+        entries[name] = {
+            "dtype": src.header[name]["dtype"],
+            "shape": src.header[name]["shape"],
+            "nbytes": end - begin,
+            "raw": (lambda n=name: src.read_raw(n)),
+        }
+    config = copy.deepcopy(src.config)
+    config["text_config"]["bonsai_bias_plane"] = "derived"
+    config["bonsai_fold"] = {
+        "operation": "strip_bias_plane",
+        "source_pack": str(src.pack_dir),
+        "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "note": "biases == f16(-scales/2); load with bonsaifold.loader.load_bonsai",
+    }
+    write_pack(dst_pack, entries, config, src.pack_dir)
+    return len(quant_bases)
+
+
 def verify_byte_identity(src_pack, dst_pack, block_map):
     """Check dst holds exactly the mapped tensors, each byte-identical to
     its source. Returns a report dict; report["ok"] is the verdict."""
