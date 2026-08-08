@@ -1,0 +1,147 @@
+{
+ "reference": "models/Bonsai-27B-mlx-1bit",
+ "probes": {
+  "seed": 20260715,
+  "tokenizer_pack": "/Users/atheocharis/repos/bonsai-fold/models/Bonsai-27B-mlx-1bit",
+  "target_tokens": 2048,
+  "completion_pack": "/Users/atheocharis/repos/bonsai-fold/models/Bonsai-27B-mlx-1bit",
+  "completion_max_tokens": 1024,
+  "completion_seed": 20260715,
+  "complete": true
+ },
+ "probe_fingerprint": "f47ad8da24426755",
+ "candidates": [
+  {
+   "name": "sub[a58]",
+   "mean_kl_nats": 0.0021575430287303497,
+   "items": [
+    {
+     "id": "math-probe-257",
+     "tokens": 1058,
+     "kl_nats": 0.0021575430287303497
+    }
+   ]
+  },
+  {
+   "name": "sub[a38]",
+   "mean_kl_nats": 0.0017388070632469452,
+   "items": [
+    {
+     "id": "math-probe-257",
+     "tokens": 1058,
+     "kl_nats": 0.0017388070632469452
+    }
+   ]
+  },
+  {
+   "name": "sub[a57]",
+   "mean_kl_nats": 0.0016269975703646251,
+   "items": [
+    {
+     "id": "math-probe-257",
+     "tokens": 1058,
+     "kl_nats": 0.0016269975703646251
+    }
+   ]
+  },
+  {
+   "name": "sub[a4]",
+   "mean_kl_nats": 0.0016144040324117827,
+   "items": [
+    {
+     "id": "math-probe-257",
+     "tokens": 1058,
+     "kl_nats": 0.0016144040324117827
+    }
+   ]
+  },
+  {
+   "name": "sub[a5]",
+   "mean_kl_nats": 0.0008939056197755278,
+   "items": [
+    {
+     "id": "math-probe-257",
+     "tokens": 1058,
+     "kl_nats": 0.0008939056197755278
+    }
+   ]
+  },
+  {
+   "name": "sub[m4]",
+   "mean_kl_nats": 0.00037505845662509223,
+   "items": [
+    {
+     "id": "math-probe-257",
+     "tokens": 1058,
+     "kl_nats": 0.00037505845662509223
+    }
+   ]
+  },
+  {
+   "name": "sub[a12]",
+   "mean_kl_nats": 0.0010463331325599372,
+   "items": [
+    {
+     "id": "math-probe-257",
+     "tokens": 1058,
+     "kl_nats": 0.0010463331325599372
+    }
+   ]
+  },
+  {
+   "name": "sub[a8]",
+   "mean_kl_nats": 0.000856045469824781,
+   "items": [
+    {
+     "id": "math-probe-257",
+     "tokens": 1058,
+     "kl_nats": 0.000856045469824781
+    }
+   ]
+  },
+  {
+   "name": "sub[a9]",
+   "mean_kl_nats": 0.0010228332480686825,
+   "items": [
+    {
+     "id": "math-probe-257",
+     "tokens": 1058,
+     "kl_nats": 0.0010228332480686825
+    }
+   ]
+  },
+  {
+   "name": "sub[a61]",
+   "mean_kl_nats": 0.002013603110035392,
+   "items": [
+    {
+     "id": "math-probe-257",
+     "tokens": 1058,
+     "kl_nats": 0.002013603110035392
+    }
+   ]
+  },
+  {
+   "name": "sub[m12]",
+   "mean_kl_nats": 0.0012399011638388742,
+   "items": [
+    {
+     "id": "math-probe-257",
+     "tokens": 1058,
+     "kl_nats": 0.0012399011638388742
+    }
+   ]
+  },
+  {
+   "name": "sub[a37]",
+   "mean_kl_nats": 0.0017693585668653532,
+   "items": [
+    {
+     "id": "math-probe-257",
+     "tokens": 1058,
+     "kl_nats": 0.0017693585668653532
+    }
+   ]
+  }
+ ]
+}
