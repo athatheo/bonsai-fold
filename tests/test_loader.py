@@ -163,3 +163,54 @@ def test_block_tap_fires_per_block():
     calls.clear()
     mx.eval(model(tokens))
     assert calls == []
+
+
+def test_sublayer_view_drop_attn_and_mlp():
+    from bonsaifold.loader import sublayer_view
+
+    layer_types = [L, F, L, L]
+    model = build(layer_types)
+    tm = model.language_model.model
+    tokens = mx.array([[3, 1, 4, 1, 5]])
+    full = np.array(model(tokens), copy=False)
+
+    # drop-attn on block 2: manual forward must match exactly
+    v = sublayer_view(model, drop_attn=[2])
+    got = np.array(v(tokens), copy=False)
+    h = tm.embed_tokens(tokens)
+    import mlx_lm.models.qwen3_5 as q35
+
+    ssm_mask = q35.create_ssm_mask(h, None)
+    fa_mask = q35.create_attention_mask(h, None)
+    for i, l in enumerate(tm.layers):
+        mask = ssm_mask if l.is_linear else fa_mask
+        if i == 2:
+            h = h + l.mlp(l.post_attention_layernorm(h))  # attn skipped
+        else:
+            h = l(h, mask=mask, cache=None)
+    manual = model.language_model.lm_head(tm.norm(h))
+    assert np.array_equal(got, np.array(manual, copy=False))
+    assert not np.array_equal(got, full)
+
+    # dropping BOTH sublayers of a block == dropping the block
+    from bonsaifold.loader import drop_view
+
+    both = sublayer_view(model, drop_attn=[1], drop_mlp=[1])
+    assert np.array_equal(
+        np.array(both(tokens), copy=False),
+        np.array(drop_view(model, [1])(tokens), copy=False),
+    )
+
+    # cache classes follow the underlying block types; decode step works
+    from mlx_lm.models.cache import ArraysCache, KVCache
+
+    v2 = sublayer_view(model, drop_mlp=[0])
+    cache = v2.make_cache()
+    assert [type(c) for c in cache] == [ArraysCache, KVCache, ArraysCache, ArraysCache]
+    mx.eval(v2(tokens, cache=cache))
+    mx.eval(v2(mx.array([[6]]), cache=cache))
+
+    with pytest.raises(ValueError):
+        sublayer_view(model)
+    with pytest.raises(ValueError):
+        sublayer_view(model, drop_attn=[99])

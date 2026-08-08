@@ -168,6 +168,59 @@ def drop_view(model, drop):
     return LayerSubsetView(model, [i for i in range(n) if i not in dropped])
 
 
+class SublayerAdapter:
+    """Wraps a DecoderLayer, optionally skipping its attention or MLP
+    sublayer (residual passthrough). Weight-sharing, non-mutating."""
+
+    def __init__(self, layer, drop_attn=False, drop_mlp=False):
+        self.layer = layer
+        self.drop_attn = drop_attn
+        self.drop_mlp = drop_mlp
+
+    @property
+    def is_linear(self):
+        return self.layer.is_linear
+
+    def __call__(self, x, mask=None, cache=None):
+        l = self.layer
+        if self.drop_attn:
+            h = x
+        else:
+            attn = l.linear_attn if l.is_linear else l.self_attn
+            h = x + attn(l.input_layernorm(x), mask, cache)
+        if self.drop_mlp:
+            return h
+        return h + l.mlp(l.post_attention_layernorm(h))
+
+
+def sublayer_view(model, drop_attn=(), drop_mlp=()):
+    """Zero-copy view with individual attention/MLP sublayers removed.
+
+    Finer-grained than drop_view: a block whose attention is dropped keeps
+    its MLP and vice versa. Dropping BOTH sublayers of a block equals
+    dropping the block (kept for composition sweeps; verified in tests).
+    Mask anchors (fa_idx/ssm_idx) are recomputed over blocks whose
+    attention survives.
+    """
+    tm = model.language_model.model
+    n = len(tm.layers)
+    da, dm = set(drop_attn), set(drop_mlp)
+    if not (da or dm) or not (da | dm) <= set(range(n)):
+        raise ValueError(f"sublayer indices {sorted(da | dm)} not all in 0..{n-1}")
+    view = LayerSubsetView(model, list(range(n)))
+    view.layers = [
+        SublayerAdapter(l, i in da, i in dm) if (i in da or i in dm) else l
+        for i, l in enumerate(tm.layers)
+    ]
+    view.fa_idx = next(
+        (i for i, l in enumerate(tm.layers) if i not in da and not l.is_linear), None
+    )
+    view.ssm_idx = next(
+        (i for i, l in enumerate(tm.layers) if i not in da and l.is_linear), None
+    )
+    return view
+
+
 def layer_types_of(pack_dir):
     config = load_config(Path(pack_dir))
     return config.get("text_config", config)["layer_types"]
