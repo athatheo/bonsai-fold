@@ -116,11 +116,19 @@ def main():
         for spec in args.drop
     ]
     for spec in args.drop_sub:
-        da, dm = [], []
+        parts = {"a": [], "m": [], "b": []}
         for tokn in spec.split("+"):
-            (da if tokn[0] == "a" else dm if tokn[0] == "m" else None).append(int(tokn[1:]))
+            parts[tokn[0]].append(int(tokn[1:]))  # KeyError = loud on bad grammar
         candidates.append(
-            (f"sub[{spec}]", sublayer_view(ref_model, drop_attn=da, drop_mlp=dm))
+            (
+                f"sub[{spec}]",
+                sublayer_view(
+                    ref_model,
+                    drop_attn=parts["a"],
+                    drop_mlp=parts["m"],
+                    drop_blocks=parts["b"],
+                ),
+            )
         )
     for pack in args.candidate_pack:
         candidates.append((pack, load_bonsai(pack)[0]))

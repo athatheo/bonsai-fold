@@ -209,31 +209,37 @@ class SublayerAdapter:
         return h + l.mlp(l.post_attention_layernorm(h))
 
 
-def sublayer_view(model, drop_attn=(), drop_mlp=()):
-    """Zero-copy view with individual attention/MLP sublayers removed.
+def sublayer_view(model, drop_attn=(), drop_mlp=(), drop_blocks=()):
+    """Zero-copy view with individual attention/MLP sublayers removed, and
+    optionally whole blocks (all indices refer to ORIGINAL block numbers).
 
     Finer-grained than drop_view: a block whose attention is dropped keeps
     its MLP and vice versa. Dropping BOTH sublayers of a block equals
     dropping the block (kept for composition sweeps; verified in tests).
-    Mask anchors (fa_idx/ssm_idx) are recomputed over blocks whose
-    attention survives.
+    Mask anchors (fa_idx/ssm_idx) are recomputed over surviving blocks
+    whose attention survives.
     """
     tm = model.language_model.model
     n = len(tm.layers)
-    da, dm = set(drop_attn), set(drop_mlp)
-    if not (da or dm) or not (da | dm) <= set(range(n)):
-        raise ValueError(f"sublayer indices {sorted(da | dm)} not all in 0..{n-1}")
-    view = LayerSubsetView(model, list(range(n)))
+    da, dm, db = set(drop_attn), set(drop_mlp), set(drop_blocks)
+    all_idx = da | dm | db
+    if not all_idx or not all_idx <= set(range(n)):
+        raise ValueError(f"drop indices {sorted(all_idx)} not all in 0..{n-1}")
+    if db & (da | dm):
+        raise ValueError(f"blocks {sorted(db & (da | dm))} both whole-dropped and sublayer-dropped")
+    keep = [i for i in range(n) if i not in db]
+    view = LayerSubsetView(model, keep)
     view.layers = [
-        SublayerAdapter(l, i in da, i in dm) if (i in da or i in dm) else l
-        for i, l in enumerate(tm.layers)
+        SublayerAdapter(tm.layers[i], i in da, i in dm)
+        if (i in da or i in dm)
+        else tm.layers[i]
+        for i in keep
     ]
-    view.fa_idx = next(
-        (i for i, l in enumerate(tm.layers) if i not in da and not l.is_linear), None
-    )
-    view.ssm_idx = next(
-        (i for i, l in enumerate(tm.layers) if i not in da and l.is_linear), None
-    )
+    attn_alive = [
+        (pos, tm.layers[i]) for pos, i in enumerate(keep) if i not in da
+    ]
+    view.fa_idx = next((p for p, l in attn_alive if not l.is_linear), None)
+    view.ssm_idx = next((p for p, l in attn_alive if l.is_linear), None)
     return view
 
 

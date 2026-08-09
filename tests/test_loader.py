@@ -214,3 +214,37 @@ def test_sublayer_view_drop_attn_and_mlp():
         sublayer_view(model)
     with pytest.raises(ValueError):
         sublayer_view(model, drop_attn=[99])
+
+
+def test_sublayer_view_with_whole_blocks():
+    from bonsaifold.loader import drop_view, sublayer_view
+
+    layer_types = [L, F, L, L, F, L]
+    model = build(layer_types)
+    tokens = mx.array([[2, 7, 1, 8]])
+
+    # whole-block-only via sublayer_view == drop_view
+    a = sublayer_view(model, drop_blocks=[1, 3])(tokens)
+    b = drop_view(model, [1, 3])(tokens)
+    assert np.array_equal(np.array(a, copy=False), np.array(b, copy=False))
+
+    # mixed: drop block 1 whole + attn of block 3 == manual composition
+    v = sublayer_view(model, drop_attn=[3], drop_blocks=[1])
+    assert len(v.layers) == 5
+    # mask anchors must point at surviving-attn positions in the NEW indexing
+    types_kept = [layer_types[i] for i in [0, 2, 3, 4, 5]]
+    assert types_kept[v.fa_idx] == F and v.fa_idx == 3  # block 4 at new pos 3
+    assert types_kept[v.ssm_idx] == L and v.ssm_idx == 0
+    out = np.array(v(tokens), copy=False)
+    # manual: drop_view removes block 1; then adapter on original block 3
+    ref = drop_view(model, [1])
+    from bonsaifold.loader import SublayerAdapter
+
+    ref.layers = [
+        SublayerAdapter(l, True, False) if pos == 2 else l  # orig block 3 at pos 2
+        for pos, l in enumerate(ref.layers)
+    ]
+    assert np.array_equal(out, np.array(ref(tokens), copy=False))
+
+    with pytest.raises(ValueError):
+        sublayer_view(model, drop_attn=[1], drop_blocks=[1])
