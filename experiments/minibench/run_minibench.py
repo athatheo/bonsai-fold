@@ -64,6 +64,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pack", required=True)
     ap.add_argument("--drop", default=None, help="comma-separated block indices")
+    ap.add_argument(
+        "--drop-sub",
+        default=None,
+        help="mixed drop spec, tokens b/a/m<idx> joined by '+' (screen grammar)",
+    )
     ap.add_argument("--out", required=True)
     ap.add_argument("--max-tokens", type=int, default=16384)  # short tier
     ap.add_argument("--seed", type=int, default=0)
@@ -108,8 +113,19 @@ def main():
     else:
         model, tokenizer = load_bonsai(args.pack)
     target = model
+    if args.drop and args.drop_sub:
+        raise SystemExit("use either --drop or --drop-sub, not both")
     if args.drop:
         target = drop_view(model, [int(i) for i in args.drop.split(",")])
+    if args.drop_sub:
+        from bonsaifold.loader import sublayer_view
+
+        parts = {"a": [], "m": [], "b": []}
+        for tokn in args.drop_sub.split("+"):
+            parts[tokn[0]].append(int(tokn[1:]))
+        target = sublayer_view(
+            model, drop_attn=parts["a"], drop_mlp=parts["m"], drop_blocks=parts["b"]
+        )
 
     results = []
 
