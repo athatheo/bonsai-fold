@@ -168,6 +168,108 @@ def strip_bias_plane(src_pack, dst_pack):
     return len(quant_bases)
 
 
+def trim_lm_head(src_pack, dst_pack, keep):
+    """A4: delete lm_head rows outside `keep` (sorted token ids).
+
+    Surviving rows are byte-identical (contiguous row slices of the packed
+    weight and scales/biases). The config records the kept token ids; the
+    loader builds a narrow head and scatters logits back to full-vocab
+    positions, so samplers and eos handling are unchanged.
+    """
+    from .stio import weight_base
+
+    src = PackReader(src_pack)
+    keep = sorted(set(keep))
+    head = "language_model.lm_head"
+    entries = {}
+    for name in src.header:
+        base = weight_base(name) or (
+            name[: -len(".scales")] if name.endswith(".scales") else
+            name[: -len(".biases")] if name.endswith(".biases") else name
+        )
+        if base == head:
+            import numpy as np
+
+            arr = src.read(name)
+            rows = arr[np.array(keep)]
+            entries[name] = {
+                "dtype": src.header[name]["dtype"],
+                "shape": list(rows.shape),
+                "raw": rows.tobytes(),
+            }
+            continue
+        begin, end = src.header[name]["data_offsets"]
+        entries[name] = {
+            "dtype": src.header[name]["dtype"],
+            "shape": src.header[name]["shape"],
+            "nbytes": end - begin,
+            "raw": (lambda n=name: src.read_raw(n)),
+        }
+    config = copy.deepcopy(src.config)
+    config["text_config"]["bonsai_lm_head_keep"] = keep
+    config["bonsai_fold"] = {
+        "operation": "trim_lm_head",
+        "kept_rows": len(keep),
+        "source_pack": str(src.pack_dir),
+        "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "note": "load with bonsaifold.loader.load_bonsai (logit scatter-back)",
+    }
+    write_pack(dst_pack, entries, config, src.pack_dir)
+    return len(keep)
+
+
+def drop_sublayers_in_pack(src_pack, dst_pack, drop_attn=(), drop_mlp=()):
+    """A1 as a pack operation: delete the tensors of the named sublayers and
+    record the drops in config; the loader builds those blocks without the
+    corresponding submodule. Block indices refer to THIS pack's numbering.
+    """
+    src = PackReader(src_pack)
+    da, dm = sorted(set(drop_attn)), sorted(set(drop_mlp))
+
+    def dropped(name):
+        parts = name.split(".")
+        if "layers" not in parts or name.startswith("vision_tower."):
+            return False
+        i = int(parts[parts.index("layers") + 1])
+        rest = ".".join(parts[parts.index("layers") + 2 :])
+        if i in da and (
+            rest.startswith("linear_attn.") or rest.startswith("self_attn.")
+            or rest.startswith("input_layernorm.")
+        ):
+            return True
+        if i in dm and (
+            rest.startswith("mlp.") or rest.startswith("post_attention_layernorm.")
+        ):
+            return True
+        return False
+
+    entries = {}
+    for name in src.header:
+        if dropped(name):
+            continue
+        begin, end = src.header[name]["data_offsets"]
+        entries[name] = {
+            "dtype": src.header[name]["dtype"],
+            "shape": src.header[name]["shape"],
+            "nbytes": end - begin,
+            "raw": (lambda n=name: src.read_raw(n)),
+        }
+    config = copy.deepcopy(src.config)
+    sub = config["text_config"].setdefault("bonsai_sublayer_drops", {"attn": [], "mlp": []})
+    sub["attn"] = sorted(set(sub["attn"]) | set(da))
+    sub["mlp"] = sorted(set(sub["mlp"]) | set(dm))
+    config["bonsai_fold"] = {
+        "operation": "drop_sublayers",
+        "drop_attn": da,
+        "drop_mlp": dm,
+        "source_pack": str(src.pack_dir),
+        "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "note": "load with bonsaifold.loader.load_bonsai",
+    }
+    write_pack(dst_pack, entries, config, src.pack_dir)
+    return len(entries)
+
+
 def verify_byte_identity(src_pack, dst_pack, block_map):
     """Check dst holds exactly the mapped tensors, each byte-identical to
     its source. Returns a report dict; report["ok"] is the verdict."""

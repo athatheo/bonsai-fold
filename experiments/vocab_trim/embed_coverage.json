@@ -1,0 +1,77 @@
+{
+ "keep_rows": 60288,
+ "corpora": {
+  "wikitext_heldout": {
+   "tokens": 545985,
+   "oov_tokens": 11906,
+   "oov_rate": 0.02180646,
+   "distinct_oov": 4299,
+   "example_oov": [
+    "\ufffd",
+    "\ufffd",
+    "\ufffd",
+    "\ufffd",
+    "\ufffd",
+    "\ufffd",
+    "\ufffd",
+    "\ufffd",
+    "\ufffd",
+    "\ufffd"
+   ]
+  },
+  "dolly_heldout": {
+   "tokens": 141908,
+   "oov_tokens": 3078,
+   "oov_rate": 0.02169011,
+   "distinct_oov": 2011,
+   "example_oov": [
+    "\ufffd",
+    "\ufffd",
+    "\ufffd",
+    "\treturn",
+    "cess",
+    "ION",
+    "erty",
+    "roller",
+    "indows",
+    "mary"
+   ]
+  },
+  "gsm8k_train": {
+   "tokens": 273615,
+   "oov_tokens": 1202,
+   "oov_rate": 0.00439303,
+   "distinct_oov": 465,
+   "example_oov": [
+    "ollow",
+    " wom",
+    "artment",
+    ".To",
+    "thon",
+    "leased",
+    "riend",
+    "andler",
+    "arter",
+    "chie"
+   ]
+  },
+  "code_heldout": {
+   "tokens": 241424,
+   "oov_tokens": 19617,
+   "oov_rate": 0.08125538,
+   "distinct_oov": 1428,
+   "example_oov": [
+    "\treturn",
+    "========",
+    "                               ",
+    "ql",
+    "\t\t\t\t\t\t",
+    "odule",
+    ".id",
+    "ypes",
+    ".append",
+    ".print"
+   ]
+  }
+ }
+}

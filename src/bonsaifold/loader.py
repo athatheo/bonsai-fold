@@ -60,6 +60,22 @@ def _hybrid_forward(tm_or_view, inputs, cache, input_embeddings=None):
     return s.norm(h)
 
 
+class TypedDecoderLayer(q35.DecoderLayer):
+    """DecoderLayer that tolerates deleted sublayers (pack-persisted A1
+    drops): a missing attn/mlp submodule is a residual passthrough. Stays a
+    real nn.Module so surviving parameters remain in the tree for loading."""
+
+    def __call__(self, x, mask=None, cache=None):
+        if hasattr(self, "linear_attn") or hasattr(self, "self_attn"):
+            attn = self.linear_attn if self.is_linear else self.self_attn
+            h = x + attn(self.input_layernorm(x), mask, cache)
+        else:
+            h = x
+        if hasattr(self, "mlp"):
+            return h + self.mlp(self.post_attention_layernorm(h))
+        return h
+
+
 class TypedQwen3_5TextModel(q35.Qwen3_5TextModel):
     """Stock text model with block types taken from an explicit list."""
 
@@ -79,7 +95,7 @@ class TypedQwen3_5TextModel(q35.Qwen3_5TextModel):
             "full_attention": targs.full_attention_interval - 1,
         }
         self.layers = [
-            q35.DecoderLayer(args=targs, layer_idx=force_idx[t]) for t in layer_types
+            TypedDecoderLayer(args=targs, layer_idx=force_idx[t]) for t in layer_types
         ]
         self.fa_idx = _first_index(self.layers, linear=False)
         self.ssm_idx = _first_index(self.layers, linear=True)
@@ -91,11 +107,58 @@ class TypedQwen3_5TextModel(q35.Qwen3_5TextModel):
 class TypedModel(q35.Model):
     def __init__(self, args):
         super().__init__(args)
-        targs = q35.TextModelArgs.from_dict(args.text_config)
-        self._derive_bias_plane = args.text_config.get("bonsai_bias_plane") == "derived"
+        tcfg = args.text_config
+        targs = q35.TextModelArgs.from_dict(tcfg)
+        self._derive_bias_plane = tcfg.get("bonsai_bias_plane") == "derived"
         self.language_model.model = TypedQwen3_5TextModel(
-            targs, args.text_config["layer_types"]
+            targs, tcfg["layer_types"]
         )
+        # pack-persisted sublayer drops: build those blocks WITHOUT the
+        # deleted submodule (strict weight loading then expects nothing for it)
+        sub = tcfg.get("bonsai_sublayer_drops", {"attn": [], "mlp": []})
+        tm = self.language_model.model
+        for i in sub["attn"]:
+            l = tm.layers[i]
+            delattr(l, "linear_attn" if l.is_linear else "self_attn")
+            delattr(l, "input_layernorm")
+        for i in sub["mlp"]:
+            delattr(tm.layers[i], "mlp")
+            delattr(tm.layers[i], "post_attention_layernorm")
+        if sub["attn"] or sub["mlp"]:
+            # TypedDecoderLayer skips deleted submodules in forward; only the
+            # mask anchors need recomputing over blocks whose attn survives
+            da = set(sub["attn"])
+            tm.fa_idx = next(
+                (i for i, l in enumerate(tm.layers) if not l.is_linear and i not in da), None
+            )
+            tm.ssm_idx = next(
+                (i for i, l in enumerate(tm.layers) if l.is_linear and i not in da), None
+            )
+        # pack-persisted lm_head trim: narrow head + logit scatter-back
+        self._lm_head_keep = tcfg.get("bonsai_lm_head_keep")
+        if self._lm_head_keep is not None:
+            import mlx.core as mx
+            import mlx.nn as nn
+
+            self.language_model.lm_head = nn.Linear(
+                targs.hidden_size, len(self._lm_head_keep), bias=False
+            )
+            self._keep_idx = mx.array(self._lm_head_keep)
+            self._full_vocab = targs.vocab_size
+
+    def __call__(self, inputs, cache=None, input_embeddings=None):
+        out = super().__call__(inputs, cache=cache, input_embeddings=input_embeddings)
+        if getattr(self, "_lm_head_keep", None) is not None:
+            import mlx.core as mx
+
+            full = mx.full((*out.shape[:-1], self._full_vocab), -mx.inf, dtype=out.dtype)
+            out = mx.put_along_axis(
+                full,
+                mx.broadcast_to(self._keep_idx, (*out.shape[:-1], len(self._lm_head_keep))),
+                out,
+                axis=-1,
+            )
+        return out
 
     def sanitize(self, weights):
         weights = super().sanitize(weights)
