@@ -5,9 +5,12 @@
  "max_tokens": 16384,
  "seed": 0,
  "task_accuracy": {
-  "gsm8k": 0.9024390243902439
+  "gsm8k": 0.91,
+  "math500": 0.67,
+  "ifeval": 0.88,
+  "mmlu": 0.725
  },
- "macro_avg": 0.9024390243902439,
+ "macro_avg": 0.79625,
  "items": [
   {
    "id": "gsm8k-000",
@@ -581,6 +584,2932 @@
    "task": "gsm8k",
    "correct": true,
    "gen_tokens": 861,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-082",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1625,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-083",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1223,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-084",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 900,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-085",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1568,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-086",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 3172,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-087",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 6072,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-088",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1488,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-089",
+   "task": "gsm8k",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "gsm8k-090",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 8654,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-091",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 4433,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-092",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1466,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-093",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1053,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-094",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1475,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-095",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 9288,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-096",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1267,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-097",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 8337,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-098",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1389,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-099",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1163,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-000",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 1170,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-001",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 13322,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-002",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 3773,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-003",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 1862,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-004",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 10904,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-005",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 3402,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-006",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-007",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-008",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 1549,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-009",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 4548,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-010",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 1653,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-011",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 1131,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-012",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-013",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 1912,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-014",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-015",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 1170,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-016",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 5672,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-017",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 3538,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-018",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 9018,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-019",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 1401,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-020",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 12014,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-021",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 8301,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-022",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 4845,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-023",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 16204,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-024",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 5560,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-025",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-026",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 2301,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-027",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-028",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 8121,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-029",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 3035,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-030",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 4573,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-031",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 3259,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-032",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-033",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-034",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 2926,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-035",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 8807,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-036",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-037",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-038",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 6404,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-039",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 3337,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-040",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 11966,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-041",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-042",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 16219,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-043",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-044",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-045",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 15260,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-046",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-047",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 4800,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-048",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 3539,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-049",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 1927,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-050",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 5315,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-051",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 2163,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-052",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 7713,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-053",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-054",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 8533,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-055",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 6143,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-056",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-057",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-058",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-059",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 5897,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-060",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-061",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-062",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 2263,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-063",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 2173,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-064",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 2705,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-065",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-066",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-067",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 3779,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-068",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-069",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-070",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 12433,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-071",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 949,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-072",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 3324,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-073",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 950,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-074",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 8335,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-075",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-076",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-077",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 4718,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-078",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 16204,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-079",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-080",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 1509,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-081",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 1515,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-082",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-083",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 14693,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-084",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 440,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-085",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-086",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-087",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 2456,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-088",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-089",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 3998,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-090",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 1224,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-091",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 10074,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-092",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 5587,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-093",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 1297,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-094",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 2386,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-095",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 9833,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-096",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 1376,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "math500-097",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-098",
+   "task": "math500",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "math500-099",
+   "task": "math500",
+   "correct": true,
+   "gen_tokens": 4366,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-000",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1839,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-001",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1588,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-002",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2235,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-003",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2011,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-004",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1861,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-005",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1488,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-006",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2412,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-007",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 3724,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-008",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1683,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-009",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1265,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-010",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1642,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-011",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1132,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-012",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1515,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-013",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2801,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-014",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2075,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-015",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 628,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-016",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2386,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-017",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2521,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-018",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 3436,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-019",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2653,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-020",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2711,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-021",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2622,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-022",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 5985,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-023",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2247,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-024",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1924,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-025",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2575,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-026",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2504,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-027",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2628,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-028",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 3500,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-029",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1487,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-030",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2100,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-031",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1937,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-032",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2108,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-033",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2612,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-034",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2468,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-035",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 7011,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-036",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1916,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-037",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 3494,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-038",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 3027,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-039",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1483,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-040",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 4181,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-041",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1920,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-042",
+   "task": "ifeval",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "ifeval-043",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1823,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-044",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2068,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-045",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1791,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-046",
+   "task": "ifeval",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "ifeval-047",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2351,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-048",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 4154,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-049",
+   "task": "ifeval",
+   "correct": false,
+   "gen_tokens": 1769,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-050",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 4087,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-051",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 8195,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-052",
+   "task": "ifeval",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "ifeval-053",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2518,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-054",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1157,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-055",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 10422,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-056",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1825,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-057",
+   "task": "ifeval",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "ifeval-058",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2010,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-059",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 3954,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-060",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 3519,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-061",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2462,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-062",
+   "task": "ifeval",
+   "correct": false,
+   "gen_tokens": 2626,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-063",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 3288,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-064",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1714,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-065",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 3520,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-066",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1080,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-067",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2435,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-068",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 948,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-069",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1757,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-070",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1522,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-071",
+   "task": "ifeval",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "ifeval-072",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2061,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-073",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1937,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-074",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2720,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-075",
+   "task": "ifeval",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "ifeval-076",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2276,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-077",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2169,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-078",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 7704,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-079",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 4948,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-080",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2386,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-081",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1985,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-082",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 3526,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-083",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1966,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-084",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1971,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-085",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1448,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-086",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1937,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-087",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 4313,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-088",
+   "task": "ifeval",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "ifeval-089",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 4180,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-090",
+   "task": "ifeval",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "ifeval-091",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2863,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-092",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 3777,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-093",
+   "task": "ifeval",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "ifeval-094",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 3444,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-095",
+   "task": "ifeval",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "ifeval-096",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 1410,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-097",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 3330,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-098",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2593,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "ifeval-099",
+   "task": "ifeval",
+   "correct": true,
+   "gen_tokens": 2246,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-000",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 9660,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-001",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 3833,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-002",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 331,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-003",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1100,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-004",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1495,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-005",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 883,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-006",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 407,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-007",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1119,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-008",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 572,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-009",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1957,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-010",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1672,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-011",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 915,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-012",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 2917,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-013",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "mmlu-014",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1335,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-015",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 596,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-016",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 472,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-017",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 352,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-018",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1353,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-019",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 862,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-020",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 10367,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-021",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 838,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-022",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 4134,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-023",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 725,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-024",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "mmlu-025",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 9630,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-026",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 717,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-027",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 3004,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-028",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1819,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-029",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "mmlu-030",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 3205,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-031",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1115,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-032",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 338,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-033",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 937,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-034",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 303,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-035",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 4394,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-036",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 3720,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-037",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 827,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-038",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 318,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-039",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 197,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-040",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 717,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-041",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 2518,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-042",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1205,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-043",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 2075,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-044",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 470,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-045",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 2487,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-046",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 785,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-047",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 216,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-048",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 517,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-049",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 3066,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-050",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1838,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-051",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 6804,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-052",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1077,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-053",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1477,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-054",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1126,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-055",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1863,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-056",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 390,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-057",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1203,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-058",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1005,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-059",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1363,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-060",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 878,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-061",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1823,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-062",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1055,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-063",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1674,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-064",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1630,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-065",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1897,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-066",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1824,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-067",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1742,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-068",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1253,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-069",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 234,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-070",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 3120,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-071",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 589,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-072",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 905,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-073",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1917,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-074",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 526,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-075",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 2511,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-076",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 3138,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-077",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "mmlu-078",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "mmlu-079",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 4384,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-080",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1882,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-081",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1230,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-082",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 569,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-083",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "mmlu-084",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 873,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-085",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "mmlu-086",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 2322,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-087",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "mmlu-088",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 3127,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-089",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 728,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-090",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 3126,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-091",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 4806,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-092",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 5457,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-093",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 2133,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-094",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1613,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-095",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1826,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-096",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1007,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-097",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 269,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-098",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 4116,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-099",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1605,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-100",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1435,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-101",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 834,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-102",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 821,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-103",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1209,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-104",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 911,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-105",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1497,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-106",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 968,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-107",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 405,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-108",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 563,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-109",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1368,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-110",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1210,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-111",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1226,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-112",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1004,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-113",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 5669,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-114",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 370,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-115",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1032,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-116",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 950,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-117",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1547,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-118",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1420,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-119",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1224,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-120",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1310,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-121",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1151,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-122",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 2129,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-123",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 2255,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-124",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1691,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-125",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1052,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-126",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 931,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-127",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 773,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-128",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 2565,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-129",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1195,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-130",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 2218,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-131",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1648,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-132",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "mmlu-133",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 4113,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-134",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1024,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-135",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 531,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-136",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 11440,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-137",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1238,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-138",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1499,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-139",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 694,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-140",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1105,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-141",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 3368,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-142",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 226,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-143",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 604,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-144",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 670,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-145",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 3538,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-146",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "mmlu-147",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 156,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-148",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1602,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-149",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 379,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-150",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 2021,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-151",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1105,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-152",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1557,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-153",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 11822,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-154",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1045,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-155",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 658,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-156",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 956,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-157",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 890,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-158",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 925,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-159",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 4869,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-160",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 729,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-161",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 863,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-162",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1243,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-163",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1150,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-164",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 922,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-165",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 996,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-166",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1421,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-167",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 5083,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-168",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 461,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-169",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 3312,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-170",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 7612,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-171",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 5103,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-172",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 3882,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-173",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1447,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-174",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1171,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-175",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "mmlu-176",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1326,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-177",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1534,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-178",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 5662,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-179",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1819,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-180",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "mmlu-181",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1211,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-182",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1240,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-183",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1823,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-184",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1904,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-185",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1018,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-186",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1568,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-187",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "mmlu-188",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 818,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-189",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 721,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-190",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1936,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-191",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 612,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-192",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 253,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-193",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 1604,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-194",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 542,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-195",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 3699,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-196",
+   "task": "mmlu",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "mmlu-197",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 731,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-198",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 1953,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "mmlu-199",
+   "task": "mmlu",
+   "correct": true,
+   "gen_tokens": 466,
    "finish_reason": "stop"
   }
  ]
