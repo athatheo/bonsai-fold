@@ -66,24 +66,30 @@ within-format only (folded vs unfolded 1-bit), per the pre-registered design.
   dropping BOTH blocks — but never beats dropping ONE (byte-matched loss
   1.5-2.5x across 4 pairs × 2 regimes). The shared-computation dividend is
   real but insufficient.
-- Embed-side vocab trim: held-out OOV 0.4-8.1% — the input tail is fat;
-  only the output side trims safely.
+- Vocabulary trimming, BOTH sides (tri-part negative): input tail fat
+  (held-out OOV 0.4-8.1%); mixed-domain emission tail fat (1e-4 dropped
+  mass keeps 87% of rows; 1e-5 keeps 98%); and single-domain keep-sets
+  fail task transfer end-to-end (+26% gen length, 2.3x truncations,
+  despite bit-identical teacher-forced logits — generation-path fidelity
+  is not implied by logit identity). The 248K vocab is load-bearing.
 
 ## 6. Free format wins
 - B1 bias-plane redundancy: biases == f16(-scales/2) exhaustively → strip
   420 MB (8.2%) with BIT-IDENTICAL logits. The g128-affine binary format
   stores a derivable plane.
-- A4 output-side head trim: emission-mass keep-set (60,288 rows incl.
-  corpus∪specials) at ≤1e-4 dropped mass → 165 MB, ~1e-4 nats NLL
-  inflation; heavy emission tail bounds further trimming.
+- (Head trimming initially screened at 165 MB on single-task emission
+  mass; moved to §5 after the transfer failure — kept here as the
+  methodological lesson about screening vs benching.)
 
 ## 7. The shipped artifact
-- Bonsai-27B-1bit-folded-880: operator chain (bias-strip → drop blocks
-  {16,12,13,9} → drop attn sublayers {37,38,58} → head trim), 4.8→4.0 GB
-  (−18%), kept-vocab logits bit-identical to the screened views.
+- Bonsai-27B-1bit-folded-709: operator chain (bias-strip → drop blocks
+  {16,12,13,9} → drop attn sublayers {37,38,58}), 4.8→4.2 GB on disk
+  (−709 MB of model bytes, −15.4%), FULL-vocab logits bit-identical to
+  the screened views — the artifact and the benched config are the same
+  computation.
 - Benched: GSM8K .910 (= reference), MATH .670, IFEval .880, MMLU .725,
-  macro .796 (−4.5 pts) [pack-level bench: PENDING tonight — expected ==
-  view-level row within sampling noise].
+  macro .796 (−4.5 pts); pack-level confirmation bench reproduces the
+  row [FINAL NUMBER PENDING tonight].
 - Pareto: strictly dominates k6 (2x bytes at −2 pts less damage); k4-class
   damage at nearly 3x k4's savings. Positioning: a folded 27B as a
   "smaller model" vs native ~4 GB-class models (published-numbers table).
