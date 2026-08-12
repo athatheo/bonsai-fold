@@ -17,9 +17,9 @@ within-format only (folded vs unfolded 1-bit), per the pre-registered design.
   end-to-end 1-bit LLM at block and sublayer granularity; (ii) a
   training-free, format-preserving operator suite whose surviving weights
   are byte-identical (exactness as a verification discipline, not an
-  aspiration); (iii) a two-component damage law; (iv) a 4.0 GB shipped
-  artifact at −18% bytes with GSM8K at reference parity; (v) a catalog of
-  measured negative results (width, entropy, merging, embed-trim) that
+  aspiration); (iii) a two-component damage law; (iv) a 4.2 GB shipped
+  artifact at −15.4% model bytes with GSM8K at reference parity; (v) a catalog of
+  measured negative results (width, entropy, merging, vocab both sides) that
   bounds what does NOT work at 1 bit.
 
 ## 2. Setup
@@ -116,4 +116,4 @@ within-format only (folded vs unfolded 1-bit), per the pre-registered design.
 3. Anchor table + KL→macro scatter with the two-component fit.
 4. H4 quad chart: merge vs drop-one vs drop-both per pair.
 5. The negatives panel: width saliency flatness + sign-entropy + embed OOV.
-6. Final artifact ledger waterfall: 4.8 GB → 4.0 GB by operator.
+6. Final artifact ledger waterfall: 4.8 GB → 4.2 GB by operator.
