@@ -14,3 +14,6 @@ Training-free depth compression (block dropping, format-native block merging) of
 - Model packs live under `models/` (gitignored). Experiment outputs under `experiments/`, committed.
 - docs/LAB_NOTEBOOK.md is append-only, newest at the bottom; every entry has date, phase, what was done, numbers, surprises, decisions, open questions.
 - Sampling for all Bonsai generation: temperature 0.7, top-p 0.95, top-k 20, thinking mode on.
+
+## Flagged arm (authorized 2026-08-12)
+Group C (scale-metadata quantization) is authorized by Thanasis as a VALUE-MODIFYING experimental arm. It is exempt from the byte-identity constraint but must be (a) implemented as a separate operator, (b) screened on the full KL+bench ladder, and (c) reported separately from the byte-identical result line in all tables and the paper. The main artifact line remains byte-identical.
