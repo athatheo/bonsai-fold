@@ -132,3 +132,102 @@ index bb55ed3..aaade01 100644
  
  # Make sure the given metal header is also expanded in the source content
  HDRS_SORTED+=("${INPUT_FILE#$SRC_DIR/}")
+diff --git a/mlx/ops.cpp b/mlx/ops.cpp
+index b569888..ba5cafc 100644
+--- a/mlx/ops.cpp
++++ b/mlx/ops.cpp
+@@ -4376,6 +4376,10 @@ std::pair<int, int> quantization_params_from_mode(
+       default_group_size = 64;
+       default_bits = 4;
+       break;
++    case QuantizationMode::AffineDerived:
++      default_group_size = 128;
++      default_bits = 1;
++      break;
+     case QuantizationMode::Nvfp4:
+       default_group_size = 16;
+       default_bits = 4;
+@@ -4408,6 +4412,21 @@ std::pair<Dtype, QuantizationMode> validate_mode_with_type(
+     throw std::invalid_argument(msg.str());
+   }
+ 
++  if (qmode == QuantizationMode::AffineDerived) {
++    if (biases) {
++      std::ostringstream msg;
++      msg << "[" << tag << "] Biases must be null for affine-derived mode "
++          << "(bias == -scale/2 is computed in-kernel).";
++      throw std::invalid_argument(msg.str());
++    }
++    if (!issubdtype(scales.dtype(), floating)) {
++      std::ostringstream msg;
++      msg << "[" << tag << "] Scales must be floating for affine-derived mode.";
++      throw std::invalid_argument(msg.str());
++    }
++    return {out_type.value_or(scales.dtype()), qmode};
++  }
++
+   if (qmode == QuantizationMode::Affine) {
+     if (!biases) {
+       std::ostringstream msg;
+@@ -4493,11 +4512,16 @@ array quantized_matmul(
+   auto [w_inner_dims, w_outer_dims] = extract_quantized_matmul_dims(
+       "quantized_matmul", x, w, scales, biases, transpose, group_size, bits);
+ 
+-  if (qmode == QuantizationMode::Affine) {
++  if (qmode == QuantizationMode::Affine ||
++      qmode == QuantizationMode::AffineDerived) {
+     dtype = promote_types(x.dtype(), dtype);
+   } else {
+     dtype = x.dtype();
+   }
++  if (qmode == QuantizationMode::AffineDerived && bits != 1) {
++    throw std::invalid_argument(
++        "[quantized_matmul] affine-derived mode requires bits == 1.");
++  }
+ 
+   if (!issubdtype(dtype, floating)) {
+     std::ostringstream msg;
+@@ -4509,6 +4533,8 @@ array quantized_matmul(
+   if (qmode == QuantizationMode::Affine) {
+     inputs = {
+         astype(x, dtype), w, astype(scales, dtype), astype(*biases, dtype)};
++  } else if (qmode == QuantizationMode::AffineDerived) {
++    inputs = {astype(x, dtype), w, astype(scales, dtype)};
+   } else {
+     inputs = {x, w, scales};
+   }
+diff --git a/mlx/primitives.cpp b/mlx/primitives.cpp
+index a861dba..b0043d0 100644
+--- a/mlx/primitives.cpp
++++ b/mlx/primitives.cpp
+@@ -3405,6 +3405,8 @@ std::string quantization_mode_to_string(QuantizationMode mode) {
+   switch (mode) {
+     case QuantizationMode::Affine:
+       return "affine";
++    case QuantizationMode::AffineDerived:
++      return "affine-derived";
+     case QuantizationMode::Mxfp4:
+       return "mxfp4";
+     case QuantizationMode::Mxfp8:
+@@ -3420,6 +3422,8 @@ QuantizationMode string_to_quantization_mode(
+     std::string_view tag /* = "" */) {
+   if (mode == "affine") {
+     return QuantizationMode::Affine;
++  } else if (mode == "affine-derived") {
++    return QuantizationMode::AffineDerived;
+   } else if (mode == "mxfp4") {
+     return QuantizationMode::Mxfp4;
+   } else if (mode == "mxfp8") {
+diff --git a/mlx/primitives.h b/mlx/primitives.h
+index ed580d6..8674910 100644
+--- a/mlx/primitives.h
++++ b/mlx/primitives.h
+@@ -152,7 +152,7 @@ class MLX_API UnaryPrimitive : public Primitive {
+   UnaryPrimitive& operator=(UnaryPrimitive&& other) = delete;
+ };
+ 
+-enum class QuantizationMode { Affine, Mxfp4, Mxfp8, Nvfp4 };
++enum class QuantizationMode { Affine, Mxfp4, Mxfp8, Nvfp4, AffineDerived };
+ 
+ std::string quantization_mode_to_string(QuantizationMode mode);
+ QuantizationMode string_to_quantization_mode(
