@@ -1,3 +1,18 @@
+diff --git a/mlx/backend/metal/jit_kernels.cpp b/mlx/backend/metal/jit_kernels.cpp
+index a0703cd..51c809a 100644
+--- a/mlx/backend/metal/jit_kernels.cpp
++++ b/mlx/backend/metal/jit_kernels.cpp
+@@ -858,7 +858,9 @@ MTL::ComputePipelineState* get_quantized_kernel(
+         metal::utils(),
+         metal::gemm(),
+         metal::quantized_utils(),
+-        (mode == "affine") ? metal::quantized() : metal::fp_quantized(),
++        (mode != "mxfp4" && mode != "mxfp8" && mode != "nvfp4")
++            ? metal::quantized()
++            : metal::fp_quantized(),
+         template_def);
+     return kernel_source;
+   });
 diff --git a/mlx/backend/metal/kernels/CMakeLists.txt b/mlx/backend/metal/kernels/CMakeLists.txt
 index 500e7de..6ae9c60 100644
 --- a/mlx/backend/metal/kernels/CMakeLists.txt
@@ -69,6 +84,78 @@ index 500e7de..6ae9c60 100644
  
  add_custom_target(mlx-metallib DEPENDS ${MLX_METAL_PATH}/mlx.metallib)
  
+diff --git a/mlx/backend/metal/kernels/quantized.h b/mlx/backend/metal/kernels/quantized.h
+index 9ac2e42..b5e44da 100644
+--- a/mlx/backend/metal/kernels/quantized.h
++++ b/mlx/backend/metal/kernels/quantized.h
+@@ -841,7 +841,7 @@ METAL_FUNC void qmv_quad_impl(
+   }
+ }
+ 
+-template <typename T, int group_size, int bits>
++template <typename T, int group_size, int bits, bool DERIVE_BIAS = false>
+ METAL_FUNC void qmv_fast_impl(
+     const device uint32_t* w,
+     const device T* scales,
+@@ -892,7 +892,7 @@ METAL_FUNC void qmv_fast_impl(
+       const device T* bl = biases + row * in_vec_size_g;
+ 
+       U s = sl[0];
+-      U b = bl[0];
++      U b = DERIVE_BIAS ? U(T(-0.5f * s)) : U(bl[0]);
+       result[row] += qdot<U, values_per_thread, bits>(wl, x_thread, s, b, sum);
+     }
+ 
+@@ -918,7 +918,7 @@ METAL_FUNC void qmv_fast_impl(
+       const device T* bl = biases + row * in_vec_size_g;
+ 
+       U s = in_bounds ? (U)sl[0] : (U)0;
+-      U b = in_bounds ? (U)bl[0] : (U)0;
++      U b = DERIVE_BIAS ? U(T(-0.5f * s)) : (in_bounds ? (U)bl[0] : (U)0);
+       result[row] += qdot<U, values_per_thread, bits>(wl, x_thread, s, b, sum);
+     }
+   }
+@@ -1707,6 +1707,40 @@ template <typename T, int group_size, int bits, int D, bool batched>
+       quad_lid);
+ }
+ 
++template <typename T, int group_size, int bits, bool batched>
++[[kernel]] void affine_derived_qmv_fast(
++    const device uint32_t* w [[buffer(0)]],
++    const device T* scales [[buffer(1)]],
++    const device T* x [[buffer(2)]],
++    device T* y [[buffer(3)]],
++    const constant int& in_vec_size [[buffer(4)]],
++    const constant int& out_vec_size [[buffer(5)]],
++    const constant int& x_batch_ndims [[buffer(6)]],
++    const constant int* x_shape [[buffer(7)]],
++    const constant int64_t* x_strides [[buffer(8)]],
++    const constant int& w_batch_ndims [[buffer(9)]],
++    const constant int* w_shape [[buffer(10)]],
++    const constant int64_t* w_strides [[buffer(11)]],
++    const constant int64_t* s_strides [[buffer(12)]],
++    uint3 tid [[threadgroup_position_in_grid]],
++    uint simd_gid [[simdgroup_index_in_threadgroup]],
++    uint simd_lid [[thread_index_in_simdgroup]]) {
++  // biases derived in-register (b = f16(-s/2)); scales aliased where a
++  // biases pointer is structurally required, never read in derived mode
++  const device T* biases = scales;
++  if (batched) {
++    int M = x_shape[x_batch_ndims];
++    adjust_matrix_offsets<T>(
++        x, w, scales, biases, y, out_vec_size * M,
++        x_batch_ndims, x_shape, x_strides,
++        w_batch_ndims, w_shape, w_strides,
++        s_strides, s_strides, tid);
++  }
++  qmv_fast_impl<T, group_size, bits, true>(
++      w, scales, biases, x, y, in_vec_size, out_vec_size,
++      tid, simd_gid, simd_lid);
++}
++
+ template <typename T, int group_size, int bits, bool batched>
+ [[kernel]] void affine_qmv_fast(
+     const device uint32_t* w [[buffer(0)]],
 diff --git a/mlx/backend/metal/make_compiled_preamble.sh b/mlx/backend/metal/make_compiled_preamble.sh
 index bb55ed3..aaade01 100644
 --- a/mlx/backend/metal/make_compiled_preamble.sh
@@ -132,6 +219,182 @@ index bb55ed3..aaade01 100644
  
  # Make sure the given metal header is also expanded in the source content
  HDRS_SORTED+=("${INPUT_FILE#$SRC_DIR/}")
+diff --git a/mlx/backend/metal/quantized.cpp b/mlx/backend/metal/quantized.cpp
+index 22f9451..b836f06 100644
+--- a/mlx/backend/metal/quantized.cpp
++++ b/mlx/backend/metal/quantized.cpp
+@@ -12,6 +12,14 @@
+ #include "mlx/primitives.h"
+ #include "mlx/utils.h"
+ 
++namespace {
++// Metal host_name must be a valid identifier; "affine-derived" -> "affine_derived"
++inline std::string kernel_mode_name(const std::string& mode) {
++  return (mode == "affine-derived") ? std::string("affine_derived") : mode;
++}
++} // namespace
++
++
+ namespace mlx::core {
+ 
+ namespace {
+@@ -27,7 +35,9 @@ auto get_quantized_kernel_wrapped(
+     int bits,
+     Args... args) {
+   std::string template_def;
+-  std::string fname = ((mode == "affine") ? "affine_" : "fp_") + func;
++  std::string fname = (mode == "affine")           ? "affine_" + func
++      : (mode == "affine-derived") ? "affine_derived_" + func
++                                   : "fp_" + func;
+   template_def = get_template_definition(
+       name, fname, type, group_size, bits, std::forward<Args>(args)...);
+   return get_quantized_kernel(d, name, template_def, mode);
+@@ -44,7 +54,9 @@ auto get_qmm_nax_kernel_wrapped(
+     int bits,
+     Args... args) {
+   std::string template_def;
+-  std::string fname = ((mode == "affine") ? "affine_" : "fp_") + func;
++  std::string fname = (mode == "affine")           ? "affine_" + func
++      : (mode == "affine-derived") ? "affine_derived_" + func
++                                   : "fp_" + func;
+   template_def = get_template_definition(
+       name, fname, type, group_size, bits, std::forward<Args>(args)...);
+   return get_qmm_nax_kernel(d, name, template_def, mode);
+@@ -203,7 +215,7 @@ void qmv_quad(
+ 
+   concatenate(
+       kname,
+-      mode + "_qmv_quad_",
++      kernel_mode_name(mode) + "_qmv_quad_",
+       type_string,
+       "_gs_",
+       group_size,
+@@ -260,7 +272,7 @@ void qmv(
+ 
+   concatenate(
+       kname,
+-      mode + (fast ? "_qmv_fast_" : "_qmv_"),
++      kernel_mode_name(mode) + (fast ? "_qmv_fast_" : "_qmv_"),
+       type_string,
+       "_gs_",
+       group_size,
+@@ -353,7 +365,7 @@ void qmv_wide(
+   std::string type_string = get_type_string(x.dtype());
+   concatenate(
+       kname,
+-      mode + "_qmv_wide_",
++      kernel_mode_name(mode) + "_qmv_wide_",
+       type_string,
+       "_gs_",
+       group_size,
+@@ -465,7 +477,7 @@ void qvm_split_k(
+   kname.reserve(64);
+   concatenate(
+       kname,
+-      mode + "_qvm_split_k_",
++      kernel_mode_name(mode) + "_qvm_split_k_",
+       type_string,
+       "_gs_",
+       group_size,
+@@ -543,7 +555,7 @@ void qvm(
+   std::string type_string = get_type_string(x.dtype());
+   concatenate(
+       kname,
+-      mode + "_qvm_",
++      kernel_mode_name(mode) + "_qvm_",
+       type_string,
+       "_gs_",
+       group_size,
+@@ -602,7 +614,7 @@ void qmm_nax(
+   std::string type_string = get_type_string(x.dtype());
+   concatenate(
+       kname,
+-      mode + (transpose ? "_qmm_t_nax_" : "_qmm_n_nax_"),
++      kernel_mode_name(mode) + (transpose ? "_qmm_t_nax_" : "_qmm_n_nax_"),
+       type_string,
+       "_gs_",
+       group_size,
+@@ -706,7 +718,7 @@ void gather_qmm_nax(
+   std::string type_string = get_type_string(x.dtype());
+   concatenate(
+       kname,
+-      mode + (transpose ? "_gather_qmm_t_nax_" : "_gather_qmm_n_nax_"),
++      kernel_mode_name(mode) + (transpose ? "_gather_qmm_t_nax_" : "_gather_qmm_n_nax_"),
+       type_string,
+       "_gs_",
+       group_size,
+@@ -827,7 +839,7 @@ void qmm(
+   std::string type_string = get_type_string(x.dtype());
+   concatenate(
+       kname,
+-      mode + (transpose ? "_qmm_t_" : "_qmm_n_"),
++      kernel_mode_name(mode) + (transpose ? "_qmm_t_" : "_qmm_n_"),
+       type_string,
+       "_gs_",
+       group_size,
+@@ -929,7 +941,7 @@ void qmm_splitk(
+   kname.reserve(64);
+   concatenate(
+       kname,
+-      mode + "_qmm_t_splitk_",
++      kernel_mode_name(mode) + "_qmm_t_splitk_",
+       type_string,
+       "_gs_",
+       group_size,
+@@ -1019,7 +1031,7 @@ void gather_qmm(
+   std::string type_string = get_type_string(x.dtype());
+   concatenate(
+       kname,
+-      mode + (transpose ? "_gather_qmm_t_" : "_gather_qmm_n_"),
++      kernel_mode_name(mode) + (transpose ? "_gather_qmm_t_" : "_gather_qmm_n_"),
+       type_string,
+       "_gs_",
+       group_size,
+@@ -1086,7 +1098,7 @@ void gather_qmv(
+   bool fast = N % bn == 0 && K % 512 == 0;
+   concatenate(
+       kname,
+-      mode + (fast ? "_gather_qmv_fast_" : "_gather_qmv_"),
++      kernel_mode_name(mode) + (fast ? "_gather_qmv_fast_" : "_gather_qmv_"),
+       type_string,
+       "_gs_",
+       group_size,
+@@ -1152,7 +1164,7 @@ void gather_qvm(
+   std::string type_string = get_type_string(x.dtype());
+   concatenate(
+       kname,
+-      mode + "_gather_qvm_",
++      kernel_mode_name(mode) + "_gather_qvm_",
+       type_string,
+       "_gs_",
+       group_size,
+@@ -1387,7 +1399,7 @@ void gather_qmm_rhs(
+   std::string type_string = get_type_string(x.dtype());
+   concatenate(
+       kname,
+-      mode + (transpose ? "_gather_qmm_rhs_nt_" : "_gather_qmm_rhs_nn_"),
++      kernel_mode_name(mode) + (transpose ? "_gather_qmm_rhs_nt_" : "_gather_qmm_rhs_nn_"),
+       type_string,
+       "_gs_",
+       group_size,
+@@ -1685,7 +1697,7 @@ void quantize_dequantize(
+   std::string kname;
+   concatenate(
+       kname,
+-      mode + "_quantize_dequantize_",
++      kernel_mode_name(mode) + "_quantize_dequantize_",
+       type_string,
+       "_gs_",
+       group_size,
+@@ -1801,7 +1813,7 @@ void fast::Quantize::eval_gpu(
+   std::string kname;
+   concatenate(
+       kname,
+-      mode + (dequantize_ ? "_dequantize" : "_quantize"),
++      kernel_mode_name(mode) + (dequantize_ ? "_dequantize" : "_quantize"),
+       "_",
+       type_string,
+       "_gs_",
 diff --git a/mlx/ops.cpp b/mlx/ops.cpp
 index b569888..ba5cafc 100644
 --- a/mlx/ops.cpp
