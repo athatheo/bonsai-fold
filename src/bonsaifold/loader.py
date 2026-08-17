@@ -189,11 +189,51 @@ def _typed_classes(config):
     return TypedModel, ModelArgs
 
 
-def load_bonsai(pack_dir, lazy=False):
+def _apply_derived_kernels(model):
+    """B1 kernel stage: route every 1-bit affine module through the
+    in-register bias-derivation kernels (mode="affine-derived", bit-identical
+    to affine — parity battery 2026-08-17). The stock quantized modules fetch
+    biases via self.get("biases") and pass self.mode through, so deleting the
+    biases parameter and flipping mode is the whole integration; under a lazy
+    load the sanitize-built bias graphs are dropped before ever evaluating."""
+    import mlx.nn as nn
+
+    for m in model.modules():
+        if (
+            isinstance(m, (nn.QuantizedLinear, nn.QuantizedEmbedding))
+            and m.mode == "affine"
+            and m.bits == 1
+        ):
+            if "biases" in m:
+                delattr(m, "biases")
+            m.mode = "affine-derived"
+
+
+def load_bonsai(pack_dir, lazy=False, derived_kernels=None):
     """Load (model, tokenizer) honoring config layer_types. Use for every
-    folded pack; safe (and verified identical) for unfolded ones."""
+    folded pack; safe (and verified identical) for unfolded ones.
+
+    derived_kernels: None (default) enables the B1 in-kernel bias derivation
+    automatically for packs stamped bonsai_bias_plane=="derived"; True enables
+    it and errors when the pack is not stamped; False forces the
+    materialized-bias path (parity/debug)."""
+    import mlx.core as mx
+
     pack_dir = Path(pack_dir)
-    model, config = load_model(pack_dir, lazy=lazy, get_model_classes=_typed_classes)
+    config = load_config(pack_dir)
+    stamped = config.get("text_config", config).get("bonsai_bias_plane") == "derived"
+    if derived_kernels is True and not stamped:
+        raise ValueError(f"{pack_dir} is not stamped bonsai_bias_plane=derived")
+    use_derived = stamped if derived_kernels is None else derived_kernels
+    # derived mode forces a lazy load: _apply_derived_kernels drops the
+    # sanitize-materialized bias arrays before they are ever evaluated
+    model, _ = load_model(
+        pack_dir, lazy=lazy or use_derived, get_model_classes=_typed_classes
+    )
+    if use_derived:
+        _apply_derived_kernels(model)
+        if not lazy:
+            mx.eval(model.parameters())
     tokenizer = load_tokenizer(pack_dir)
     return model, tokenizer
 
