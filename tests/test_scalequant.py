@@ -1,13 +1,20 @@
 """Group C operator unit tests (synthetic; no model load)."""
+import json
+
 import mlx.core as mx
 import numpy as np
+import pytest
+from conftest import LAYER_TYPES, N_BLOCKS, st_entry
 
+from bonsaifold.fold import strip_bias_plane
 from bonsaifold.scalequant import (
     QMAX,
+    quantize_scale_plane,
     quantize_scales,
     reconstruct_scales,
     roundtrip_scales,
 )
+from bonsaifold.stio import PackReader, write_safetensors
 
 
 def test_shapes_and_dtypes():
@@ -58,13 +65,9 @@ def test_determinism():
     assert bool(mx.array_equal(a, b))
 
 
-def wide_pack(tmp_path):
-    """Synthetic pack with real-geometry scales (K=4096 -> 32 cols at g128)."""
-    import json
-
-    from tests.conftest import LAYER_TYPES, N_BLOCKS, st_entry
-    from bonsaifold.stio import write_safetensors
-
+def write_wide_pack(tmp_path):
+    """Synthetic pack with real-geometry scales (K=4096 -> 32 cols at g128).
+    Returns the pack dir."""
     rng = np.random.default_rng(11)
     d = tmp_path / "wide_src"
     d.mkdir()
@@ -95,12 +98,8 @@ def wide_pack(tmp_path):
 def test_quantize_scale_plane_pack(tmp_path):
     """strip biases -> Group C pack: q8 triplet replaces 1-bit scales, other
     tensors byte-identical, reconstruction == in-memory roundtrip."""
-    from bonsaifold.fold import strip_bias_plane
-    from bonsaifold.scalequant import quantize_scale_plane
-    from bonsaifold.stio import PackReader
-
     nobias = tmp_path / "nobias"
-    strip_bias_plane(wide_pack(tmp_path), nobias)
+    strip_bias_plane(write_wide_pack(tmp_path), nobias)
     dst = tmp_path / "groupc"
     n, saved = quantize_scale_plane(nobias, dst)
     # 8 blocks x (8x32) scales: 512B f16 -> 256B q8 + 32B meta each
@@ -125,10 +124,6 @@ def test_quantize_scale_plane_pack(tmp_path):
 
 
 def test_quantize_scale_plane_requires_derived(tmp_path, mini_pack):
-    import pytest
-
-    from bonsaifold.scalequant import quantize_scale_plane
-
     with pytest.raises(ValueError, match="bias-derived"):
         quantize_scale_plane(mini_pack, tmp_path / "out")
 
@@ -136,10 +131,6 @@ def test_quantize_scale_plane_requires_derived(tmp_path, mini_pack):
 def test_unprofitable_geometry_falls_back_to_copy(tmp_path, mini_pack):
     """mini_pack scales are (8,1): the q8 triplet would be larger, so the
     operator must keep the original plane byte-identical."""
-    from bonsaifold.fold import strip_bias_plane
-    from bonsaifold.scalequant import quantize_scale_plane
-    from bonsaifold.stio import PackReader
-
     nobias = tmp_path / "nobias"
     strip_bias_plane(mini_pack, nobias)
     n, saved = quantize_scale_plane(nobias, tmp_path / "groupc")

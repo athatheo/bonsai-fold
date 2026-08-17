@@ -171,13 +171,12 @@ class TypedModel(q35.Model):
 
             for k in list(weights):
                 if k.endswith(".scales_q8"):
-                    base = k[: -len("_q8")]
+                    base = k[: -len("_q8")]  # the ".scales" name
                     weights[base] = reconstruct_scales(
-                        weights[k],
+                        weights.pop(k),
                         weights.pop(base + "_lo"),
                         weights.pop(base + "_step"),
                     )
-                    del weights[k]
         if self._derive_bias_plane:
             # B1 pack-v2: the biases plane was stripped (redundant — Phase 0
             # proved biases == f16(-scales/2)); re-materialize it at load

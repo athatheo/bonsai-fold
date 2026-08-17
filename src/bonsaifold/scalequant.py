@@ -14,10 +14,19 @@ deterministic from the stored tensors alone. Run under B1 derived kernels
 (bonsai_bias_plane=="derived"): biases re-derive from s' in-register, so the
 pack stays self-consistent with no separate bias decision.
 """
+import copy
+from datetime import datetime, timezone
+
 import mlx.core as mx
+import mlx.nn as nn
+import numpy as np
+
+from .fold import write_pack
+from .stio import PackReader, is_quantized, weight_base
 
 BITS = 8
 QMAX = (1 << BITS) - 1
+_ST_DTYPE = {"uint8": "U8", "float16": "F16"}  # numpy dtype name -> st code
 
 
 def quantize_scales(s):
@@ -35,10 +44,10 @@ def quantize_scales(s):
 def reconstruct_scales(q, lo, step):
     """Inverse of quantize_scales; f32 compute, f16 result. Accepts mx or
     numpy input (sanitize receives whatever the weight file loader yields)."""
-    f = mx.array(q).astype(mx.float32) * mx.array(step).astype(mx.float32) + mx.array(
-        lo
-    ).astype(mx.float32)
-    return f.astype(mx.float16)
+    q32 = mx.array(q).astype(mx.float32)
+    lo32 = mx.array(lo).astype(mx.float32)
+    step32 = mx.array(step).astype(mx.float32)
+    return (q32 * step32 + lo32).astype(mx.float16)
 
 
 def roundtrip_scales(s):
@@ -56,20 +65,14 @@ def quantize_scale_plane(src_pack, dst_pack):
 
     Returns (n_tensors, bytes_saved).
     """
-    import numpy as np
-
-    from .fold import write_pack
-    from .stio import PackReader, is_quantized, weight_base
-
     src = PackReader(src_pack)
     if src.config["text_config"].get("bonsai_bias_plane") != "derived":
         raise ValueError("Group C requires a bias-derived (nobias) source pack")
-    onebit_scales = set()
-    for n in src.header:
-        if is_quantized(n, src.header):
-            _, bits = src.quant_meta(n)
-            if bits == 1:
-                onebit_scales.add(weight_base(n) + ".scales")
+    onebit_scales = {
+        weight_base(name) + ".scales"
+        for name in src.header
+        if is_quantized(name, src.header) and src.quant_meta(name)[1] == 1  # bits
+    }
 
     entries, saved, n_quantized = {}, 0, 0
     for name in src.header:
@@ -81,7 +84,7 @@ def quantize_scale_plane(src_pack, dst_pack):
             for suffix, t in ((".scales_q8", q), (".scales_lo", lo), (".scales_step", step)):
                 a = np.array(t)
                 triplet[base + suffix] = {
-                    "dtype": {"uint8": "U8", "float16": "F16"}[a.dtype.name],
+                    "dtype": _ST_DTYPE[a.dtype.name],
                     "shape": list(a.shape),
                     "raw": a.tobytes(),
                 }
@@ -98,9 +101,6 @@ def quantize_scale_plane(src_pack, dst_pack):
             "nbytes": end - begin,
             "raw": (lambda n=name: src.read_raw(n)),
         }
-
-    import copy
-    from datetime import datetime, timezone
 
     config = copy.deepcopy(src.config)
     config["text_config"]["bonsai_scale_plane"] = {"bits": BITS, "grouping": "row"}
@@ -121,16 +121,13 @@ def apply_roundtrip(model):
     round-trip. Under derived kernels this fully defines the Group C model
     (biases follow as f16(-s'/2) in-register). Returns (n_modules,
     max relative error) for the log."""
-    import mlx.nn as nn
-
     n, max_rel = 0, 0.0
     for m in model.modules():
         if isinstance(m, (nn.QuantizedLinear, nn.QuantizedEmbedding)) and m.bits == 1:
             s = m["scales"]
             s2 = roundtrip_scales(s)
-            rel = mx.abs(s2.astype(mx.float32) - s.astype(mx.float32)) / mx.maximum(
-                mx.abs(s.astype(mx.float32)), 1e-8
-            )
+            s32 = s.astype(mx.float32)
+            rel = mx.abs(s2.astype(mx.float32) - s32) / mx.maximum(mx.abs(s32), 1e-8)
             max_rel = max(max_rel, float(rel.max()))
             m.scales = s2
             n += 1

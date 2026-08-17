@@ -33,15 +33,17 @@ REGIMES = {
 
 
 def item_kl(ref_model, cand_model, token_ids):
+    """(summed forward KL over positions, n_positions) for one probe."""
     ids = mx.array([token_ids])
-    a = ref_model(ids)
-    b = cand_model(ids)
-    mx.eval(a, b)
-    total, n = 0.0, a.shape[1]
-    for s in range(0, n, CHUNK):
-        r = nn.log_softmax(a[:, s : s + CHUNK].astype(mx.float32), axis=-1)
-        c = nn.log_softmax(b[:, s : s + CHUNK].astype(mx.float32), axis=-1)
-        total += float(nn.losses.kl_div_loss(c, r, axis=-1).sum())
+    ref_logits = ref_model(ids)
+    cand_logits = cand_model(ids)
+    mx.eval(ref_logits, cand_logits)
+    total, n = 0.0, ref_logits.shape[1]
+    for i in range(0, n, CHUNK):
+        chunk = slice(i, i + CHUNK)
+        lp_ref = nn.log_softmax(ref_logits[:, chunk].astype(mx.float32), axis=-1)
+        lp_cand = nn.log_softmax(cand_logits[:, chunk].astype(mx.float32), axis=-1)
+        total += float(nn.losses.kl_div_loss(lp_cand, lp_ref, axis=-1).sum())
     return total, n
 
 
