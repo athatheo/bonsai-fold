@@ -85,7 +85,7 @@ index 500e7de..6ae9c60 100644
  add_custom_target(mlx-metallib DEPENDS ${MLX_METAL_PATH}/mlx.metallib)
  
 diff --git a/mlx/backend/metal/kernels/quantized.h b/mlx/backend/metal/kernels/quantized.h
-index 9ac2e42..800f00b 100644
+index 9ac2e42..ce12052 100644
 --- a/mlx/backend/metal/kernels/quantized.h
 +++ b/mlx/backend/metal/kernels/quantized.h
 @@ -663,7 +663,8 @@ template <
@@ -235,7 +235,65 @@ index 9ac2e42..800f00b 100644
  
    // Set the block
    const int K_w = K * bytes_per_pack / pack_factor;
-@@ -1707,6 +1710,40 @@ template <typename T, int group_size, int bits, int D, bool batched>
+@@ -1655,6 +1658,57 @@ METAL_FUNC void adjust_matrix_offsets(
+   y += tid.z * output_stride;
+ }
+ 
++template <typename T, int group_size, int bits, int D, bool batched>
++[[kernel]] void affine_derived_qmv_quad(
++    const device uint32_t* w [[buffer(0)]],
++    const device T* scales [[buffer(1)]],
++    const device T* x [[buffer(2)]],
++    device T* y [[buffer(3)]],
++    const constant int& in_vec_size [[buffer(4)]],
++    const constant int& out_vec_size [[buffer(5)]],
++    const constant int& x_batch_ndims [[buffer(6)]],
++    const constant int* x_shape [[buffer(7)]],
++    const constant int64_t* x_strides [[buffer(8)]],
++    const constant int& w_batch_ndims [[buffer(9)]],
++    const constant int* w_shape [[buffer(10)]],
++    const constant int64_t* w_strides [[buffer(11)]],
++    const constant int64_t* s_strides [[buffer(12)]],
++    uint3 tid [[threadgroup_position_in_grid]],
++    uint quad_gid [[quadgroup_index_in_threadgroup]],
++    uint quad_lid [[thread_index_in_quadgroup]]) {
++  const device T* biases = scales;
++  if (batched) {
++    int M = x_shape[x_batch_ndims];
++    adjust_matrix_offsets<T>(
++        x,
++        w,
++        scales,
++        biases,
++        y,
++        out_vec_size * M,
++        x_batch_ndims,
++        x_shape,
++        x_strides,
++        w_batch_ndims,
++        w_shape,
++        w_strides,
++        s_strides,
++        s_strides,
++        tid);
++  }
++  qmv_quad_impl<T, group_size, bits, D, true>(
++      w,
++      scales,
++      biases,
++      x,
++      y,
++      in_vec_size,
++      out_vec_size,
++      tid,
++      quad_gid,
++      quad_lid);
++}
++
+ template <typename T, int group_size, int bits, int D, bool batched>
+ [[kernel]] void affine_qmv_quad(
+     const device uint32_t* w [[buffer(0)]],
+@@ -1707,6 +1761,40 @@ template <typename T, int group_size, int bits, int D, bool batched>
        quad_lid);
  }
  
@@ -276,6 +334,344 @@ index 9ac2e42..800f00b 100644
  template <typename T, int group_size, int bits, bool batched>
  [[kernel]] void affine_qmv_fast(
      const device uint32_t* w [[buffer(0)]],
+@@ -1759,6 +1847,57 @@ template <typename T, int group_size, int bits, bool batched>
+       simd_lid);
+ }
+ 
++template <typename T, const int group_size, const int bits, bool batched>
++[[kernel]] void affine_derived_qmv(
++    const device uint32_t* w [[buffer(0)]],
++    const device T* scales [[buffer(1)]],
++    const device T* x [[buffer(2)]],
++    device T* y [[buffer(3)]],
++    const constant int& in_vec_size [[buffer(4)]],
++    const constant int& out_vec_size [[buffer(5)]],
++    const constant int& x_batch_ndims [[buffer(6)]],
++    const constant int* x_shape [[buffer(7)]],
++    const constant int64_t* x_strides [[buffer(8)]],
++    const constant int& w_batch_ndims [[buffer(9)]],
++    const constant int* w_shape [[buffer(10)]],
++    const constant int64_t* w_strides [[buffer(11)]],
++    const constant int64_t* s_strides [[buffer(12)]],
++    uint3 tid [[threadgroup_position_in_grid]],
++    uint simd_gid [[simdgroup_index_in_threadgroup]],
++    uint simd_lid [[thread_index_in_simdgroup]]) {
++  const device T* biases = scales;
++  if (batched) {
++    int M = x_shape[x_batch_ndims];
++    adjust_matrix_offsets<T>(
++        x,
++        w,
++        scales,
++        biases,
++        y,
++        out_vec_size * M,
++        x_batch_ndims,
++        x_shape,
++        x_strides,
++        w_batch_ndims,
++        w_shape,
++        w_strides,
++        s_strides,
++        s_strides,
++        tid);
++  }
++  qmv_impl<T, group_size, bits, true>(
++      w,
++      scales,
++      biases,
++      x,
++      y,
++      in_vec_size,
++      out_vec_size,
++      tid,
++      simd_gid,
++      simd_lid);
++}
++
+ template <typename T, const int group_size, const int bits, bool batched>
+ [[kernel]] void affine_qmv(
+     const device uint32_t* w [[buffer(0)]],
+@@ -1811,6 +1950,64 @@ template <typename T, const int group_size, const int bits, bool batched>
+       simd_lid);
+ }
+ 
++template <
++    typename T,
++    int group_size,
++    int bits,
++    int vecs_per_tg,
++    int k_lanes,
++    bool batched>
++[[kernel]] void affine_derived_qmv_wide(
++    const device uint32_t* w,
++    const device T* scales,
++    const device T* x,
++    device T* y,
++    const constant int& in_vec_size,
++    const constant int& out_vec_size,
++    const constant int& M,
++    const constant int& x_batch_ndims,
++    const constant int* x_shape,
++    const constant int64_t* x_strides,
++    const constant int& w_batch_ndims,
++    const constant int* w_shape,
++    const constant int64_t* w_strides,
++    const constant int64_t* s_strides,
++    uint3 tid [[threadgroup_position_in_grid]],
++    uint simd_gid [[simdgroup_index_in_threadgroup]],
++    uint simd_lid [[thread_index_in_simdgroup]]) {
++  const device T* biases = scales;
++  if (batched) {
++    adjust_matrix_offsets<T>(
++        x,
++        w,
++        scales,
++        biases,
++        y,
++        out_vec_size * M,
++        x_batch_ndims,
++        x_shape,
++        x_strides,
++        w_batch_ndims,
++        w_shape,
++        w_strides,
++        s_strides,
++        s_strides,
++        tid);
++  }
++  qmv_wide_impl<T, group_size, bits, vecs_per_tg, k_lanes, true>(
++      w,
++      scales,
++      biases,
++      x,
++      y,
++      in_vec_size,
++      out_vec_size,
++      M,
++      tid,
++      simd_gid,
++      simd_lid);
++}
++
+ template <
+     typename T,
+     int group_size,
+@@ -1978,6 +2175,78 @@ template <typename T, const int group_size, const int bits, int split_k = 32>
+       simd_lid);
+ }
+ 
++template <
++    typename T,
++    const int group_size,
++    const int bits,
++    const bool aligned_N,
++    const bool batched,
++    const int BM = 32,
++    const int BK = 32,
++    const int BN = 32>
++[[kernel]] void affine_derived_qmm_t(
++    const device uint32_t* w [[buffer(0)]],
++    const device T* scales [[buffer(1)]],
++    const device T* x [[buffer(2)]],
++    device T* y [[buffer(3)]],
++    const constant int& K [[buffer(4)]],
++    const constant int& N [[buffer(5)]],
++    const constant int& M [[buffer(6)]],
++    const constant int& x_batch_ndims [[buffer(7)]],
++    const constant int* x_shape [[buffer(8)]],
++    const constant int64_t* x_strides [[buffer(9)]],
++    const constant int& w_batch_ndims [[buffer(10)]],
++    const constant int* w_shape [[buffer(11)]],
++    const constant int64_t* w_strides [[buffer(12)]],
++    const constant int64_t* s_strides [[buffer(13)]],
++    uint3 tid [[threadgroup_position_in_grid]],
++    uint lid [[thread_index_in_threadgroup]],
++    uint simd_gid [[simdgroup_index_in_threadgroup]],
++    uint simd_lid [[thread_index_in_simdgroup]]) {
++  const device T* biases = scales;
++  (void)lid;
++
++  constexpr int BK_padded = (BK + 16 / sizeof(T));
++
++  threadgroup T Xs[BM * BK_padded];
++  threadgroup T Ws[BN * BK_padded];
++
++  if (batched) {
++    adjust_matrix_offsets<T>(
++        x,
++        w,
++        scales,
++        biases,
++        y,
++        M * N,
++        x_batch_ndims,
++        x_shape,
++        x_strides,
++        w_batch_ndims,
++        w_shape,
++        w_strides,
++        s_strides,
++        s_strides,
++        tid);
++  }
++  qmm_t_impl<T, group_size, bits, aligned_N, BM, BK, BN, true>(
++      w,
++      scales,
++      biases,
++      x,
++      y,
++      Xs,
++      Ws,
++      K,
++      N,
++      M,
++      K,
++      tid,
++      lid,
++      simd_gid,
++      simd_lid);
++}
++
+ template <
+     typename T,
+     const int group_size,
+@@ -2051,6 +2320,65 @@ template <
+       simd_lid);
+ }
+ 
++template <
++    typename T,
++    const int group_size,
++    const int bits,
++    const bool aligned_N,
++    const int BM = 32,
++    const int BK = 32,
++    const int BN = 32>
++[[kernel]] void affine_derived_qmm_t_splitk(
++    const device uint32_t* w [[buffer(0)]],
++    const device T* scales [[buffer(1)]],
++    const device T* x [[buffer(2)]],
++    device T* y [[buffer(3)]],
++    const constant int& K [[buffer(4)]],
++    const constant int& N [[buffer(5)]],
++    const constant int& M [[buffer(6)]],
++    const constant int& k_partition_size [[buffer(7)]],
++    const constant int& split_k_partition_stride [[buffer(8)]],
++    uint3 tid [[threadgroup_position_in_grid]],
++    uint lid [[thread_index_in_threadgroup]],
++    uint simd_gid [[simdgroup_index_in_threadgroup]],
++    uint simd_lid [[thread_index_in_simdgroup]]) {
++  const device T* biases = scales;
++  (void)lid;
++
++  constexpr int BK_padded = (BK + 16 / sizeof(T));
++  constexpr int pack_factor = get_pack_factor<bits, 8>();
++  constexpr int bytes_per_pack = get_bytes_per_pack<bits>();
++
++  threadgroup T Xs[BM * BK_padded];
++  threadgroup T Ws[BN * BK_padded];
++
++  const int k_start = tid.z * k_partition_size;
++  x += k_start;
++
++  auto wl = (const device uint8_t*)w;
++  wl += k_start * bytes_per_pack / pack_factor;
++  scales += k_start / group_size;
++  biases += k_start / group_size;
++  y += tid.z * static_cast<int64_t>(split_k_partition_stride);
++
++  qmm_t_impl<T, group_size, bits, aligned_N, BM, BK, BN, true>(
++      (const device uint32_t*)wl,
++      scales,
++      biases,
++      x,
++      y,
++      Xs,
++      Ws,
++      K,
++      N,
++      M,
++      k_partition_size,
++      tid,
++      lid,
++      simd_gid,
++      simd_lid);
++}
++
+ template <
+     typename T,
+     const int group_size,
+@@ -2816,6 +3144,69 @@ template <typename T, const int group_size, const int bits>
+   }
+ }
+ 
++template <typename T, const int group_size, const int bits>
++[[kernel]] void affine_derived_dequantize(
++    const device uint8_t* w [[buffer(0)]],
++    const device T* scales [[buffer(1)]],
++    device T* out [[buffer(3)]],
++    uint2 index [[thread_position_in_grid]],
++    uint2 grid_dim [[threads_per_grid]]) {
++  constexpr int pack_factor = get_pack_factor<bits, 8>();
++  constexpr int bytes_per_pack = get_bytes_per_pack<bits>();
++
++  size_t offset = index.x + grid_dim.x * size_t(index.y);
++  size_t oindex = offset * pack_factor;
++  size_t gindex = oindex / group_size;
++  T scale = scales[gindex];
++  T bias = T(-0.5f * scale);
++
++  out += oindex;
++
++  if (bits == 3) {
++    w += offset * bytes_per_pack;
++    out[0] = (w[0] & 0x7) * scale + bias;
++    out[1] = ((w[0] & 0x38) >> 3) * scale + bias;
++    out[2] = (((w[0] & 0xc0) >> 6) + ((w[1] & 0x1) << 2)) * scale + bias;
++    out[3] = ((w[1] & 0xe) >> 1) * scale + bias;
++    out[4] = ((w[1] & 0x70) >> 4) * scale + bias;
++    out[5] = (((w[1] & 0x80) >> 7) + ((w[2] & 0x3) << 1)) * scale + bias;
++    out[6] = ((w[2] & 0x1c) >> 2) * scale + bias;
++    out[7] = ((w[2] & 0xe0) >> 5) * scale + bias;
++  } else if (bits == 5) {
++    w += offset * bytes_per_pack;
++    out[0] = (w[0] & 0x1f) * scale + bias;
++    out[1] = (((w[0] & 0xe0) >> 5) + ((w[1] & 0x3) << 3)) * scale + bias;
++    out[2] = ((w[1] & 0x7c) >> 2) * scale + bias;
++    out[3] = (((w[1] & 0x80) >> 7) + ((w[2] & 0xf) << 1)) * scale + bias;
++    out[4] = (((w[2] & 0xf0) >> 4) + ((w[3] & 0x1) << 4)) * scale + bias;
++    out[5] = ((w[3] & 0x3e) >> 1) * scale + bias;
++    out[6] = (((w[3] & 0xc0) >> 6) + ((w[4] & 0x7) << 2)) * scale + bias;
++    out[7] = ((w[4] & 0xf8) >> 3) * scale + bias;
++  } else if (bits == 6) {
++    w += offset * bytes_per_pack;
++    out[0] = (w[0] & 0x3f) * scale + bias;
++    out[1] = (((w[0] >> 6) & 0x03) + ((w[1] & 0x0f) << 2)) * scale + bias;
++    out[2] = (((w[1] >> 4) & 0x0f) + ((w[2] & 0x03) << 4)) * scale + bias;
++    out[3] = ((w[2] >> 2) & 0x3f) * scale + bias;
++  } else {
++    uint val = w[offset];
++#pragma clang loop unroll(full)
++    for (int i = 0; i < pack_factor; i++) {
++      uint8_t d;
++      if (bits == 1) {
++        d = (val >> i) & 0x01;
++      } else if (bits == 2) {
++        d = (val >> (bits * i)) & 0x03;
++      } else if (bits == 4) {
++        d = (val >> (bits * i)) & 0x0f;
++      } else if (bits == 8) {
++        d = val;
++      }
++      out[i] = scale * d + bias;
++    }
++  }
++}
++
+ template <typename T, const int group_size, const int bits>
+ [[kernel]] void affine_dequantize(
+     const device uint8_t* w [[buffer(0)]],
 diff --git a/mlx/backend/metal/make_compiled_preamble.sh b/mlx/backend/metal/make_compiled_preamble.sh
 index bb55ed3..aaade01 100644
 --- a/mlx/backend/metal/make_compiled_preamble.sh
@@ -340,15 +736,18 @@ index bb55ed3..aaade01 100644
  # Make sure the given metal header is also expanded in the source content
  HDRS_SORTED+=("${INPUT_FILE#$SRC_DIR/}")
 diff --git a/mlx/backend/metal/quantized.cpp b/mlx/backend/metal/quantized.cpp
-index 22f9451..b836f06 100644
+index 22f9451..a1261ce 100644
 --- a/mlx/backend/metal/quantized.cpp
 +++ b/mlx/backend/metal/quantized.cpp
-@@ -12,6 +12,14 @@
+@@ -12,6 +12,17 @@
  #include "mlx/primitives.h"
  #include "mlx/utils.h"
  
 +namespace {
 +// Metal host_name must be a valid identifier; "affine-derived" -> "affine_derived"
++inline bool is_affine_family(const std::string& mode) {
++  return mode == "affine" || mode == "affine-derived";
++}
 +inline std::string kernel_mode_name(const std::string& mode) {
 +  return (mode == "affine-derived") ? std::string("affine_derived") : mode;
 +}
@@ -358,7 +757,7 @@ index 22f9451..b836f06 100644
  namespace mlx::core {
  
  namespace {
-@@ -27,7 +35,9 @@ auto get_quantized_kernel_wrapped(
+@@ -27,7 +38,9 @@ auto get_quantized_kernel_wrapped(
      int bits,
      Args... args) {
    std::string template_def;
@@ -369,7 +768,7 @@ index 22f9451..b836f06 100644
    template_def = get_template_definition(
        name, fname, type, group_size, bits, std::forward<Args>(args)...);
    return get_quantized_kernel(d, name, template_def, mode);
-@@ -44,7 +54,9 @@ auto get_qmm_nax_kernel_wrapped(
+@@ -44,7 +57,9 @@ auto get_qmm_nax_kernel_wrapped(
      int bits,
      Args... args) {
    std::string template_def;
@@ -380,7 +779,7 @@ index 22f9451..b836f06 100644
    template_def = get_template_definition(
        name, fname, type, group_size, bits, std::forward<Args>(args)...);
    return get_qmm_nax_kernel(d, name, template_def, mode);
-@@ -203,7 +215,7 @@ void qmv_quad(
+@@ -203,7 +218,7 @@ void qmv_quad(
  
    concatenate(
        kname,
@@ -389,7 +788,7 @@ index 22f9451..b836f06 100644
        type_string,
        "_gs_",
        group_size,
-@@ -260,7 +272,7 @@ void qmv(
+@@ -260,7 +275,7 @@ void qmv(
  
    concatenate(
        kname,
@@ -398,7 +797,25 @@ index 22f9451..b836f06 100644
        type_string,
        "_gs_",
        group_size,
-@@ -353,7 +365,7 @@ void qmv_wide(
+@@ -301,7 +316,7 @@ void qmv(
+ // breaks even after two rows and wins once three or more rows share a block.
+ inline bool
+ use_qmv_wide(const std::string& mode, int bits, int M, metal::Device& d) {
+-  if (mode != "affine") {
++  if (!is_affine_family(mode)) {
+     return true;
+   }
+   if (bits == 1 || (bits == 2 && M < 3)) {
+@@ -335,7 +350,7 @@ void qmv_wide(
+   // k_lanes: lanes reducing K per output row (32/k_lanes rows per simdgroup).
+   // The affine subchunk decode has enough ALU per weight load to favor more
+   // rows per simdgroup (kl8); the fp modes' vectorized dot is balanced at 16.
+-  int k_lanes = mode == "affine" ? 8 : 16;
++  int k_lanes = is_affine_family(mode) ? 8 : 16;
+   constexpr int num_simdgroups = 2;
+   int B = out.size() / M / N;
+   bool batched = B > 1;
+@@ -353,7 +368,7 @@ void qmv_wide(
    std::string type_string = get_type_string(x.dtype());
    concatenate(
        kname,
@@ -407,7 +824,7 @@ index 22f9451..b836f06 100644
        type_string,
        "_gs_",
        group_size,
-@@ -465,7 +477,7 @@ void qvm_split_k(
+@@ -465,7 +480,7 @@ void qvm_split_k(
    kname.reserve(64);
    concatenate(
        kname,
@@ -416,7 +833,7 @@ index 22f9451..b836f06 100644
        type_string,
        "_gs_",
        group_size,
-@@ -543,7 +555,7 @@ void qvm(
+@@ -543,7 +558,7 @@ void qvm(
    std::string type_string = get_type_string(x.dtype());
    concatenate(
        kname,
@@ -425,7 +842,7 @@ index 22f9451..b836f06 100644
        type_string,
        "_gs_",
        group_size,
-@@ -602,7 +614,7 @@ void qmm_nax(
+@@ -602,7 +617,7 @@ void qmm_nax(
    std::string type_string = get_type_string(x.dtype());
    concatenate(
        kname,
@@ -434,7 +851,7 @@ index 22f9451..b836f06 100644
        type_string,
        "_gs_",
        group_size,
-@@ -706,7 +718,7 @@ void gather_qmm_nax(
+@@ -706,7 +721,7 @@ void gather_qmm_nax(
    std::string type_string = get_type_string(x.dtype());
    concatenate(
        kname,
@@ -443,7 +860,7 @@ index 22f9451..b836f06 100644
        type_string,
        "_gs_",
        group_size,
-@@ -827,7 +839,7 @@ void qmm(
+@@ -827,7 +842,7 @@ void qmm(
    std::string type_string = get_type_string(x.dtype());
    concatenate(
        kname,
@@ -452,7 +869,7 @@ index 22f9451..b836f06 100644
        type_string,
        "_gs_",
        group_size,
-@@ -929,7 +941,7 @@ void qmm_splitk(
+@@ -929,7 +944,7 @@ void qmm_splitk(
    kname.reserve(64);
    concatenate(
        kname,
@@ -461,7 +878,7 @@ index 22f9451..b836f06 100644
        type_string,
        "_gs_",
        group_size,
-@@ -1019,7 +1031,7 @@ void gather_qmm(
+@@ -1019,7 +1034,7 @@ void gather_qmm(
    std::string type_string = get_type_string(x.dtype());
    concatenate(
        kname,
@@ -470,7 +887,7 @@ index 22f9451..b836f06 100644
        type_string,
        "_gs_",
        group_size,
-@@ -1086,7 +1098,7 @@ void gather_qmv(
+@@ -1086,7 +1101,7 @@ void gather_qmv(
    bool fast = N % bn == 0 && K % 512 == 0;
    concatenate(
        kname,
@@ -479,7 +896,7 @@ index 22f9451..b836f06 100644
        type_string,
        "_gs_",
        group_size,
-@@ -1152,7 +1164,7 @@ void gather_qvm(
+@@ -1152,7 +1167,7 @@ void gather_qvm(
    std::string type_string = get_type_string(x.dtype());
    concatenate(
        kname,
@@ -488,7 +905,7 @@ index 22f9451..b836f06 100644
        type_string,
        "_gs_",
        group_size,
-@@ -1387,7 +1399,7 @@ void gather_qmm_rhs(
+@@ -1387,7 +1402,7 @@ void gather_qmm_rhs(
    std::string type_string = get_type_string(x.dtype());
    concatenate(
        kname,
@@ -497,7 +914,7 @@ index 22f9451..b836f06 100644
        type_string,
        "_gs_",
        group_size,
-@@ -1685,7 +1697,7 @@ void quantize_dequantize(
+@@ -1685,7 +1700,7 @@ void quantize_dequantize(
    std::string kname;
    concatenate(
        kname,
@@ -506,7 +923,7 @@ index 22f9451..b836f06 100644
        type_string,
        "_gs_",
        group_size,
-@@ -1801,7 +1813,7 @@ void fast::Quantize::eval_gpu(
+@@ -1801,7 +1816,7 @@ void fast::Quantize::eval_gpu(
    std::string kname;
    concatenate(
        kname,
@@ -516,7 +933,7 @@ index 22f9451..b836f06 100644
        type_string,
        "_gs_",
 diff --git a/mlx/ops.cpp b/mlx/ops.cpp
-index b569888..ba5cafc 100644
+index b569888..51ab3be 100644
 --- a/mlx/ops.cpp
 +++ b/mlx/ops.cpp
 @@ -4376,6 +4376,10 @@ std::pair<int, int> quantization_params_from_mode(
@@ -579,6 +996,122 @@ index b569888..ba5cafc 100644
    } else {
      inputs = {x, w, scales};
    }
+@@ -5053,6 +5079,99 @@ array affine_dequantize(
+   return fallback({w, scales, biases})[0];
+ }
+ 
++
++array affine_derived_dequantize(
++    const array& w,
++    const array& scales,
++    int group_size,
++    int bits,
++    StreamOrDevice s_) {
++  auto wshape = w.shape();
++  auto sshape = scales.shape();
++  if (wshape.size() != sshape.size()) {
++    throw std::invalid_argument(
++        "[dequantize] Shape of scales and biases does not match the matrix");
++  }
++  wshape.back() = -1;
++  sshape.back() = -1;
++
++  if (wshape != sshape) {
++    throw std::invalid_argument(
++        "[dequantize] Shape of scales and biases does not match the matrix");
++  }
++
++  // Packing into uint32
++  int out_size = w.shape(-1) * 32 / bits;
++
++  if (out_size != scales.shape(-1) * group_size) {
++    std::ostringstream msg;
++    msg << "[dequantize] Shape of scales and biases does not match the matrix "
++        << "given the quantization parameters. Provided matrix of shape "
++        << w.shape() << " and scales/biases of shape " << scales.shape()
++        << " with group_size=" << group_size << " and bits=" << bits << ".";
++    throw std::invalid_argument(msg.str());
++  }
++
++  auto s = to_stream(s_);
++
++  auto fallback =
++      [wshape = std::move(wshape),
++       sshape = std::move(sshape),
++       group_size,
++       bits,
++       s](const std::vector<array>& inputs) mutable -> std::vector<array> {
++    auto w = inputs[0];
++    auto& scales = inputs[1];
++    auto biases = astype(multiply(astype(inputs[1], float32, s),
++        array(-0.5f), s), inputs[1].dtype(), s);
++    if (is_power_of_2(bits)) {
++      std::vector<array> parts;
++      for (int start = 0; start < 32; start += bits) {
++        parts.push_back(expand_dims(
++            right_shift(
++                left_shift(w, array(32 - (start + bits), uint32), s),
++                array(32 - bits, uint32),
++                s),
++            -1,
++            s));
++      }
++      w = concatenate(parts, -1, s);
++    } else {
++      w = expand_dims(w, /* axis= */ -1, s);
++      w = bitwise_and(
++          right_shift(w, arange(32, uint32, s), s), array({1}, uint32), s);
++      auto new_shape = w.shape();
++      new_shape[new_shape.size() - 2] = -1;
++      new_shape.back() = bits;
++      w = reshape(w, new_shape, s);
++      array shifts = arange(bits, uint32, s);
++      w = sum(
++          left_shift(w, shifts, s), /* axis= */ -1, /* keepdims= */ false, s);
++    }
++
++    // Dequantize
++    wshape.push_back(group_size);
++    w = reshape(w, wshape, s);
++    w = multiply(w, expand_dims(scales, -1, s), s);
++    w = add(w, expand_dims(biases, -1, s), s);
++    w = reshape(w, sshape, s);
++
++    return {w};
++  };
++
++  if (s.device == Device::gpu) {
++    auto out_shape = w.shape();
++    out_shape.back() = out_size;
++    return array(
++        std::move(out_shape),
++        scales.dtype(),
++        std::make_shared<fast::Quantize>(
++            s, fallback, group_size, bits, QuantizationMode::AffineDerived, true),
++        {w, scales});
++  }
++  return fallback({w, scales})[0];
++}
++
+ array fp_dequantize(
+     const array& w,
+     const array& scales,
+@@ -5224,6 +5343,15 @@ array dequantize(
+         affine_dequantize(w, scales, *biases, group_size, bits, s),
+         out_type,
+         s);
++  } else if (qmode == QuantizationMode::AffineDerived) {
++    if (bits != 1) {
++      throw std::invalid_argument(
++          "[dequantize] affine-derived mode requires bits == 1.");
++    }
++    return astype(
++        affine_derived_dequantize(w, scales, group_size, bits, s),
++        out_type,
++        s);
+   } else {
+     return fp_dequantize(
+         w,
 diff --git a/mlx/primitives.cpp b/mlx/primitives.cpp
 index a861dba..b0043d0 100644
 --- a/mlx/primitives.cpp
