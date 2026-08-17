@@ -110,6 +110,7 @@ class TypedModel(q35.Model):
         tcfg = args.text_config
         targs = q35.TextModelArgs.from_dict(tcfg)
         self._derive_bias_plane = tcfg.get("bonsai_bias_plane") == "derived"
+        self._scale_plane = tcfg.get("bonsai_scale_plane")
         self.language_model.model = TypedQwen3_5TextModel(
             targs, tcfg["layer_types"]
         )
@@ -162,6 +163,21 @@ class TypedModel(q35.Model):
 
     def sanitize(self, weights):
         weights = super().sanitize(weights)
+        if self._scale_plane:
+            # Group C (FLAGGED value-modifying): reconstruct f16 scales from
+            # the 8-bit plane. Must precede bias materialization — derived
+            # biases follow the reconstructed scales.
+            from .scalequant import reconstruct_scales
+
+            for k in list(weights):
+                if k.endswith(".scales_q8"):
+                    base = k[: -len("_q8")]
+                    weights[base] = reconstruct_scales(
+                        weights[k],
+                        weights.pop(base + "_lo"),
+                        weights.pop(base + "_step"),
+                    )
+                    del weights[k]
         if self._derive_bias_plane:
             # B1 pack-v2: the biases plane was stripped (redundant — Phase 0
             # proved biases == f16(-scales/2)); re-materialize it at load

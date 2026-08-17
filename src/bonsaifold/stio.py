@@ -11,7 +11,13 @@ from pathlib import Path
 
 import numpy as np
 
-DTYPE_NP = {"F16": np.float16, "BF16": np.uint16, "F32": np.float32, "U32": np.uint32}
+DTYPE_NP = {
+    "F16": np.float16,
+    "BF16": np.uint16,
+    "F32": np.float32,
+    "U32": np.uint32,
+    "U8": np.uint8,
+}
 
 
 def read_st_header(path):
