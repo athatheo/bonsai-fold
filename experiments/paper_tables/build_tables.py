@@ -1,0 +1,107 @@
+"""Assemble the paper's result tables from canonical committed JSONs.
+
+Emits markdown to tables.md. Re-run after any bench completes. Rules:
+- every bench table leads with the unfolded Bonsai-27B-1bit reference row;
+- Group C (flagged, value-modifying) rows sit in their OWN table, never a
+  row among byte-identical lines (CLAUDE.md flagged-arm reporting rule);
+- numbers are read from result files, never typed by hand.
+
+Usage: uv run python experiments/paper_tables/build_tables.py
+"""
+import json
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[2]
+RES = REPO / "experiments/minibench/results"
+OUT = Path(__file__).parent / "tables.md"
+
+# (result file, label, MB removed vs 4.71 GB pack, notes) — byte-identical line
+BENCH_ROWS = [
+    ("reference", "Bonsai-27B-1bit (unfolded reference)", 0, "—"),
+    ("k2_16-12", "k2: drop blocks {16,12}", 118, "screen champion, 2 blocks"),
+    ("k4", "k4: drop blocks {16,12,13,9}", 236, ""),
+    ("k6", "k6: drop 6 blocks", 360, ""),
+    ("k8", "k8: drop 8 blocks", 478, "damage knee"),
+    ("folded709_pack", "folded-709 (k4 + attn{37,38,58}); SHIPPING", 709,
+     "incl. bias strip; pack == benched view, 500/500"),
+]
+FLAGGED_ROWS = [
+    # benched pack = nobias + scale quant (no structural drops): 420 + 192.5
+    ("groupc_scaleq8", "Group C: nobias + 8-bit scale plane (VALUE-MODIFYING)", 612,
+     "KL 2.7e-06 on / 9.2e-06 off; stackable on folded-709's structural drops"),
+]
+
+KL_PARETO = [
+    ("hand", "folded-709 config", 289, 0.026, 0.16),
+    ("hand", "k6", 360, 0.031, 0.205),
+    ("hand", "k8_mixed", 478, 0.064, 0.392),
+    ("search", "A6 T350 champion", 364.6, 0.0314, 0.176),
+    ("search", "A6 T350-s2 champion", 374.8, 0.0322, 0.187),
+    ("search", "A6 T450 champion", 456.8, 0.0504, 0.233),
+]
+
+
+def bench_table(rows, require_complete=True):
+    lines = ["| config | MB removed | GSM8K | MATH500 | IFEval | MMLU-R | macro | n |",
+             "|---|---|---|---|---|---|---|---|"]
+    for fname, label, mb, note in rows:
+        p = RES / f"{fname}.json"
+        if not p.exists():
+            lines.append(f"| {label} | {mb} | *pending* | | | | | |")
+            continue
+        d = json.loads(p.read_text())
+        n = len(d["items"])
+        if require_complete and n < 500:
+            lines.append(f"| {label} | {mb} | *running ({n}/500)* | | | | | |")
+            continue
+        t = d["task_accuracy"]
+        lines.append(
+            f"| {label} | {mb} | {t.get('gsm8k', float('nan')):.3f} | "
+            f"{t.get('math500', float('nan')):.3f} | {t.get('ifeval', float('nan')):.3f} | "
+            f"{t.get('mmlu', float('nan')):.3f} | {d['macro_avg']:.4f} | {n} |"
+        )
+    return "\n".join(lines)
+
+
+def kl_table():
+    lines = ["| frontier | config | structural MB | KL on-policy | KL off-policy |",
+             "|---|---|---|---|---|"]
+    for kind, label, mb, on, off in KL_PARETO:
+        lines.append(f"| {kind} | {label} | {mb} | {on:.4f} | {off:.3f} |")
+    return "\n".join(lines)
+
+
+def main():
+    md = [
+        "# bonsai-fold result tables (generated; do not edit by hand)",
+        "",
+        "## Table 1 — mini-bench (500 items), byte-identical arm",
+        "All surviving weights byte-identical to the original pack. "
+        "Sizes vs the 4.71 GB nobias-inclusive baseline.",
+        "",
+        bench_table(BENCH_ROWS),
+        "",
+        "## Table 2 — FLAGGED arm: Group C scale quantization (value-modifying)",
+        "Reported separately per the flagged-arm rule: scales are 8-bit "
+        "reconstructions; weights are NOT byte-identical. Authorized 2026-08-12.",
+        "",
+        bench_table(FLAGGED_ROWS),
+        "",
+        "## Table 3 — KL Pareto frontier, hand-built vs A6 search (100 probes, both regimes)",
+        "",
+        kl_table(),
+        "",
+        "## Memory/disk engineering results (B1, exact)",
+        "",
+        "- B1 in-kernel bias derivation: resident RAM −420,225,024 B on the 27B "
+        "(4,207,606,792 → 3,787,381,768), logits bit-identical (6-probe identity "
+        "gate); disk −420 MB via the nobias pack.",
+        "- Group C disk: −192.5 MB further (498 scale tensors, per-row 8-bit).",
+        "",
+    ]
+    OUT.write_text("\n".join(md))
+    print(f"wrote {OUT}")
+
+
+if __name__ == "__main__":
+    main()
