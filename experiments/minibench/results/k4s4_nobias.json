@@ -1,6 +1,7 @@
 {
  "pack": "models/Bonsai-27B-mlx-1bit-nobias",
  "drop": null,
+ "drop_sub": "b16+b12+b13+b9+a38+a37+a58",
  "stock_loader": false,
  "max_tokens": 16384,
  "seed": 0,
@@ -3512,5 +3513,6 @@
    "gen_tokens": 466,
    "finish_reason": "stop"
   }
- ]
+ ],
+ "metadata_note": "drop_sub restored 2026-08-17: original run predates drop_sub recording (fixed in run_minibench); spec identified by exact KL match (.0258 on-policy) in kl_screen/results/sublayer_sets_onpolicy.json"
 }

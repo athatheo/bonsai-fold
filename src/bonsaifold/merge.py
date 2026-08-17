@@ -162,6 +162,10 @@ def _block_tensor_kinds(src, i):
             name.rsplit(".", 1)[0] + ".weight" in src.header
         ):
             continue  # member of a quantized triple, handled via its base
+        elif src.header[name]["dtype"] == "U32":
+            # packed codes whose scales partner is missing (e.g. a pack this
+            # module doesn't understand) — fp-averaging them would be garbage
+            raise ValueError(f"{name}: U32 weight without a .scales partner")
         else:
             fp.append(name)
     return bases, fp
@@ -176,6 +180,12 @@ def merge_blocks(src_pack, dst_pack, i, j, operator, chunk_rows=4096):
     kernel, out_bits = OPERATORS[operator]
     src = PackReader(src_pack)
     tcfg = src.config["text_config"]
+    if tcfg.get("bonsai_scale_plane"):
+        # is_quantized keys on base+".scales", absent from Group C packs, so
+        # every gate below would silently misclassify the U32 weights as FP
+        # and fp-mean them into garbage that verify_merge cannot catch
+        raise ValueError("merge_blocks does not support scale-quantized "
+                         "(Group C) packs; merge first, then quantize_scale_plane")
     n = tcfg["num_hidden_layers"]
     if not (0 <= i < j < n):
         raise ValueError(f"need 0 <= i < j < {n}, got ({i}, {j})")

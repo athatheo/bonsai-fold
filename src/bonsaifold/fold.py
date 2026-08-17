@@ -35,6 +35,25 @@ SIDECAR_FILES = [
 ]
 
 
+def carry_provenance(src_config, stamp):
+    """Chain the source pack's bonsai_fold record into a new op stamp so
+    provenance (esp. the Group C flagged_arm marker) survives every
+    downstream operator instead of being overwritten. Mutates and returns
+    stamp."""
+    prev = src_config.get("bonsai_fold")
+    if prev:
+        history = prev.get("history", []) + [
+            {k: v for k, v in prev.items() if k != "history"}
+        ]
+        stamp["history"] = history
+        flagged = prev.get("flagged_arm") or next(
+            (h["flagged_arm"] for h in history if "flagged_arm" in h), None
+        )
+        if flagged and "flagged_arm" not in stamp:
+            stamp["flagged_arm"] = flagged
+    return stamp
+
+
 def rewrite_folded_config(config, block_map, op_stamp, extra_quant_overrides=None):
     """Folded-pack config: trimmed layer_types, renamed per-tensor
     quantization overrides, provenance stamp. Returns a new dict."""
@@ -58,11 +77,11 @@ def rewrite_folded_config(config, block_map, op_stamp, extra_quant_overrides=Non
         section["quantization"] = renamed
     if extra_quant_overrides:
         config.setdefault("quantization", {}).update(extra_quant_overrides)
-    config["bonsai_fold"] = {
+    config["bonsai_fold"] = carry_provenance(config, {
         **op_stamp,
         "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "note": "load with bonsaifold.loader.load_bonsai (layer_types-aware)",
-    }
+    })
     return config
 
 
@@ -138,12 +157,28 @@ def strip_bias_plane(src_pack, dst_pack):
     present; the eventual kernel change computes it in-register instead.
     All kept tensors are raw byte copies.
     """
+    import numpy as np
+
     from .stio import is_quantized, weight_base
 
     src = PackReader(src_pack)
     quant_bases = {
         weight_base(n) for n in src.header if is_quantized(n, src.header)
     }
+    # refuse to strip a plane that is not derivable: every bias tensor must
+    # satisfy b == f16(-s/2) exactly (a promoted 2-bit block stores b == -s
+    # and would be silently corrupted by the loader's -s/2 re-materialization)
+    for base in sorted(quant_bases):
+        if base + ".biases" not in src.header:
+            continue
+        s = src.read(base + ".scales")
+        b = src.read(base + ".biases")
+        expected = (-(s.astype(np.float32) / 2)).astype(s.dtype)
+        if not np.array_equal(b, expected):
+            raise ValueError(
+                f"{base}: biases != f16(-scales/2); refusing to strip a "
+                "non-derivable bias plane"
+            )
     entries = {}
     for name in src.header:
         base = name[: -len(".biases")] if name.endswith(".biases") else None
@@ -158,12 +193,12 @@ def strip_bias_plane(src_pack, dst_pack):
         }
     config = copy.deepcopy(src.config)
     config["text_config"]["bonsai_bias_plane"] = "derived"
-    config["bonsai_fold"] = {
+    config["bonsai_fold"] = carry_provenance(config, {
         "operation": "strip_bias_plane",
         "source_pack": str(src.pack_dir),
         "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "note": "biases == f16(-scales/2); load with bonsaifold.loader.load_bonsai",
-    }
+    })
     write_pack(dst_pack, entries, config, src.pack_dir)
     return len(quant_bases)
 
@@ -179,6 +214,12 @@ def trim_lm_head(src_pack, dst_pack, keep):
     from .stio import weight_base
 
     src = PackReader(src_pack)
+    if src.config["text_config"].get("bonsai_scale_plane"):
+        # the row-slicer below only knows .weight/.scales/.biases; a Group C
+        # pack's scales_q8/_lo/_step triplet would be copied untrimmed and
+        # the pack would fail strict load much later
+        raise ValueError("trim_lm_head does not support scale-quantized "
+                         "(Group C) packs; trim first, then quantize_scale_plane")
     keep = sorted(set(keep))
     head = "language_model.lm_head"
     entries = {}
@@ -207,13 +248,13 @@ def trim_lm_head(src_pack, dst_pack, keep):
         }
     config = copy.deepcopy(src.config)
     config["text_config"]["bonsai_lm_head_keep"] = keep
-    config["bonsai_fold"] = {
+    config["bonsai_fold"] = carry_provenance(config, {
         "operation": "trim_lm_head",
         "kept_rows": len(keep),
         "source_pack": str(src.pack_dir),
         "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "note": "load with bonsaifold.loader.load_bonsai (logit scatter-back)",
-    }
+    })
     write_pack(dst_pack, entries, config, src.pack_dir)
     return len(keep)
 
@@ -258,14 +299,14 @@ def drop_sublayers_in_pack(src_pack, dst_pack, drop_attn=(), drop_mlp=()):
     sub = config["text_config"].setdefault("bonsai_sublayer_drops", {"attn": [], "mlp": []})
     sub["attn"] = sorted(set(sub["attn"]) | set(da))
     sub["mlp"] = sorted(set(sub["mlp"]) | set(dm))
-    config["bonsai_fold"] = {
+    config["bonsai_fold"] = carry_provenance(config, {
         "operation": "drop_sublayers",
         "drop_attn": da,
         "drop_mlp": dm,
         "source_pack": str(src.pack_dir),
         "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "note": "load with bonsaifold.loader.load_bonsai",
-    }
+    })
     write_pack(dst_pack, entries, config, src.pack_dir)
     return len(entries)
 

@@ -5,9 +5,9 @@
  "max_tokens": 16384,
  "seed": 0,
  "task_accuracy": {
-  "gsm8k": 1.0
+  "gsm8k": 0.8571428571428571
  },
- "macro_avg": 1.0,
+ "macro_avg": 0.8571428571428571,
  "items": [
   {
    "id": "gsm8k-000",
@@ -35,6 +35,27 @@
    "task": "gsm8k",
    "correct": true,
    "gen_tokens": 2889,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-004",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1319,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-005",
+   "task": "gsm8k",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "gsm8k-006",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 2958,
    "finish_reason": "stop"
   }
  ]

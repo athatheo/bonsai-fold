@@ -33,7 +33,11 @@ REGIMES = {
 
 
 def item_kl(ref_model, cand_model, token_ids):
-    """(summed forward KL over positions, n_positions) for one probe."""
+    """(summed forward KL over positions, n_positions) for one probe.
+
+    -inf-safe: lm_head-trimmed packs emit -inf on dropped vocab rows; where
+    the reference is -inf its probability is 0, so the contribution is 0
+    (kl_div_loss would produce 0*inf = NaN there)."""
     ids = mx.array([token_ids])
     ref_logits = ref_model(ids)
     cand_logits = cand_model(ids)
@@ -43,7 +47,10 @@ def item_kl(ref_model, cand_model, token_ids):
         chunk = slice(i, i + CHUNK)
         lp_ref = nn.log_softmax(ref_logits[:, chunk].astype(mx.float32), axis=-1)
         lp_cand = nn.log_softmax(cand_logits[:, chunk].astype(mx.float32), axis=-1)
-        total += float(nn.losses.kl_div_loss(lp_cand, lp_ref, axis=-1).sum())
+        terms = mx.where(
+            lp_ref == -mx.inf, 0.0, mx.exp(lp_ref) * (lp_ref - lp_cand)
+        )
+        total += float(terms.sum())
     return total, n
 
 
@@ -52,7 +59,14 @@ def main():
     ap.add_argument("--items", type=int, default=100)
     args = ap.parse_args()
 
+    fingerprint = {"pack": str(PACK), "transform": "scaleq8-row"}
     done = json.loads(OUT.read_text()) if OUT.exists() else {"items": {}}
+    if done.get("fingerprint", fingerprint) != fingerprint:
+        raise SystemExit(
+            f"{OUT} holds results for {done['fingerprint']}, not {fingerprint}; "
+            "move it aside"
+        )
+    done["fingerprint"] = fingerprint
 
     ref, _ = load_bonsai(PACK)  # stamped -> derived kernels, exact scales
     cand, _ = load_bonsai(PACK)

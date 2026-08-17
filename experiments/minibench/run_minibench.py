@@ -87,11 +87,12 @@ def main():
     done = {}
     if out.exists():
         prev = json.loads(out.read_text())
-        prev_config = {k: prev.get(k) for k in ("pack", "drop", "max_tokens", "seed")}
+        prev_config = {k: prev.get(k) for k in ("pack", "drop", "drop_sub", "max_tokens", "seed")}
         prev_config["stock_loader"] = bool(prev.get("stock_loader"))
         now_config = {
             "pack": args.pack,
             "drop": args.drop,
+            "drop_sub": args.drop_sub,
             "max_tokens": args.max_tokens,
             "seed": args.seed,
             "stock_loader": args.stock_loader,
@@ -141,6 +142,7 @@ def main():
                 {
                     "pack": args.pack,
                     "drop": args.drop,
+                    "drop_sub": args.drop_sub,
                     "stock_loader": args.stock_loader,
                     "max_tokens": args.max_tokens,
                     "seed": args.seed,

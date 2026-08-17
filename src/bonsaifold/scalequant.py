@@ -102,16 +102,18 @@ def quantize_scale_plane(src_pack, dst_pack):
             "raw": (lambda n=name: src.read_raw(n)),
         }
 
+    from .fold import carry_provenance
+
     config = copy.deepcopy(src.config)
     config["text_config"]["bonsai_scale_plane"] = {"bits": BITS, "grouping": "row"}
-    config["bonsai_fold"] = {
+    config["bonsai_fold"] = carry_provenance(config, {
         "operation": "quantize_scale_plane",
         "flagged_arm": "group_c_value_modifying",
         "source_pack": str(src.pack_dir),
         "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "note": "VALUE-MODIFYING (authorized 2026-08-12): scales are 8-bit "
                 "reconstructions, NOT byte-identical. Load with load_bonsai.",
-    }
+    })
     write_pack(dst_pack, entries, config, src.pack_dir)
     return n_quantized, saved
 

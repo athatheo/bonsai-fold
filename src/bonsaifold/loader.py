@@ -167,33 +167,60 @@ class TypedModel(q35.Model):
             # Group C (FLAGGED value-modifying): reconstruct f16 scales from
             # the 8-bit plane. Must precede bias materialization — derived
             # biases follow the reconstructed scales.
-            from .scalequant import reconstruct_scales
-
-            for k in list(weights):
-                if k.endswith(".scales_q8"):
-                    base = k[: -len("_q8")]  # the ".scales" name
-                    weights[base] = reconstruct_scales(
-                        weights.pop(k),
-                        weights.pop(base + "_lo"),
-                        weights.pop(base + "_step"),
-                    )
+            reconstruct_scale_plane(weights)
         if self._derive_bias_plane:
-            # B1 pack-v2: the biases plane was stripped (redundant — Phase 0
-            # proved biases == f16(-scales/2)); re-materialize it at load
-            import mlx.core as mx
-
-            for k in list(weights):
-                if k.endswith(".scales") and k[: -len(".scales")] + ".biases" not in weights:
-                    s = weights[k]
-                    weights[k[: -len(".scales")] + ".biases"] = (
-                        -(s.astype(mx.float32) / 2)
-                    ).astype(s.dtype)
+            materialize_bias_plane(weights)
         return weights
 
     def set_block_tap(self, fn):
         """Install fn(i, h_in, h_out), called on every block's residual
         stream during forward. Pass None to remove."""
         self.language_model.model.block_tap = fn
+
+
+def reconstruct_scale_plane(weights):
+    """Group C: replace each (scales_q8, scales_lo, scales_step) triplet in
+    the weights dict with reconstructed f16 .scales, in place. Refuses
+    corrupt packs (both planes present, or an incomplete triplet)."""
+    from .scalequant import reconstruct_scales
+
+    for k in list(weights):
+        if not k.endswith(".scales_q8"):
+            continue
+        base = k[: -len("_q8")]  # the ".scales" name
+        if base in weights:
+            raise ValueError(f"{base}: both f16 scales and a q8 plane present")
+        if base + "_lo" not in weights or base + "_step" not in weights:
+            raise ValueError(f"{base}: q8 plane missing its _lo/_step meta")
+        weights[base] = reconstruct_scales(
+            weights.pop(k),
+            weights.pop(base + "_lo"),
+            weights.pop(base + "_step"),
+        )
+    return weights
+
+
+def materialize_bias_plane(weights):
+    """B1 pack-v2: re-materialize biases == f16(-scales/2) for every 1-bit
+    quantized tensor missing them, in place. The -s/2 invariant holds ONLY
+    for bits==1 g128 (a promoted 2-bit block stores b == -s), so derive only
+    where the packed-weight/scales column ratio proves 1-bit: w_cols = K/32
+    codes-per-u32 and s_cols = K/128 give ratio 4 at bits 1 (a 2-bit tensor
+    has ratio 8). Anything else is left missing so strict loading fails
+    loudly instead of running with wrong biases."""
+    import mlx.core as mx
+
+    for k in list(weights):
+        if not k.endswith(".scales") or k[: -len(".scales")] + ".biases" in weights:
+            continue
+        w = weights.get(k[: -len(".scales")] + ".weight")
+        if w is None or w.dtype != mx.uint32 or w.shape[-1] != 4 * weights[k].shape[-1]:
+            continue
+        s = weights[k]
+        weights[k[: -len(".scales")] + ".biases"] = (
+            -(s.astype(mx.float32) / 2)
+        ).astype(s.dtype)
+    return weights
 
 
 def _typed_classes(config):

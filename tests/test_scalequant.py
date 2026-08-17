@@ -139,3 +139,163 @@ def test_unprofitable_geometry_falls_back_to_copy(tmp_path, mini_pack):
     base = "language_model.model.layers.0.mlp.up_proj"
     assert base + ".scales_q8" not in out.header
     assert out.read_raw(base + ".scales") == src.read_raw(base + ".scales")
+
+
+# ---- Group C x downstream-operator interactions (review findings 2026-08-17)
+
+
+def test_reconstruct_scale_plane_dict():
+    from bonsaifold.loader import reconstruct_scale_plane
+
+    s = mx.random.uniform(0.001, 0.1, (8, 32)).astype(mx.float16)
+    q, lo, step = quantize_scales(s)
+    w = {"x.scales_q8": q, "x.scales_lo": lo, "x.scales_step": step}
+    reconstruct_scale_plane(w)
+    assert set(w) == {"x.scales"}
+    assert bool(mx.array_equal(w["x.scales"], roundtrip_scales(s)))
+
+
+def test_reconstruct_scale_plane_refuses_corrupt():
+    from bonsaifold.loader import reconstruct_scale_plane
+
+    s = mx.random.uniform(0.001, 0.1, (8, 32)).astype(mx.float16)
+    q, lo, step = quantize_scales(s)
+    with pytest.raises(ValueError, match="both"):
+        reconstruct_scale_plane(
+            {"x.scales": s, "x.scales_q8": q, "x.scales_lo": lo, "x.scales_step": step}
+        )
+    with pytest.raises(ValueError, match="_lo/_step"):
+        reconstruct_scale_plane({"x.scales_q8": q, "x.scales_lo": lo})
+
+
+def test_materialize_bias_plane_only_one_bit():
+    from bonsaifold.loader import materialize_bias_plane
+
+    s1 = mx.random.uniform(0.001, 0.1, (8, 2)).astype(mx.float16)
+    w1 = mx.zeros((8, 8), dtype=mx.uint32)  # ratio 4 -> 1-bit g128
+    s2 = mx.random.uniform(0.001, 0.1, (8, 2)).astype(mx.float16)
+    w2 = mx.zeros((8, 16), dtype=mx.uint32)  # ratio 8 -> 2-bit (promoted)
+    w = {"a.scales": s1, "a.weight": w1, "b.scales": s2, "b.weight": w2}
+    materialize_bias_plane(w)
+    assert "a.biases" in w and "b.biases" not in w
+    expected = (-(s1.astype(mx.float32) / 2)).astype(mx.float16)
+    assert bool(mx.array_equal(w["a.biases"], expected))
+
+
+def test_apply_roundtrip_filters_one_bit():
+    import mlx.nn as nn
+
+    from bonsaifold.scalequant import apply_roundtrip
+
+    class M(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.one = nn.QuantizedLinear(256, 8, bias=False, group_size=128, bits=1)
+            self.four = nn.QuantizedLinear(256, 8, bias=False, group_size=64, bits=4)
+
+    m = M()
+    s_one, s_four = m.one.scales, m.four.scales
+    n, max_rel = apply_roundtrip(m)
+    assert n == 1 and max_rel >= 0
+    assert bool(mx.array_equal(m.one.scales, roundtrip_scales(s_one)))
+    assert bool(mx.array_equal(m.four.scales, s_four))  # untouched control
+
+
+def _groupc_pack(tmp_path):
+    nobias = tmp_path / "nobias"
+    strip_bias_plane(write_wide_pack(tmp_path), nobias)
+    gc = tmp_path / "gc"
+    quantize_scale_plane(nobias, gc)
+    return gc
+
+
+def test_trim_lm_head_refuses_groupc(tmp_path):
+    from bonsaifold.fold import trim_lm_head
+
+    with pytest.raises(ValueError, match="scale-quantized"):
+        trim_lm_head(_groupc_pack(tmp_path), tmp_path / "out", [0, 1])
+
+
+def test_merge_blocks_refuses_groupc(tmp_path):
+    from bonsaifold.merge import merge_blocks
+
+    with pytest.raises(ValueError, match="scale-quantized"):
+        merge_blocks(_groupc_pack(tmp_path), tmp_path / "out", 0, 1, "sign_election")
+
+
+def test_block_tensor_kinds_refuses_orphan_u32(tmp_path):
+    from bonsaifold.merge import _block_tensor_kinds
+
+    d = tmp_path / "orphan"
+    d.mkdir()
+    write_safetensors(d / "model.safetensors", {
+        "language_model.model.layers.0.mlp.up_proj.weight": st_entry(
+            np.zeros((4, 8), dtype=np.uint32)
+        ),
+    })
+    (d / "config.json").write_text(json.dumps({
+        "model_type": "qwen3_5", "quantization": {"group_size": 128, "bits": 1},
+        "text_config": {"num_hidden_layers": 1, "layer_types": ["linear_attention"],
+                        "full_attention_interval": 4},
+    }))
+    with pytest.raises(ValueError, match="without a .scales partner"):
+        _block_tensor_kinds(PackReader(d), 0)
+
+
+def test_strip_bias_plane_refuses_wrong_invariant(tmp_path):
+    src = write_wide_pack(tmp_path)
+    # rewrite one tensor's biases to the 2-bit promotion convention (b == -s)
+    r = PackReader(src)
+    entries = {}
+    for name in r.header:
+        arr = r.read(name)
+        entries[name] = st_entry(arr)
+        if name.endswith(".scales"):
+            entries[name[: -len(".scales")] + ".biases"] = st_entry(-arr)
+    write_safetensors(src / "model.safetensors", entries)
+    with pytest.raises(ValueError, match="refusing to strip"):
+        strip_bias_plane(src, tmp_path / "out")
+
+
+def test_flagged_arm_provenance_survives_drop(tmp_path):
+    from bonsaifold.fold import drop_blocks
+
+    gc = _groupc_pack(tmp_path)
+    dst = tmp_path / "dropped"
+    drop_blocks(gc, dst, [1])
+    cfg = PackReader(dst).config
+    assert cfg["bonsai_fold"]["operation"] == "drop"
+    assert cfg["bonsai_fold"]["flagged_arm"] == "group_c_value_modifying"
+    ops = [h["operation"] for h in cfg["bonsai_fold"]["history"]]
+    assert ops == ["strip_bias_plane", "quantize_scale_plane"]
+    assert cfg["text_config"]["bonsai_scale_plane"]["bits"] == 8
+
+
+def test_mixed_bits_pack_keeps_two_bit_scales_f16(tmp_path):
+    d = tmp_path / "mixed"
+    d.mkdir()
+    rng = np.random.default_rng(3)
+    entries = {}
+    for i, wcols in enumerate((128, 256)):  # block 0: 1-bit ratio, block 1: 2-bit ratio
+        base = f"language_model.model.layers.{i}.mlp.up_proj"
+        entries[f"{base}.weight"] = st_entry(
+            rng.integers(0, 2**32, size=(8, wcols), dtype=np.uint32))
+        entries[f"{base}.scales"] = st_entry(
+            rng.uniform(0.001, 0.1, (8, 32)).astype(np.float16))
+    write_safetensors(d / "model.safetensors", entries)
+    (d / "config.json").write_text(json.dumps({
+        "model_type": "qwen3_5",
+        "quantization": {"group_size": 128, "bits": 1,
+                         "language_model.model.layers.1.mlp.up_proj": {"bits": 2}},
+        "text_config": {"num_hidden_layers": 2,
+                        "layer_types": ["linear_attention", "linear_attention"],
+                        "full_attention_interval": 4,
+                        "bonsai_bias_plane": "derived"},
+    }))
+    (d / "tokenizer_config.json").write_text("{}")
+    out = tmp_path / "gc_mixed"
+    n, saved = quantize_scale_plane(d, out)
+    assert n == 1
+    r = PackReader(out)
+    assert "language_model.model.layers.0.mlp.up_proj.scales_q8" in r.header
+    assert "language_model.model.layers.1.mlp.up_proj.scales" in r.header  # 2-bit stays f16
