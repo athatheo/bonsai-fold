@@ -85,10 +85,56 @@ index 500e7de..6ae9c60 100644
  add_custom_target(mlx-metallib DEPENDS ${MLX_METAL_PATH}/mlx.metallib)
  
 diff --git a/mlx/backend/metal/kernels/quantized.h b/mlx/backend/metal/kernels/quantized.h
-index 9ac2e42..b5e44da 100644
+index 9ac2e42..800f00b 100644
 --- a/mlx/backend/metal/kernels/quantized.h
 +++ b/mlx/backend/metal/kernels/quantized.h
-@@ -841,7 +841,7 @@ METAL_FUNC void qmv_quad_impl(
+@@ -663,7 +663,8 @@ template <
+     short reduction_dim,
+     short tgp_size,
+     short group_size,
+-    short bits>
++    short bits,
++    bool DERIVE_BIAS = false>
+ struct QuantizedBlockLoader {
+   static_assert(
+       BCOLS <= group_size,
+@@ -726,7 +727,7 @@ struct QuantizedBlockLoader {
+     }
+ 
+     T scale = *scales;
+-    T bias = *biases;
++    T bias = DERIVE_BIAS ? T(-0.5f * scale) : *biases;
+     for (int i = 0; i < n_reads; i++) {
+       dequantize<T, pack_factor, bits>(
+           src + i * bytes_per_pack, scale, bias, dst + i * pack_factor);
+@@ -753,7 +754,7 @@ struct QuantizedBlockLoader {
+     }
+ 
+     T scale = *scales;
+-    T bias = *biases;
++    T bias = DERIVE_BIAS ? T(-0.5f * scale) : *biases;
+     for (int i = 0; i < n_reads; i++) {
+       dequantize<T, pack_factor, bits>(
+           (device uint8_t*)(src + i * bytes_per_pack),
+@@ -784,7 +785,7 @@ struct QuantizedBlockLoader {
+   }
+ };
+ 
+-template <typename T, int group_size, int bits, int D>
++template <typename T, int group_size, int bits, int D, bool DERIVE_BIAS = false>
+ METAL_FUNC void qmv_quad_impl(
+     const device uint32_t* w,
+     const device T* scales,
+@@ -827,7 +828,7 @@ METAL_FUNC void qmv_quad_impl(
+     const device T* bl = biases + row * in_vec_size_g * quads_per_simd;
+ 
+     U s = sl[0];
+-    U b = bl[0];
++    U b = DERIVE_BIAS ? U(T(-0.5f * s)) : U(bl[0]);
+     if (row * quads_per_simd + out_row < out_vec_size) {
+       result[row] += qdot<U, values_per_thread, bits>(wl, x_thread, s, b, sum);
+     }
+@@ -841,7 +842,7 @@ METAL_FUNC void qmv_quad_impl(
    }
  }
  
@@ -97,7 +143,7 @@ index 9ac2e42..b5e44da 100644
  METAL_FUNC void qmv_fast_impl(
      const device uint32_t* w,
      const device T* scales,
-@@ -892,7 +892,7 @@ METAL_FUNC void qmv_fast_impl(
+@@ -892,7 +893,7 @@ METAL_FUNC void qmv_fast_impl(
        const device T* bl = biases + row * in_vec_size_g;
  
        U s = sl[0];
@@ -106,7 +152,7 @@ index 9ac2e42..b5e44da 100644
        result[row] += qdot<U, values_per_thread, bits>(wl, x_thread, s, b, sum);
      }
  
-@@ -918,7 +918,7 @@ METAL_FUNC void qmv_fast_impl(
+@@ -918,7 +919,7 @@ METAL_FUNC void qmv_fast_impl(
        const device T* bl = biases + row * in_vec_size_g;
  
        U s = in_bounds ? (U)sl[0] : (U)0;
@@ -115,7 +161,81 @@ index 9ac2e42..b5e44da 100644
        result[row] += qdot<U, values_per_thread, bits>(wl, x_thread, s, b, sum);
      }
    }
-@@ -1707,6 +1707,40 @@ template <typename T, int group_size, int bits, int D, bool batched>
+@@ -931,7 +932,7 @@ METAL_FUNC void qmv_fast_impl(
+   }
+ }
+ 
+-template <typename T, int group_size, int bits>
++template <typename T, int group_size, int bits, bool DERIVE_BIAS = false>
+ METAL_FUNC void qmv_impl(
+     const device uint32_t* w,
+     const device T* scales,
+@@ -993,7 +994,7 @@ METAL_FUNC void qmv_impl(
+         const device T* bl = biases + row * in_vec_size_g;
+ 
+         U s = sl[0];
+-        U b = bl[0];
++        U b = DERIVE_BIAS ? U(T(-0.5f * s)) : U(bl[0]);
+         result[row] +=
+             qdot<U, values_per_thread, bits>(wl, x_thread, s, b, sum);
+       }
+@@ -1019,7 +1020,7 @@ METAL_FUNC void qmv_impl(
+         const device T* bl = biases + row * in_vec_size_g;
+ 
+         U s = sl[0];
+-        U b = bl[0];
++        U b = DERIVE_BIAS ? U(T(-0.5f * s)) : U(bl[0]);
+         result[row] += qdot_safe<U, values_per_thread, bits>(
+             wl, x_thread, s, b, sum, remaining);
+       }
+@@ -1054,7 +1055,7 @@ METAL_FUNC void qmv_impl(
+         const device T* bl = biases + row * in_vec_size_g;
+ 
+         U s = sl[0];
+-        U b = bl[0];
++        U b = DERIVE_BIAS ? U(T(-0.5f * s)) : U(bl[0]);
+         result[row] +=
+             qdot<U, values_per_thread, bits>(wl, x_thread, s, b, sum);
+       }
+@@ -1078,7 +1079,7 @@ METAL_FUNC void qmv_impl(
+         const device T* bl = biases + row * in_vec_size_g;
+ 
+         U s = sl[0];
+-        U b = bl[0];
++        U b = DERIVE_BIAS ? U(T(-0.5f * s)) : U(bl[0]);
+         result[row] += qdot_safe<U, values_per_thread, bits>(
+             wl, x_thread, s, b, sum, remaining);
+       }
+@@ -1095,7 +1096,7 @@ METAL_FUNC void qmv_impl(
+ // Affine analog of fp_qmv_wide. Weights carry a scale and bias per group, so
+ // each group is decoded in 8-value sub-chunks (scale * q + bias, registers
+ // bounded for any group_size) and reused across the vecs_per_tg vectors.
+-template <typename T, int group_size, int bits, int vecs_per_tg, int k_lanes>
++template <typename T, int group_size, int bits, int vecs_per_tg, int k_lanes, bool DERIVE_BIAS = false>
+ METAL_FUNC void qmv_wide_impl(
+     const device uint32_t* w,
+     const device T* scales,
+@@ -1305,7 +1306,8 @@ template <
+     const bool aligned_N,
+     const int BM = 32,
+     const int BK = 32,
+-    const int BN = 32>
++    const int BN = 32,
++    const bool DERIVE_BIAS = false>
+ METAL_FUNC void qmm_t_impl(
+     const device uint32_t* w,
+     const device T* scales,
+@@ -1347,7 +1349,8 @@ METAL_FUNC void qmm_t_impl(
+       1,
+       WM * WN * SIMD_SIZE,
+       group_size,
+-      bits>;
++      bits,
++      DERIVE_BIAS>;
+ 
+   // Set the block
+   const int K_w = K * bytes_per_pack / pack_factor;
+@@ -1707,6 +1710,40 @@ template <typename T, int group_size, int bits, int D, bool batched>
        quad_lid);
  }
  
