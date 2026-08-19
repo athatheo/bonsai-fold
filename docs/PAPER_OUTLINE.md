@@ -1,4 +1,4 @@
-# Is There Depth Left to Fold? — paper outline (draft 1, 2026-08-11)
+# Is There Depth Left to Fold? — paper outline (draft 2, 2026-08-19; adds B1 kernel stage, A6 frontier, Group C flagged section)
 
 Working title: **"Is There Depth Left to Fold? Training-Free Structural
 Compression of an End-to-End 1-Bit LLM"**
@@ -77,6 +77,11 @@ within-format only (folded vs unfolded 1-bit), per the pre-registered design.
 - B1 bias-plane redundancy: biases == f16(-scales/2) exhaustively → strip
   420 MB (8.2%) with BIT-IDENTICAL logits. The g128-affine binary format
   stores a derivable plane.
+- B1 kernel stage (DONE 2026-08-17): mode "affine-derived" computes the
+  bias in-register — 6 matmul routes + dequantize bit-identical to affine
+  (synthetic parity + 27B identity gate); resident RAM −420,225,024 B
+  measured (3.919 → 3.527 GB). The disk win becomes a RAM win with zero
+  quality cost, no new module classes (stock layers + mode flip).
 - (Head trimming initially screened at 165 MB on single-task emission
   mass; moved to §5 after the transfer failure — kept here as the
   methodological lesson about screening vs benching.)
@@ -88,26 +93,51 @@ within-format only (folded vs unfolded 1-bit), per the pre-registered design.
   the screened views — the artifact and the benched config are the same
   computation.
 - Benched: GSM8K .910 (= reference), MATH .670, IFEval .880, MMLU .725,
-  macro .796 (−4.5 pts); pack-level confirmation bench reproduces the
-  row [FINAL NUMBER PENDING tonight].
+  macro .796 (−4.5 pts); pack-level confirmation bench reproduced the row
+  with 500/500 per-item agreement (bit-identity → trajectory identity).
 - Pareto: strictly dominates k6 (2x bytes at −2 pts less damage); k4-class
   damage at nearly 3x k4's savings. Positioning: a folded 27B as a
   "smaller model" vs native ~4 GB-class models (published-numbers table).
 - Efficiency honesty: decode tok/s gain ≈ bytes removed, but thinking-length
   compensation eats part of it on hard tasks; report wall-clock both ways.
 
+## 7b. The searched frontier (A6)
+- (1+λ) EA over per-block {keep, drop_block, drop_attn, drop_mlp}: 311
+  genomes, 3 seeds, 2 byte tiers; champions confirmed at 100 probes both
+  regimes. Search dominates or ties the hand frontier at every tier and
+  the margin GROWS with aggressiveness (off-policy: 5% → 14% → 40%
+  better) — it routes around the same-type interaction tax via operators
+  no shortlist proposed (block 36, mlp-only drops incl. full-attn-block
+  MLPs, attn-kept partial blocks). Data: Table 3 in experiments/paper_tables.
+
+## 7c. FLAGGED arm — Group C scale quantization (VALUE-MODIFYING; separate reporting)
+- Reported strictly apart from every byte-identical claim (authorized
+  2026-08-12): per-row 8-bit second-level quantization of the f16 scales
+  plane, riding the derived-bias kernels so biases follow s' consistently.
+- Full ladder: KL 2.7e-06 on / 9.2e-06 off (100+100 probes) — ~1000× below
+  the gentlest structural op; 500-item bench macro .8363 vs reference
+  .8413 (−0.5 pts, under sampling σ), flips 13/18 bidirectional, gen
+  tokens +1.0%, truncations 0 — no A4-style tail signature.
+- Line: 4.71 → 4.19 GB via metadata-only ops (−420 MB derivable plane,
+  −192.5 MB scale quantization), sign planes untouched. Stacking on
+  folded-709's structural drops (~4.0 GB combined flagged artifact) is
+  unbuilt/unbenched — future decision, outside authorized scope.
+
 ## 8. Limitations & open lines
 - Single model/format (Bonsai 27B g128 binary); single machine; N=500
   bench (sublayer add-on cost not separable from k4 at this N — McNemar
   p=.27-1.0); 16K thinking budget confounds the floor; ternary arm cut by
-  design decision; B1 kernel stage (RAM win) and A6 global search
-  (Pareto frontier) engineering-pending.
+  design decision; A6 champions KL-confirmed but not bench-confirmed;
+  Group C stacked-with-structural-drops artifact unbuilt; qvm
+  (transpose=false) route of the derived kernels is a documented loud-error
+  gap (unused by inference).
 
 ## 9. Reproducibility
 - Everything training-free on public weights, one 64 GB Mac; repo with
   frozen probe sets (fingerprinted), operator suite with exactness tests
-  (397), patched-runtime build recipe + validation battery, and the full
-  append-only lab notebook as the provenance record.
+  (418, incl. Group C interaction guards), patched-runtime build recipe +
+  validation battery, config-level provenance chains (flagged_arm survives
+  every operator), and the full append-only lab notebook as the record.
 
 ## Figures/tables shortlist
 1. Redundancy map heat-strip (block × sublayer BI, both regimes).
