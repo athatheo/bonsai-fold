@@ -1,0 +1,89 @@
+# bonsai-fold — CANONICAL RESULTS (compaction-proof record)
+
+Update this file whenever a new confirmed result lands. Numbers here are
+final and verified; provenance chain: docs/LAB_NOTEBOOK.md (append-only) →
+experiments/*/results (raw JSONs) → experiments/paper_tables/tables.md
+(generated). If this file and a raw JSON disagree, the JSON wins.
+
+Last updated: 2026-08-19 (program closed; extension queue running).
+
+## Headline artifacts
+
+| artifact | size | vs 4.71 GB LM | macro (500-item bench) | status |
+|---|---|---|---|---|
+| Bonsai-27B-1bit (reference) | 4.71 GB | — | .8413 | baseline (our harness) |
+| **Bonsai-27B-1bit-folded-709** | 4.2 GB | −709 MB / −15.4% | **.7963** (GSM8K .910 = ref) | SHIPPING, byte-identical |
+| Bonsai-27B-1bit-groupc-scaleq8 | 4.19 GB | −612 MB / −13% | **.8363** (−0.5, within noise) | FLAGGED (value-modifying) |
+
+- folded-709 = bias-strip + drop blocks {16,12,13,9} + drop attn sublayers
+  {37,38,58}. Full-vocab logits bit-identical to benched views; pack bench
+  reproduced 500/500 per-item. All surviving weights byte-identical.
+- groupc-scaleq8 = nobias + per-row 8-bit scale plane (no structural cuts).
+  KL 2.7e-06 on / 9.2e-06 off; flips vs ref 13/18 bidirectional; report
+  SEPARATELY from byte-identical lines always (CLAUDE.md flagged-arm rule).
+
+## Engineering wins (bit-exact, measured)
+
+- **B1 bias plane**: biases == f16(−scales/2) proven exhaustively. Disk
+  −420 MB (nobias pack). Kernel stage: MLX fork mode "affine-derived"
+  computes bias in-register; 6 matmul routes + dequantize bit-identical;
+  **resident RAM −420,225,024 B measured** (3.919 → 3.527 GB on the 27B).
+  PrismML's whitepaper §4.3 acknowledges the redundancy as "a current MLX
+  limitation" and defers it — B1 is the implementation they deferred.
+- Loader: derived kernels are DEFAULT for packs stamped
+  bonsai_bias_plane=="derived" (load_bonsai(derived_kernels=False) forces
+  materialized path).
+
+## Bench ladder, byte-identical arm (500 items; all in results/)
+
+reference .8413 | k2 .8125 (−118 MB) | k4 .8175 (−236) | k6 .7762 (−360) |
+k8 .7500 (−478) | folded-709 .7963 (−709). Damage law: truncation floor +
+accelerating knowledge term; same-type stacking pays an interaction tax
+(1.09–1.13× on-policy for cross-pool, compounding for same-pool).
+
+## A6 evolutionary search (KL-confirmed 100 probes both regimes; NOT benched)
+
+Search dominates/ties hand-built at every tier, margin grows with
+aggressiveness (off-policy 5%→14%→40%): T350 364.6 MB @ .0314/.176;
+T350-s2 374.8 @ .0322/.187; T450 456.8 @ .0504/.233 (hand k8-tier: 478 @
+.0643/.392). Champion genomes in experiments/evosearch/best_t*.json.
+T350 champion spec: drop_block {5,13,16,36} + drop_attn {38,57,58} +
+drop_mlp {4,12}.
+
+## Confirmed negatives (do not revisit)
+
+1. Width/channel trimming: flat (no low-salience tail at 1-bit).
+2. Vocab trimming: rejected BOTH sides (input OOV fat tail; mixed-domain
+   emission needs 87–98% of rows; single-domain keep-sets fail task
+   transfer end-to-end: +26% gen tokens, 2.3× truncations, caught only by
+   pack bench — teacher-forced identity does NOT imply generation fidelity).
+3. Byte-matched merging loses to dropping (promotion > sign-election, both
+   lose byte-matched; promotion merge remains in-scope as 2-bit blocks).
+4. Sign plane: 8.000 bits/byte measured entropy — incompressible.
+
+## Key facts (re-derivable but expensive)
+
+- 1-bit g128: w = s·q + b, q∈{0,1}, s = 2s_g, b = −s_g ⇒ weights ±s_g.
+- mlx-lm qwen3_5 types blocks POSITIONALLY — always load folded packs via
+  bonsaifold.loader.load_bonsai (layer_types-aware). Never stock loader.
+- Disable speculative decoding on folded models (DSpark taps fixed layers).
+- Sampling: temp 0.7, top-p 0.95, top-k 20, thinking on. Bench items are
+  seeded per-item (deterministic reproduction when logits bit-identical).
+- Whitepaper reference copy: scratchpad (re-download:
+  github.com/PrismML-Eng/Bonsai-demo). Their 1-bit avg 76.11 (EvalScope,
+  H100/vLLM) — different harness; use OUR within-format rows only.
+- PrismML's proprietary part: the FP16→binary conversion method (weights
+  are Apache; the transform is unreleased "Caltech IP").
+
+## Extension queue (decided 2026-08-19 by Thanasis)
+
+Q1. Combined flagged artifact: folded-709 + scale-q8 → screen → 500 bench.
+Q2. A6 T350 champion bench (500 items, via --drop-sub view on nobias).
+Q3. Generality: sibling Bonsai (8B-class) — full pipeline replication.
+Q4. Elastic-depth family packaging (from existing damage-law data; CPU).
+Q5. Attention-head-level map on 27B (census → singles screen → verdict).
+Q6. AFTER queue completes: value-modifying weight exploration (scope with
+    Thanasis first; extends the Group C flagged precedent — CLAUDE.md
+    amendment required before any weight-value edit).
+
+Rule: any new confirmed result updates THIS file + LAB_NOTEBOOK + tables.
