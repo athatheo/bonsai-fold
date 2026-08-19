@@ -6,9 +6,9 @@
  "max_tokens": 16384,
  "seed": 0,
  "task_accuracy": {
-  "gsm8k": 1.0
+  "gsm8k": 0.8536585365853658
  },
- "macro_avg": 1.0,
+ "macro_avg": 0.8536585365853658,
  "items": [
   {
    "id": "gsm8k-000",
@@ -22,6 +22,279 @@
    "task": "gsm8k",
    "correct": true,
    "gen_tokens": 1200,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-002",
+   "task": "gsm8k",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "gsm8k-003",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 7645,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-004",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1318,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-005",
+   "task": "gsm8k",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "gsm8k-006",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 2724,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-007",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 2009,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-008",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1414,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-009",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 984,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-010",
+   "task": "gsm8k",
+   "correct": false,
+   "gen_tokens": 2016,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-011",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 5286,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-012",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 3267,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-013",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 5839,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-014",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 5513,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-015",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 14745,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-016",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 925,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-017",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 2294,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-018",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1854,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-019",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1300,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-020",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 12118,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-021",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1380,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-022",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1156,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-023",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 4708,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-024",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 3979,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-025",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1195,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-026",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 6725,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-027",
+   "task": "gsm8k",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "gsm8k-028",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1104,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-029",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1271,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-030",
+   "task": "gsm8k",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "gsm8k-031",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1033,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-032",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1258,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-033",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 992,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-034",
+   "task": "gsm8k",
+   "correct": false,
+   "gen_tokens": 16384,
+   "finish_reason": "length"
+  },
+  {
+   "id": "gsm8k-035",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 911,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-036",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 3343,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-037",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 2264,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-038",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 6269,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-039",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 4312,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-040",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1728,
    "finish_reason": "stop"
   }
  ]

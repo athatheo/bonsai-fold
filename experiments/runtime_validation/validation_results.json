@@ -1,5 +1,5 @@
 {
- "mlx_version": "0.31.2.dev20260715+10b5fe4",
+ "mlx_version": "0.31.2.dev20260817+10b5fe4",
  "checks": [
   {
    "name": "random.uniform gpu==cpu",
