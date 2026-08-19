@@ -1,0 +1,115 @@
+{
+ "base_pack": "models/Bonsai-27B-mlx-1bit-nobias",
+ "base_num_blocks": 64,
+ "note": "prefixes at anchors == benched/KL-confirmed configs; non-anchor prefixes bounded by the additive law (cross-pool tax 1.09-1.13x on-policy). Byte-identical: every tier only deletes; surviving weights untouched.",
+ "order": [
+  "b16",
+  "b12",
+  "b13",
+  "b9",
+  "a38",
+  "a37",
+  "a58",
+  "a57",
+  "a61",
+  "a8"
+ ],
+ "steps": [
+  {
+   "step": 1,
+   "op": "b16",
+   "cum_structural_mb": 60.0,
+   "single_kl_onpolicy": 0.004253179648608101
+  },
+  {
+   "step": 2,
+   "op": "b12",
+   "cum_structural_mb": 120.0,
+   "single_kl_onpolicy": 0.003302676708683492,
+   "anchor": "k2",
+   "set_kl_onpolicy": 0.007554768374456167,
+   "set_kl_offpolicy": 0.033044363180810506,
+   "bench_file": "k2_16-12",
+   "bench_macro": 0.8125,
+   "bench_tasks": {
+    "gsm8k": 0.92,
+    "math500": 0.66,
+    "ifeval": 0.88,
+    "mmlu": 0.79
+   }
+  },
+  {
+   "step": 3,
+   "op": "b13",
+   "cum_structural_mb": 180.0,
+   "single_kl_onpolicy": 0.0036818849074665505
+  },
+  {
+   "step": 4,
+   "op": "b9",
+   "cum_structural_mb": 240.0,
+   "single_kl_onpolicy": 0.0038287226620923364,
+   "anchor": "k4",
+   "set_kl_onpolicy": 0.01770242127241983,
+   "set_kl_offpolicy": 0.08642891088764396,
+   "bench_file": "k4",
+   "bench_macro": 0.8175,
+   "bench_tasks": {
+    "gsm8k": 0.91,
+    "math500": 0.68,
+    "ifeval": 0.92,
+    "mmlu": 0.76
+   }
+  },
+  {
+   "step": 5,
+   "op": "a38",
+   "cum_structural_mb": 256.2,
+   "single_kl_onpolicy": 0.0016106610367753525
+  },
+  {
+   "step": 6,
+   "op": "a37",
+   "cum_structural_mb": 272.4,
+   "single_kl_onpolicy": 0.0021300720493247632
+  },
+  {
+   "step": 7,
+   "op": "a58",
+   "cum_structural_mb": 288.6,
+   "single_kl_onpolicy": 0.002411751986721496,
+   "anchor": "folded-709",
+   "set_kl_onpolicy": 0.02581579140010016,
+   "set_kl_offpolicy": 0.11012889365080962,
+   "bench_file": "folded709_pack",
+   "bench_macro": 0.79625,
+   "bench_tasks": {
+    "gsm8k": 0.91,
+    "math500": 0.67,
+    "ifeval": 0.88,
+    "mmlu": 0.725
+   }
+  },
+  {
+   "step": 8,
+   "op": "a57",
+   "cum_structural_mb": 304.8,
+   "single_kl_onpolicy": 0.0023954476062296335
+  },
+  {
+   "step": 9,
+   "op": "a61",
+   "cum_structural_mb": 321.0,
+   "single_kl_onpolicy": 0.0017190644012800075
+  },
+  {
+   "step": 10,
+   "op": "a8",
+   "cum_structural_mb": 337.2,
+   "single_kl_onpolicy": 0.001928363428079882,
+   "anchor": "k4+s8-tier",
+   "set_kl_onpolicy": 0.033928248917157774,
+   "set_kl_offpolicy": 0.17064889243646042
+  }
+ ]
+}

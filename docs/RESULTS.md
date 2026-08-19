@@ -77,11 +77,20 @@ drop_mlp {4,12}.
 
 ## Extension queue (decided 2026-08-19 by Thanasis)
 
-Q1. Combined flagged artifact: folded-709 + scale-q8 → screen → 500 bench.
-Q2. A6 T350 champion bench (500 items, via --drop-sub view on nobias).
-Q3. Generality: sibling Bonsai (8B-class) — full pipeline replication.
-Q4. Elastic-depth family packaging (from existing damage-law data; CPU).
-Q5. Attention-head-level map on 27B (census → singles screen → verdict).
+Q1. Combined flagged artifact folded709-scaleq8: BUILT (3.82 GB decimal,
+    −888 MB / −18.9% vs original; 451 tensors, −179.1 MB on top of 709).
+    Screen PASS: 3.1e-06 on / 9.9e-06 off vs folded-709 — the scale-quant
+    increment composes independently of the structural fold. BENCH RUNNING.
+Q2. A6 T350 champion bench (500 items, via --drop-sub view on nobias). PENDING.
+Q3. Generality: sibling Bonsai (8B-class) — full pipeline replication. PENDING.
+Q4. Elastic-depth family: DONE 2026-08-19. Spec generated from measured
+    data (experiments/elastic/elastic_spec.json): nested 10-op order, anchor
+    prefixes = k2/.8125, k4/.8175, folded-709/.7963 (benched) and k4+s8-tier
+    (KL .0339/.171). bonsaifold.elastic.elastic_view(model, budget_mb=…)
+    serves any tier zero-copy from the one nobias pack; guards refuse folded
+    packs (renumbering trap) and sub-first-tier budgets. Non-anchor prefixes
+    are additive-law-bounded, not individually benched (documented).
+Q5. Attention-head-level map on 27B (census → singles screen → verdict). PENDING.
 Q6. AFTER queue completes: value-modifying weight exploration (scope with
     Thanasis first; extends the Group C flagged precedent — CLAUDE.md
     amendment required before any weight-value edit).

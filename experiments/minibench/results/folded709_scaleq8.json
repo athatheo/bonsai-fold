@@ -1,0 +1,28 @@
+{
+ "pack": "models/Bonsai-27B-1bit-folded709-scaleq8",
+ "drop": null,
+ "drop_sub": null,
+ "stock_loader": false,
+ "max_tokens": 16384,
+ "seed": 0,
+ "task_accuracy": {
+  "gsm8k": 1.0
+ },
+ "macro_avg": 1.0,
+ "items": [
+  {
+   "id": "gsm8k-000",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1908,
+   "finish_reason": "stop"
+  },
+  {
+   "id": "gsm8k-001",
+   "task": "gsm8k",
+   "correct": true,
+   "gen_tokens": 1200,
+   "finish_reason": "stop"
+  }
+ ]
+}
