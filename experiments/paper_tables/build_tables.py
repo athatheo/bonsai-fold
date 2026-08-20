@@ -29,6 +29,9 @@ FLAGGED_ROWS = [
     # benched pack = nobias + scale quant (no structural drops): 420 + 192.5
     ("groupc_scaleq8", "Group C: nobias + 8-bit scale plane (VALUE-MODIFYING)", 612,
      "KL 2.7e-06 on / 9.2e-06 off; stackable on folded-709's structural drops"),
+    # folded-709 + scale quant of surviving tensors: 709 + 179.1
+    ("folded709_scaleq8", "COMBINED: folded-709 + 8-bit scales (VALUE-MODIFYING)", 888,
+     "3.82 GB total (-18.9%); screen 3.1e-06/9.9e-06 vs folded-709"),
 ]
 
 KL_PARETO = [

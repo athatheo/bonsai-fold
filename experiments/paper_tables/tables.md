@@ -18,6 +18,7 @@ Reported separately per the flagged-arm rule: scales are 8-bit reconstructions; 
 | config | MB removed | GSM8K | MATH500 | IFEval | MMLU-R | macro | n |
 |---|---|---|---|---|---|---|---|
 | Group C: nobias + 8-bit scale plane (VALUE-MODIFYING) | 612 | 0.930 | 0.730 | 0.910 | 0.775 | 0.8363 | 500 |
+| COMBINED: folded-709 + 8-bit scales (VALUE-MODIFYING) | 888 | 0.870 | 0.690 | 0.860 | 0.740 | 0.7900 | 500 |
 
 ## Table 3 — KL Pareto frontier, hand-built vs A6 search (100 probes, both regimes)
 

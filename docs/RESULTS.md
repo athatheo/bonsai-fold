@@ -14,6 +14,7 @@ Last updated: 2026-08-19 (program closed; extension queue running).
 | Bonsai-27B-1bit (reference) | 4.71 GB | — | .8413 | baseline (our harness) |
 | **Bonsai-27B-1bit-folded-709** | 4.2 GB | −709 MB / −15.4% | **.7963** (GSM8K .910 = ref) | SHIPPING, byte-identical |
 | Bonsai-27B-1bit-groupc-scaleq8 | 4.19 GB | −612 MB / −13% | **.8363** (−0.5, within noise) | FLAGGED (value-modifying) |
+| **Bonsai-27B-1bit-folded709-scaleq8** | **3.82 GB** | −888 MB / −18.9% | **.7900** (−0.6 vs folded-709) | FLAGGED combined headline |
 
 - folded-709 = bias-strip + drop blocks {16,12,13,9} + drop attn sublayers
   {37,38,58}. Full-vocab logits bit-identical to benched views; pack bench
@@ -77,10 +78,13 @@ drop_mlp {4,12}.
 
 ## Extension queue (decided 2026-08-19 by Thanasis)
 
-Q1. Combined flagged artifact folded709-scaleq8: BUILT (3.82 GB decimal,
-    −888 MB / −18.9% vs original; 451 tensors, −179.1 MB on top of 709).
-    Screen PASS: 3.1e-06 on / 9.9e-06 off vs folded-709 — the scale-quant
-    increment composes independently of the structural fold. BENCH RUNNING.
+Q1. Combined flagged artifact folded709-scaleq8: DONE 2026-08-20.
+    3.82 GB decimal (−888 MB / −18.9% vs original). Screen 3.1e-06 on /
+    9.9e-06 off vs folded-709; **bench macro .7900 vs folded-709 .7963**
+    (−0.6 pts within noise; GSM8K .870, MATH .690, IFEval .860, MMLU .740;
+    flips 11/12 bidirectional, +1.2% gen tokens, 0 truncations). The
+    scale-quant increment costs the same ~noise on the folded pack as on
+    the unfolded one — compositionality confirmed end-to-end. FLAGGED line.
 Q2. A6 T350 champion bench (500 items, via --drop-sub view on nobias). PENDING.
 Q3. Generality: sibling Bonsai (8B-class) — full pipeline replication. PENDING.
 Q4. Elastic-depth family: DONE 2026-08-19. Spec generated from measured
