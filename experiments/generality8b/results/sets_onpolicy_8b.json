@@ -1,0 +1,1 @@
+{"fingerprint": {"pack": "/Users/atheocharis/repos/bonsai-fold/models/Bonsai-8B-mlx-1bit", "probes": "probes_onpolicy_8b.json", "items": 24}, "candidates": [{"name": "cand[b26,b17]", "spec": "b26,b17", "mean_kl_nats": 0.04553744196869122, "ntok": 24657}, {"name": "cand[b26,b17,b21,b31]", "spec": "b26,b17,b21,b31", "mean_kl_nats": 0.10698308007482746, "ntok": 24657}]}
