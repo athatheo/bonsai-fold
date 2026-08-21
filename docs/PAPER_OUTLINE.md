@@ -101,14 +101,21 @@ within-format only (folded vs unfolded 1-bit), per the pre-registered design.
 - Efficiency honesty: decode tok/s gain ≈ bytes removed, but thinking-length
   compensation eats part of it on hard tasks; report wall-clock both ways.
 
-## 7b. The searched frontier (A6)
+## 7b. The searched frontier (A6) — and its bench-level collapse
 - (1+λ) EA over per-block {keep, drop_block, drop_attn, drop_mlp}: 311
   genomes, 3 seeds, 2 byte tiers; champions confirmed at 100 probes both
-  regimes. Search dominates or ties the hand frontier at every tier and
-  the margin GROWS with aggressiveness (off-policy: 5% → 14% → 40%
-  better) — it routes around the same-type interaction tax via operators
-  no shortlist proposed (block 36, mlp-only drops incl. full-attn-block
-  MLPs, attn-kept partial blocks). Data: Table 3 in experiments/paper_tables.
+  regimes. At the KL level, search dominates or ties the hand frontier at
+  every tier with margins growing with aggressiveness (5%→14%→40%
+  off-policy), via operators no shortlist proposed (block 36, mlp-only
+  drops, attn-kept partial blocks).
+- BUT (benched 2026-08-21): the T350 champion's 500-item bench lands at
+  .7625 — BELOW byte-matched k6 (.7762) — despite tying its on-policy KL
+  and beating it 14% off-policy. The EA Goodharted its 24-probe fitness:
+  proxy dominance did not survive downstream generation. Reframe the
+  section: search WINS the screen game and the bench exposes the game.
+  Third, strongest instance of the paper's central methodological claim
+  (screens are necessary, benches are decisive) — now demonstrated against
+  an optimizer, not just hand mistakes. Data: Tables 1+3.
 
 ## 7c. FLAGGED arm — Group C scale quantization (VALUE-MODIFYING; separate reporting)
 - Reported strictly apart from every byte-identical claim (authorized

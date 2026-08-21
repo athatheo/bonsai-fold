@@ -42,14 +42,19 @@ k8 .7500 (−478) | folded-709 .7963 (−709). Damage law: truncation floor +
 accelerating knowledge term; same-type stacking pays an interaction tax
 (1.09–1.13× on-policy for cross-pool, compounding for same-pool).
 
-## A6 evolutionary search (KL-confirmed 100 probes both regimes; NOT benched)
+## A6 evolutionary search — KL frontier does NOT transfer to bench (measured 2026-08-21)
 
-Search dominates/ties hand-built at every tier, margin grows with
-aggressiveness (off-policy 5%→14%→40%): T350 364.6 MB @ .0314/.176;
-T350-s2 374.8 @ .0322/.187; T450 456.8 @ .0504/.233 (hand k8-tier: 478 @
-.0643/.392). Champion genomes in experiments/evosearch/best_t*.json.
-T350 champion spec: drop_block {5,13,16,36} + drop_attn {38,57,58} +
-drop_mlp {4,12}.
+KL level (100 probes both regimes): search dominates/ties hand-built at
+every tier (off-policy margins 5%→14%→40%): T350 364.6 MB @ .0314/.176;
+T350-s2 374.8 @ .0322/.187; T450 456.8 @ .0504/.233. BUT the T350 champion
+500-item BENCH: **macro .7625 vs byte-matched k6 .7762 (−1.4 pts)** —
+GSM8K .880 (=k6) but MATH .610 (k6 .640), IFEval .830 (k6 .860). Verdict:
+**the EA Goodharted its 24-probe KL fitness** — screen-frontier dominance
+is real at the KL level and does not survive downstream generation. Third
+instance of the screens-are-not-benches lesson (block-1 ambush, A4 keep-set,
+now A6). Hand configs selected on the bench-anchored ladder transfer
+better. Champion genomes in experiments/evosearch/best_t*.json; T350 spec:
+drop_block {5,13,16,36} + drop_attn {38,57,58} + drop_mlp {4,12}.
 
 ## Confirmed negatives (do not revisit)
 

@@ -24,6 +24,9 @@ BENCH_ROWS = [
     ("k8", "k8: drop 8 blocks", 478, "damage knee"),
     ("folded709_pack", "folded-709 (k4 + attn{37,38,58}); SHIPPING", 709,
      "incl. bias strip; pack == benched view, 500/500"),
+    ("a6_t350_champion", "A6 T350 search champion (KL-tier winner)", 365,
+     "KL ties k6 / beats it 14% off-policy, but benches BELOW k6: "
+     "screen-fitness Goodharting"),
 ]
 FLAGGED_ROWS = [
     # benched pack = nobias + scale quant (no structural drops): 420 + 192.5
