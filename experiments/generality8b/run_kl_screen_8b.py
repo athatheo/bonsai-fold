@@ -37,9 +37,11 @@ def parse_spec(spec):
 
 def expand_candidates(cands, n_blocks):
     if len(cands) == 1 and ".." in cands[0]:
-        kind = cands[0][0]
-        lo, hi = cands[0][1:].split("..")
-        return [f"{kind}{i}" for i in range(int(lo), int(hi) + 1)]
+        lo, hi = cands[0].split("..")  # "b0..b35"
+        kind = lo[0]
+        if hi[0] != kind:
+            raise SystemExit(f"range endpoints differ in kind: {cands[0]}")
+        return [f"{kind}{i}" for i in range(int(lo[1:]), int(hi[1:]) + 1)]
     return list(cands)
 
 
