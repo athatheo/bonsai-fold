@@ -37,6 +37,13 @@ FLAGGED_ROWS = [
      "3.82 GB total (-18.9%); screen 3.1e-06/9.9e-06 vs folded-709"),
 ]
 
+# Q3 generality rows (dense 8B sibling; non-thinking scoring)
+BENCH_8B_ROWS = [
+    ("reference_8b", "Bonsai-8B-1bit (unfolded reference)", 0, "dense qwen3, 36 blocks"),
+    ("k2analog_8b", "8B k2-analog: drop {26,17}", 33, "set KL .046 on / .103 off"),
+    ("k4analog_8b", "8B k4-analog: drop {26,17,21,31}", 66, "set KL .107 on / .257 off"),
+]
+
 KL_PARETO = [
     ("hand", "folded-709 config", 289, 0.026, 0.16),
     ("hand", "k6", 360, 0.031, 0.205),
@@ -92,6 +99,12 @@ def main():
         "reconstructions; weights are NOT byte-identical. Authorized 2026-08-12.",
         "",
         bench_table(FLAGGED_ROWS),
+        "",
+        "## Table 2b — Generality: dense Bonsai-8B (byte-identical drops)",
+        "Same ladder, non-thinking scoring (the 8B family predates thinking "
+        "mode). The structural laws replicate; the slack magnitude does not.",
+        "",
+        bench_table(BENCH_8B_ROWS),
         "",
         "## Table 3 — KL Pareto frontier, hand-built vs A6 search (100 probes, both regimes)",
         "",

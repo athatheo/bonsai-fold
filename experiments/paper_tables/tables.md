@@ -21,6 +21,15 @@ Reported separately per the flagged-arm rule: scales are 8-bit reconstructions; 
 | Group C: nobias + 8-bit scale plane (VALUE-MODIFYING) | 612 | 0.930 | 0.730 | 0.910 | 0.775 | 0.8363 | 500 |
 | COMBINED: folded-709 + 8-bit scales (VALUE-MODIFYING) | 888 | 0.870 | 0.690 | 0.860 | 0.740 | 0.7900 | 500 |
 
+## Table 2b — Generality: dense Bonsai-8B (byte-identical drops)
+Same ladder, non-thinking scoring (the 8B family predates thinking mode). The structural laws replicate; the slack magnitude does not.
+
+| config | MB removed | GSM8K | MATH500 | IFEval | MMLU-R | macro | n |
+|---|---|---|---|---|---|---|---|
+| Bonsai-8B-1bit (unfolded reference) | 0 | 0.800 | 0.630 | 0.830 | 0.605 | 0.7163 | 500 |
+| 8B k2-analog: drop {26,17} | 33 | *pending* | | | | | |
+| 8B k4-analog: drop {26,17,21,31} | 66 | 0.630 | 0.300 | 0.760 | 0.585 | 0.5687 | 500 |
+
 ## Table 3 — KL Pareto frontier, hand-built vs A6 search (100 probes, both regimes)
 
 | frontier | config | structural MB | KL on-policy | KL off-policy |
