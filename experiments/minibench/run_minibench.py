@@ -77,6 +77,11 @@ def main():
         action="store_true",
         help="load via stock mlx_lm.load (external comparator packs)",
     )
+    ap.add_argument(
+        "--dense",
+        action="store_true",
+        help="dense qwen3 sibling pack (Q3): stock load + dense drop views",
+    )
     args = ap.parse_args()
     if args.stock_loader and args.drop:
         ap.error("--drop requires the Bonsai layer_types loader")
@@ -89,6 +94,7 @@ def main():
         prev = json.loads(out.read_text())
         prev_config = {k: prev.get(k) for k in ("pack", "drop", "drop_sub", "max_tokens", "seed")}
         prev_config["stock_loader"] = bool(prev.get("stock_loader"))
+        prev_config["dense"] = bool(prev.get("dense"))
         now_config = {
             "pack": args.pack,
             "drop": args.drop,
@@ -96,6 +102,7 @@ def main():
             "max_tokens": args.max_tokens,
             "seed": args.seed,
             "stock_loader": args.stock_loader,
+            "dense": args.dense,
         }
         if prev_config != now_config:
             raise SystemExit(
@@ -107,7 +114,7 @@ def main():
         print(f"{out} already complete")  # skip the multi-minute model load
         return
 
-    if args.stock_loader:
+    if args.stock_loader or args.dense:
         from mlx_lm import load
 
         model, tokenizer = load(args.pack)
@@ -116,17 +123,28 @@ def main():
     target = model
     if args.drop and args.drop_sub:
         raise SystemExit("use either --drop or --drop-sub, not both")
+    parts = {"a": [], "m": [], "b": []}
     if args.drop:
-        target = drop_view(model, [int(i) for i in args.drop.split(",")])
+        parts["b"] = [int(i) for i in args.drop.split(",")]
     if args.drop_sub:
-        from bonsaifold.loader import sublayer_view
-
-        parts = {"a": [], "m": [], "b": []}
         for tokn in args.drop_sub.split("+"):
             parts[tokn[0]].append(int(tokn[1:]))
-        target = sublayer_view(
-            model, drop_attn=parts["a"], drop_mlp=parts["m"], drop_blocks=parts["b"]
-        )
+    if parts["a"] or parts["m"] or parts["b"]:
+        if args.dense:
+            # dense qwen3 sibling packs (Q3): plain stack, no hybrid masks
+            from bonsaifold.dense import dense_drop_view
+
+            target = dense_drop_view(
+                model, drop_blocks=parts["b"], drop_attn=parts["a"], drop_mlp=parts["m"]
+            )
+        elif args.drop:
+            target = drop_view(model, parts["b"])
+        else:
+            from bonsaifold.loader import sublayer_view
+
+            target = sublayer_view(
+                model, drop_attn=parts["a"], drop_mlp=parts["m"], drop_blocks=parts["b"]
+            )
 
     results = []
 
@@ -144,6 +162,7 @@ def main():
                     "drop": args.drop,
                     "drop_sub": args.drop_sub,
                     "stock_loader": args.stock_loader,
+                    "dense": args.dense,
                     "max_tokens": args.max_tokens,
                     "seed": args.seed,
                     "task_accuracy": scores,
