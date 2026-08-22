@@ -91,7 +91,19 @@ Q1. Combined flagged artifact folded709-scaleq8: DONE 2026-08-20.
     scale-quant increment costs the same ~noise on the folded pack as on
     the unfolded one — compositionality confirmed end-to-end. FLAGGED line.
 Q2. A6 T350 champion bench (500 items, via --drop-sub view on nobias). PENDING.
-Q3. Generality: sibling Bonsai (8B-class) — full pipeline replication. PENDING.
+Q3. Generality (dense Bonsai-8B): CLOSED 2026-08-22. The map's SHAPE is
+    universal — boundary protection (b0 7.7 nats, b35 1.3-3.4, b1 both
+    regimes), mid-depth slack, two-regime disagreement, additive
+    composition (tax 0.97-1.20x, matching the 27B band) all replicate on a
+    DENSE model at 8B. The exploitable slack does NOT: cheapest single is
+    6x the 27B's, and benches confirm brutally — 8B ref .7163 (non-thinking
+    scoring, --no-think); k2-analog {26,17} .6737 (−4.3 pts / 33 MB);
+    k4-analog {26,17,21,31} .5687 (−14.8 pts / 66 MB) vs the 27B's k4 −2.4
+    pts / 236 MB. **Foldability is a property of over-provisioned depth,
+    not of 1-bit models per se.** Cross-model KL→damage curve hypothesis
+    TESTED AND REJECTED (k2-analog predicted −7-9 by the 27B curve,
+    measured −4.3): the mapping is monotone within a model only. Bench
+    scoring gotcha recorded: pre-27B family has no thinking mode.
 Q4. Elastic-depth family: DONE 2026-08-19. Spec generated from measured
     data (experiments/elastic/elastic_spec.json): nested 10-op order, anchor
     prefixes = k2/.8125, k4/.8175, folded-709/.7963 (benched) and k4+s8-tier

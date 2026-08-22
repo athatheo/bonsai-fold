@@ -27,7 +27,7 @@ Same ladder, non-thinking scoring (the 8B family predates thinking mode). The st
 | config | MB removed | GSM8K | MATH500 | IFEval | MMLU-R | macro | n |
 |---|---|---|---|---|---|---|---|
 | Bonsai-8B-1bit (unfolded reference) | 0 | 0.800 | 0.630 | 0.830 | 0.605 | 0.7163 | 500 |
-| 8B k2-analog: drop {26,17} | 33 | *pending* | | | | | |
+| 8B k2-analog: drop {26,17} | 33 | 0.750 | 0.530 | 0.820 | 0.595 | 0.6737 | 500 |
 | 8B k4-analog: drop {26,17,21,31} | 66 | 0.630 | 0.300 | 0.760 | 0.585 | 0.5687 | 500 |
 
 ## Table 3 — KL Pareto frontier, hand-built vs A6 search (100 probes, both regimes)
