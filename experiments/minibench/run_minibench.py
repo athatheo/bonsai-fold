@@ -34,10 +34,12 @@ from bonsaifold.minibench import answers, ifeval
 ITEMS = Path(__file__).parent / "minibench_items.json"
 
 
-def score(item, response):
+def score(item, response, thinking=True):
     # a response that never closes its thinking block gave no answer —
-    # scoring the raw chain-of-thought would fish stray numbers out of it
-    if "</think>" not in response:
+    # scoring the raw chain-of-thought would fish stray numbers out of it.
+    # Non-thinking models (pre-27B Bonsai family, whitepaper §2.3) never
+    # emit the tag: score the whole body.
+    if thinking and "</think>" not in response:
         return False
     body = answers.strip_thinking(response)
     try:
@@ -78,6 +80,11 @@ def main():
         help="load via stock mlx_lm.load (external comparator packs)",
     )
     ap.add_argument(
+        "--no-think",
+        action="store_true",
+        help="non-thinking model (pre-27B Bonsai family): no </think> gate",
+    )
+    ap.add_argument(
         "--dense",
         action="store_true",
         help="dense qwen3 sibling pack (Q3): stock load + dense drop views",
@@ -95,6 +102,7 @@ def main():
         prev_config = {k: prev.get(k) for k in ("pack", "drop", "drop_sub", "max_tokens", "seed")}
         prev_config["stock_loader"] = bool(prev.get("stock_loader"))
         prev_config["dense"] = bool(prev.get("dense"))
+        prev_config["no_think"] = bool(prev.get("no_think"))
         now_config = {
             "pack": args.pack,
             "drop": args.drop,
@@ -103,6 +111,7 @@ def main():
             "seed": args.seed,
             "stock_loader": args.stock_loader,
             "dense": args.dense,
+            "no_think": args.no_think,
         }
         if prev_config != now_config:
             raise SystemExit(
@@ -163,6 +172,7 @@ def main():
                     "drop_sub": args.drop_sub,
                     "stock_loader": args.stock_loader,
                     "dense": args.dense,
+                    "no_think": args.no_think,
                     "max_tokens": args.max_tokens,
                     "seed": args.seed,
                     "task_accuracy": scores,
@@ -192,7 +202,7 @@ def main():
         rec = {
             "id": item["id"],
             "task": item["task"],
-            "correct": bool(score(item, response)),
+            "correct": bool(score(item, response, thinking=not args.no_think)),
             "gen_tokens": last.generation_tokens,
             "finish_reason": last.finish_reason,
         }
