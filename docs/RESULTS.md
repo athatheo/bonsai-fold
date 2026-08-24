@@ -111,7 +111,20 @@ Q4. Elastic-depth family: DONE 2026-08-19. Spec generated from measured
     serves any tier zero-copy from the one nobias pack; guards refuse folded
     packs (renumbering trap) and sub-first-tier budgets. Non-anchor prefixes
     are additive-law-bounded, not individually benched (documented).
-Q5. Attention-head-level map on 27B (census → singles screen → verdict). PENDING.
+Q5. Attention-head map (27B): CLOSED 2026-08-24. The head axis is RICH —
+    the width-negative kill criterion was NOT met. 64 KV-group singles (16
+    full-attn blocks x 4 GQA groups, ~3.8 MB each, byte-identical row/col
+    surgery, adapter bit-exact on empty drop): 25x KL spread (.00017 to
+    .0042 on-policy), clean depth gradient with EARLY full-attention blocks
+    (3/7/11/23) cheapest — GQA over-provisioning where whole-sublayer drops
+    were never cheap. Two-regime rank agreement weak (Spearman .354; both
+    regimes mandatory again). Sets (max 2 groups/block): H8 30.4 MB @
+    .00436 on / .0318 off (tax 1.08/1.06x); H12 45.6 MB @ .00885 / .0450
+    (1.18/1.05x) — the additive law extends to head granularity. H8 does
+    not overlap folded-709's operators; KL-additivity projects the combined
+    config near ~740 MB at k6-class KL. Screen-level result only —
+    promotion to the shipped frontier needs a head-drop pack-writer +
+    bench (DECISION FOR THANASIS).
 Q6. AFTER queue completes: value-modifying weight exploration (scope with
     Thanasis first; extends the Group C flagged precedent — CLAUDE.md
     amendment required before any weight-value edit).
