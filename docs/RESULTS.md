@@ -5,7 +5,7 @@ final and verified; provenance chain: docs/LAB_NOTEBOOK.md (append-only) →
 experiments/*/results (raw JSONs) → experiments/paper_tables/tables.md
 (generated). If this file and a raw JSON disagree, the JSON wins.
 
-Last updated: 2026-08-19 (program closed; extension queue running).
+Last updated: 2026-08-24 (extension queue Q1-Q5 COMPLETE; Q6 + head-axis promotion await Thanasis).
 
 ## Headline artifacts
 
@@ -90,7 +90,9 @@ Q1. Combined flagged artifact folded709-scaleq8: DONE 2026-08-20.
     flips 11/12 bidirectional, +1.2% gen tokens, 0 truncations). The
     scale-quant increment costs the same ~noise on the folded pack as on
     the unfolded one — compositionality confirmed end-to-end. FLAGGED line.
-Q2. A6 T350 champion bench (500 items, via --drop-sub view on nobias). PENDING.
+Q2. A6 T350 champion bench: DONE 2026-08-21 — macro .7625, BELOW
+    byte-matched k6 (.7762): the EA Goodharted its KL fitness (see A6
+    section above). The searched frontier stays a KL-level result.
 Q3. Generality (dense Bonsai-8B): CLOSED 2026-08-22. The map's SHAPE is
     universal — boundary protection (b0 7.7 nats, b35 1.3-3.4, b1 both
     regimes), mid-depth slack, two-regime disagreement, additive
