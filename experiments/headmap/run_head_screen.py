@@ -77,9 +77,14 @@ def main():
         name = f"head[{spec}]"
         if name in have:
             continue
-        b, g = spec.split(".")
-        block, group = int(b[1:]), int(g[1:])
-        orig = install_head_drop(model, block, [group])
+        # single "b3.g2" or set "b3.g2+b3.g1+b23.g0": one adapter per block
+        # carrying that block's full group list (never stack adapters)
+        by_block = {}
+        for part in spec.split("+"):
+            b, g = part.split(".")
+            by_block.setdefault(int(b[1:]), []).append(int(g[1:]))
+        origs = {blk: install_head_drop(model, blk, gs)
+                 for blk, gs in by_block.items()}
         total, ntok = 0.0, 0
         for item in items:
             cand = model(mx.array([item["token_ids"]]))
@@ -87,7 +92,8 @@ def main():
             t, n = kl_vs_ref(ref[item["id"]], cand)
             total += t
             ntok += n
-        restore_head_drop(model, block, orig)
+        for blk, orig in origs.items():
+            restore_head_drop(model, blk, orig)
         check = model(canary_ids)
         mx.eval(check)
         if not bool(mx.array_equal(check, canary)):
