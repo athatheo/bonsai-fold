@@ -17,3 +17,6 @@ Training-free depth compression (block dropping, format-native block merging) of
 
 ## Flagged arm (authorized 2026-08-12)
 Group C (scale-metadata quantization) is authorized by Thanasis as a VALUE-MODIFYING experimental arm. It is exempt from the byte-identity constraint but must be (a) implemented as a separate operator, (b) screened on the full KL+bench ladder, and (c) reported separately from the byte-identical result line in all tables and the paper. The main artifact line remains byte-identical.
+
+## Flagged arm R (authorized 2026-08-24)
+Group R (activation-informed scale repair) is authorized by Thanasis as a second VALUE-MODIFYING experimental arm ("do more weight modification if high impact"). Scope: closed-form per-channel gain repair of FOLDED models, applied ONLY to the f16 scales plane of designated surviving modules — sign planes, packed weights, and all other tensors stay byte-identical. Gains are fitted by least squares on the CALIBRATION set exclusively (never on probe sets — leakage); no iterative training, no gradient descent. Same rules as Group C: (a) separate operator, (b) full KL+bench ladder with THE BENCH as the decision gate (screens are demonstrably Goodhartable — A6), (c) separate reporting from every byte-identical line. The main artifact line remains byte-identical.
