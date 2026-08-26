@@ -63,11 +63,13 @@ def main():
     ap.add_argument("--ref-pack", default=None,
                     help="reference pack (default: --pack with exact scales)")
     ap.add_argument("--out", default=str(OUT))
+    ap.add_argument("--bits", type=int, default=8)
     args = ap.parse_args()
     out_path = Path(args.out)
     ref_pack = args.ref_pack or args.pack
 
-    fingerprint = {"pack": args.pack, "ref": ref_pack, "transform": "scaleq8-row"}
+    fingerprint = {"pack": args.pack, "ref": ref_pack,
+                   "transform": f"scaleq{args.bits}-row"}
     done = json.loads(out_path.read_text()) if out_path.exists() else {"items": {}}
     if done.get("fingerprint", fingerprint) != fingerprint:
         raise SystemExit(
@@ -85,7 +87,7 @@ def main():
         print("candidate pack carries a stored q8 plane; no in-memory roundtrip")
         done["max_rel_scale_err"] = None
     else:
-        n_mod, max_rel = apply_roundtrip(cand)
+        n_mod, max_rel = apply_roundtrip(cand, bits=args.bits)
         mx.eval(cand.parameters())
         print(f"round-tripped {n_mod} modules, max rel scale err {max_rel:.5f}")
         done["max_rel_scale_err"] = max_rel

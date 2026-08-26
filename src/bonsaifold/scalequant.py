@@ -29,15 +29,18 @@ QMAX = (1 << BITS) - 1
 _ST_DTYPE = {"uint8": "U8", "float16": "F16"}  # numpy dtype name -> st code
 
 
-def quantize_scales(s):
+def quantize_scales(s, bits=BITS):
     """f16 scales (rows, cols) -> (u8 q, f16 min, f16 step), per-row affine.
-    Accepts mx or numpy input (PackReader.read returns numpy)."""
+    Accepts mx or numpy input (PackReader.read returns numpy). bits<=8;
+    codes always stored u8 (sub-8 packing is a shipping decision, not a
+    screening one)."""
+    qmax = (1 << bits) - 1
     f = mx.array(s).astype(mx.float32)
     lo = f.min(axis=-1, keepdims=True)
     hi = f.max(axis=-1, keepdims=True)
-    step = ((hi - lo) / QMAX).astype(mx.float16).astype(mx.float32)
+    step = ((hi - lo) / qmax).astype(mx.float16).astype(mx.float32)
     lo = lo.astype(mx.float16).astype(mx.float32)
-    q = mx.clip(mx.round((f - lo) / mx.where(step == 0, 1.0, step)), 0, QMAX)
+    q = mx.clip(mx.round((f - lo) / mx.where(step == 0, 1.0, step)), 0, qmax)
     return q.astype(mx.uint8), lo.astype(mx.float16), step.astype(mx.float16)
 
 
@@ -50,9 +53,9 @@ def reconstruct_scales(q, lo, step):
     return (q32 * step32 + lo32).astype(mx.float16)
 
 
-def roundtrip_scales(s):
+def roundtrip_scales(s, bits=BITS):
     """s -> reconstruct(quantize(s)); the in-memory screening transform."""
-    return reconstruct_scales(*quantize_scales(s))
+    return reconstruct_scales(*quantize_scales(s, bits))
 
 
 def quantize_scale_plane(src_pack, dst_pack):
@@ -118,7 +121,7 @@ def quantize_scale_plane(src_pack, dst_pack):
     return n_quantized, saved
 
 
-def apply_roundtrip(model):
+def apply_roundtrip(model, bits=BITS):
     """Mutate every 1-bit quantized module's scales in place to their 8-bit
     round-trip. Under derived kernels this fully defines the Group C model
     (biases follow as f16(-s'/2) in-register). Returns (n_modules,
@@ -127,7 +130,7 @@ def apply_roundtrip(model):
     for m in model.modules():
         if isinstance(m, (nn.QuantizedLinear, nn.QuantizedEmbedding)) and m.bits == 1:
             s = m["scales"]
-            s2 = roundtrip_scales(s)
+            s2 = roundtrip_scales(s, bits)
             s32 = s.astype(mx.float32)
             rel = mx.abs(s2.astype(mx.float32) - s32) / mx.maximum(mx.abs(s32), 1e-8)
             max_rel = max(max_rel, float(rel.max()))
