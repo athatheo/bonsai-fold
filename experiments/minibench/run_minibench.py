@@ -80,6 +80,12 @@ def main():
         help="load via stock mlx_lm.load (external comparator packs)",
     )
     ap.add_argument(
+        "--scale-bits",
+        type=int,
+        default=None,
+        help="Group C knee: apply in-memory scale roundtrip at N bits after load",
+    )
+    ap.add_argument(
         "--no-think",
         action="store_true",
         help="non-thinking model (pre-27B Bonsai family): no </think> gate",
@@ -103,6 +109,7 @@ def main():
         prev_config["stock_loader"] = bool(prev.get("stock_loader"))
         prev_config["dense"] = bool(prev.get("dense"))
         prev_config["no_think"] = bool(prev.get("no_think"))
+        prev_config["scale_bits"] = prev.get("scale_bits")
         now_config = {
             "pack": args.pack,
             "drop": args.drop,
@@ -112,6 +119,7 @@ def main():
             "stock_loader": args.stock_loader,
             "dense": args.dense,
             "no_think": args.no_think,
+            "scale_bits": args.scale_bits,
         }
         if prev_config != now_config:
             raise SystemExit(
@@ -129,6 +137,13 @@ def main():
         model, tokenizer = load(args.pack)
     else:
         model, tokenizer = load_bonsai(args.pack)
+    if args.scale_bits is not None:
+        from bonsaifold.scalequant import apply_roundtrip
+
+        n_mod, max_rel = apply_roundtrip(model, bits=args.scale_bits)
+        mx.eval(model.parameters())
+        print(f"scale roundtrip @{args.scale_bits} bits: {n_mod} modules, "
+              f"max rel err {max_rel:.3f}")
     target = model
     if args.drop and args.drop_sub:
         raise SystemExit("use either --drop or --drop-sub, not both")
@@ -173,6 +188,7 @@ def main():
                     "stock_loader": args.stock_loader,
                     "dense": args.dense,
                     "no_think": args.no_think,
+                    "scale_bits": args.scale_bits,
                     "max_tokens": args.max_tokens,
                     "seed": args.seed,
                     "task_accuracy": scores,
