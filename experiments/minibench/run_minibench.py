@@ -86,6 +86,12 @@ def main():
         help="Group C knee: apply in-memory scale roundtrip at N bits after load",
     )
     ap.add_argument(
+        "--shadow-repair",
+        default=None,
+        help="Group R v2: dir with shadow_folded709.{npz,json}; swaps the "
+             "repaired (weight, scales) planes into the view's repair sites",
+    )
+    ap.add_argument(
         "--no-think",
         action="store_true",
         help="non-thinking model (pre-27B Bonsai family): no </think> gate",
@@ -110,6 +116,7 @@ def main():
         prev_config["dense"] = bool(prev.get("dense"))
         prev_config["no_think"] = bool(prev.get("no_think"))
         prev_config["scale_bits"] = prev.get("scale_bits")
+        prev_config["shadow_repair"] = prev.get("shadow_repair")
         now_config = {
             "pack": args.pack,
             "drop": args.drop,
@@ -120,6 +127,7 @@ def main():
             "dense": args.dense,
             "no_think": args.no_think,
             "scale_bits": args.scale_bits,
+            "shadow_repair": args.shadow_repair,
         }
         if prev_config != now_config:
             raise SystemExit(
@@ -170,6 +178,35 @@ def main():
                 model, drop_attn=parts["a"], drop_mlp=parts["m"], drop_blocks=parts["b"]
             )
 
+    if args.shadow_repair:
+        import numpy as np
+
+        rdir = Path(args.shadow_repair)
+        meta = json.loads((rdir / "shadow_folded709.json").read_text())
+        planes = np.load(rdir / "shadow_folded709.npz")
+        want = (sorted(meta["drop_blocks"]), sorted(meta["drop_attn"]))
+        have = (sorted(parts["b"]), sorted(parts["a"]))
+        if want != have:
+            raise SystemExit(f"--shadow-repair fitted for drops {want}, "
+                             f"bench view has {have}")
+        for b, site in meta["sites"].items():
+            attn = target.layers[site["view_pos"]].linear_attn
+            src = attn.out_proj
+
+            class _Swap:
+                def __init__(sw, w, sc):
+                    sw.weight = mx.array(w)
+                    sw.scales = mx.array(sc)
+
+                def __call__(sw, x):
+                    return mx.quantized_matmul(
+                        x, sw.weight, scales=sw.scales, biases=None,
+                        transpose=True, group_size=src.group_size,
+                        bits=src.bits, mode=src.mode)
+
+            attn.out_proj = _Swap(planes[f"b{b}.weight"], planes[f"b{b}.scales"])
+        print(f"shadow repair applied at {len(meta['sites'])} sites")
+
     results = []
 
     def write():
@@ -189,6 +226,7 @@ def main():
                     "dense": args.dense,
                     "no_think": args.no_think,
                     "scale_bits": args.scale_bits,
+                    "shadow_repair": args.shadow_repair,
                     "max_tokens": args.max_tokens,
                     "seed": args.seed,
                     "task_accuracy": scores,
