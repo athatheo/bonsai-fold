@@ -5,7 +5,7 @@ final and verified; provenance chain: docs/LAB_NOTEBOOK.md (append-only) →
 experiments/*/results (raw JSONs) → experiments/paper_tables/tables.md
 (generated). If this file and a raw JSON disagree, the JSON wins.
 
-Last updated: 2026-08-24 (extension queue Q1-Q5 COMPLETE; Q6 + head-axis promotion await Thanasis).
+Last updated: 2026-08-27 (queue complete; Group R closed — repair negative + knee mapped; pending decisions: head-axis promotion bench, optional 6-bit bench, paper).
 
 ## Headline artifacts
 
@@ -55,6 +55,19 @@ instance of the screens-are-not-benches lesson (block-1 ambush, A4 keep-set,
 now A6). Hand configs selected on the bench-anchored ladder transfer
 better. Champion genomes in experiments/evosearch/best_t*.json; T350 spec:
 drop_block {5,13,16,36} + drop_attn {38,57,58} + drop_mlp {4,12}.
+
+## Flagged arm 2 — Group R + the scale knee (weight modification, 2026-08-26/27)
+
+1. **Repair negative**: closed-form per-channel scale-gain repair of
+   folded-709 (calibration-fitted, 3 sites) FAILS the paired held-out
+   screen (+1.3% on-policy). Mechanism: RMSNorm renormalization already
+   absorbs static scale effects — the loss from dropped modules is
+   token-dependent directional content, unreachable without adding bytes.
+2. **Scale knee (benched)**: 8-bit −0.5 pts (floor, shipped); 6-bit screen
+   9.1e-06 (plausibly free, UNBENCHED); **4-bit BENCH-DEGRADED −2.9 pts**
+   despite screening 76x below k2 — establishing that **KL→bench damage
+   mappings differ BY OPERATOR FAMILY** (metadata noise harms far more per
+   screen-nat than structural deletion; 4th screens-vs-benches instance).
 
 ## Confirmed negatives (do not revisit)
 
