@@ -35,6 +35,10 @@ FLAGGED_ROWS = [
     # folded-709 + scale quant of surviving tensors: 709 + 179.1
     ("folded709_scaleq8", "COMBINED: folded-709 + 8-bit scales (VALUE-MODIFYING)", 888,
      "3.82 GB total (-18.9%); screen 3.1e-06/9.9e-06 vs folded-709"),
+    # knee probe, NOT a shipping candidate: bench found the knee at 4 bits
+    ("scaleq4_nobias", "knee probe: nobias + 4-bit scales (DEGRADED)", 717,
+     "screen 1e-04 looked free; bench -2.9 pts = k2-class damage. "
+     "Scale-metadata floor stays at 8-bit (6-bit unbenched)"),
 ]
 
 # Q3 generality rows (dense 8B sibling; non-thinking scoring)

@@ -20,6 +20,7 @@ Reported separately per the flagged-arm rule: scales are 8-bit reconstructions; 
 |---|---|---|---|---|---|---|---|
 | Group C: nobias + 8-bit scale plane (VALUE-MODIFYING) | 612 | 0.930 | 0.730 | 0.910 | 0.775 | 0.8363 | 500 |
 | COMBINED: folded-709 + 8-bit scales (VALUE-MODIFYING) | 888 | 0.870 | 0.690 | 0.860 | 0.740 | 0.7900 | 500 |
+| knee probe: nobias + 4-bit scales (DEGRADED) | 717 | 0.910 | 0.710 | 0.860 | 0.770 | 0.8125 | 500 |
 
 ## Table 2b — Generality: dense Bonsai-8B (byte-identical drops)
 Same ladder, non-thinking scoring (the 8B family predates thinking mode). The structural laws replicate; the slack magnitude does not.
