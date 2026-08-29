@@ -181,30 +181,43 @@ def main():
     if args.shadow_repair:
         import numpy as np
 
-        rdir = Path(args.shadow_repair)
-        meta = json.loads((rdir / "shadow_folded709.json").read_text())
-        planes = np.load(rdir / "shadow_folded709.npz")
-        want = (sorted(meta["drop_blocks"]), sorted(meta["drop_attn"]))
-        have = (sorted(parts["b"]), sorted(parts["a"]))
-        if want != have:
-            raise SystemExit(f"--shadow-repair fitted for drops {want}, "
-                             f"bench view has {have}")
+        # "dir" (legacy: shadow_folded709.*) or "dir:prefix"
+        spec_dir, _, prefix = args.shadow_repair.partition(":")
+        prefix = prefix or "shadow_folded709"
+        rdir = Path(spec_dir)
+        meta = json.loads((rdir / f"{prefix}.json").read_text())
+        planes = np.load(rdir / f"{prefix}.npz")
+        if meta.get("folded_pack"):
+            # pack-mode fit: drops live in the pack itself
+            if Path(meta["folded_pack"]).resolve() != Path(args.pack).resolve():
+                raise SystemExit(f"--shadow-repair fitted for pack "
+                                 f"{meta['folded_pack']}, bench uses {args.pack}")
+            repair_layers = model.language_model.model.layers
+        else:
+            want = (sorted(meta["drop_blocks"]), sorted(meta["drop_attn"]))
+            have = (sorted(parts["b"]), sorted(parts["a"]))
+            if want != have:
+                raise SystemExit(f"--shadow-repair fitted for drops {want}, "
+                                 f"bench view has {have}")
+            repair_layers = target.layers
         for b, site in meta["sites"].items():
-            attn = target.layers[site["view_pos"]].linear_attn
+            attn = repair_layers[site["view_pos"]].linear_attn
             src = attn.out_proj
 
             class _Swap:
-                def __init__(sw, w, sc):
+                def __init__(sw, w, sc, gs, bits, mode):
                     sw.weight = mx.array(w)
                     sw.scales = mx.array(sc)
+                    sw.gs, sw.bits, sw.mode = gs, bits, mode
 
                 def __call__(sw, x):
                     return mx.quantized_matmul(
                         x, sw.weight, scales=sw.scales, biases=None,
-                        transpose=True, group_size=src.group_size,
-                        bits=src.bits, mode=src.mode)
+                        transpose=True, group_size=sw.gs,
+                        bits=sw.bits, mode=sw.mode)
 
-            attn.out_proj = _Swap(planes[f"b{b}.weight"], planes[f"b{b}.scales"])
+            attn.out_proj = _Swap(planes[f"b{b}.weight"], planes[f"b{b}.scales"],
+                                  src.group_size, src.bits, src.mode)
         print(f"shadow repair applied at {len(meta['sites'])} sites")
 
     results = []
