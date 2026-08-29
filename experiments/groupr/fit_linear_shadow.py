@@ -15,6 +15,7 @@ per (row, 128-col group)  s'_g = 2*mean|w*|, signs = sign(w*)  (weights are
 +-s_g/2 under the derived-bias convention).  Writes the repaired planes +
 diagnostics to shadow_folded709.npz / .json.
 """
+import argparse
 import json
 from pathlib import Path
 
@@ -27,12 +28,11 @@ from bonsaifold.stio import pack_codes, unpack_codes
 REPO = Path(__file__).resolve().parents[2]
 PACK = REPO / "models/Bonsai-27B-mlx-1bit-nobias"
 CALIB = REPO / "experiments/calibration/calibration_set.json"
-OUT_NPZ = Path(__file__).parent / "shadow_folded709.npz"
-OUT_JSON = Path(__file__).parent / "shadow_folded709.json"
 
+# defaults = the confirmed folded-709 fit
 DROP_BLOCKS = [16, 12, 13, 9]
 DROP_ATTN = [37, 38, 58]
-SITES = [(17, 13), (40, 36), (60, 56)]  # (orig block, folded view position)
+SITES = [(17, 13), (40, 36), (60, 56)]  # (orig block, folded view/pack position)
 RIDGE_SWEEP = [1e-3, 1e-2, 1e-1, 3e-1, 1.0, 3.0]  # relative to mean diag(A)
 MAX_REL_DW = 0.25  # keep requantization noise second-order
 
@@ -67,10 +67,37 @@ class InputOutputRecorder:
 
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--folded-pack", default=None,
+                    help="folded pack to repair (drops persisted in-pack); "
+                         "default: build the folded-709 view from nobias")
+    ap.add_argument("--drop-blocks", default=None, help="comma ints (view mode)")
+    ap.add_argument("--drop-attn", default=None, help="comma ints (view mode)")
+    ap.add_argument("--sites", default=None,
+                    help="comma 'origblock:pos' pairs, e.g. 5:4,10:7,14:9,17:11")
+    ap.add_argument("--out-prefix", default="shadow_folded709")
+    args = ap.parse_args()
+
+    global DROP_BLOCKS, DROP_ATTN, SITES
+    if args.drop_blocks is not None:
+        DROP_BLOCKS = [int(x) for x in args.drop_blocks.split(",")]
+    if args.drop_attn is not None:
+        DROP_ATTN = [int(x) for x in args.drop_attn.split(",")] if args.drop_attn else []
+    if args.sites:
+        SITES = [tuple(int(v) for v in pair.split(":")) for pair in args.sites.split(",")]
+    out_npz = Path(__file__).parent / f"{args.out_prefix}.npz"
+    out_json = Path(__file__).parent / f"{args.out_prefix}.json"
+
     items = json.loads(CALIB.read_text())["items"]
     model, _ = load_bonsai(PACK)
-    view = sublayer_view(model, drop_attn=DROP_ATTN, drop_mlp=[],
-                         drop_blocks=DROP_BLOCKS)
+    if args.folded_pack:
+        folded, _ = load_bonsai(args.folded_pack)
+        view = folded.language_model.model  # pack positions == site positions
+        view_layers = view.layers
+    else:
+        view = sublayer_view(model, drop_attn=DROP_ATTN, drop_mlp=[],
+                             drop_blocks=DROP_BLOCKS)
+        view_layers = view.layers
     tm = model.language_model.model
 
     site_blocks = {b for b, _ in SITES}
@@ -89,7 +116,7 @@ def main():
 
     recorders = {}
     for b, pos in SITES:
-        layer = view.layers[pos]
+        layer = view_layers[pos]
         recorders[b] = InputOutputRecorder(layer.linear_attn)
     view.block_tap = fold_tap
 
@@ -99,7 +126,7 @@ def main():
         tm.block_tap = orig_tap
         mx.eval(model(ids))
         tm.block_tap = None
-        mx.eval(view(ids))
+        mx.eval(view(ids) if not args.folded_pack else folded(ids))
         for b, _ in SITES:
             z = recorders[b].z                    # (T, in_dim) folded run
             delta = orig_streams[b] - fold_streams[b]  # (T, 5120)
@@ -115,8 +142,6 @@ def main():
     diag = {"sites": {}}
     planes = {}
     for b, pos in SITES:
-        for r in recorders.values():
-            pass
         a = acc[b]
         mod = recorders[b]._orig_out              # the real QuantizedLinear
         w_packed = np.array(mod.weight)
@@ -152,14 +177,15 @@ def main():
         print(f"site b{b}: flips {flips} ({flips/codes.size:.3%}), "
               f"|dW|/|w| {rel_dw:.3f}, scale drift {s_drift:.3%}", flush=True)
 
-    np.savez(OUT_NPZ, **planes)
-    np.savez(Path(__file__).parent / "shadow_normal_eqs.npz",
+    np.savez(out_npz, **planes)
+    np.savez(Path(__file__).parent / f"{args.out_prefix}_normal_eqs.npz",
              **{f"A{b}": acc[b]["A"] for b, _ in SITES},
              **{f"B{b}": acc[b]["B"] for b, _ in SITES})
     diag["drop_blocks"] = DROP_BLOCKS
     diag["drop_attn"] = DROP_ATTN
-    OUT_JSON.write_text(json.dumps(diag))
-    print(f"wrote {OUT_NPZ} and {OUT_JSON}")
+    diag["folded_pack"] = args.folded_pack
+    out_json.write_text(json.dumps(diag))
+    print(f"wrote {out_npz} and {out_json}")
 
 
 if __name__ == "__main__":

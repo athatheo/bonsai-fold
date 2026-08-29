@@ -3,6 +3,7 @@ identical probes, both regimes. Repaired planes are swapped in via
 non-destructive shims (npz weight/scales, derived-kernel matmul); originals
 restored and canary-checked after. Bench remains the decision gate.
 """
+import argparse
 import json
 from pathlib import Path
 
@@ -15,7 +16,7 @@ from bonsaifold.probes import load_probe_set
 
 REPO = Path(__file__).resolve().parents[2]
 PACK = REPO / "models/Bonsai-27B-mlx-1bit-nobias"
-NPZ = Path(__file__).parent / "shadow_folded709.npz"
+NPZ = Path(__file__).parent / "shadow_folded709.npz"  # default prefix
 META = Path(__file__).parent / "shadow_folded709.json"
 OUT = Path(__file__).parent / "screen_shadow.json"
 CHUNK = 256
@@ -52,19 +53,32 @@ def item_kl(ref_logits, cand_logits):
 
 
 def main():
-    meta = json.loads(META.read_text())
-    planes = np.load(NPZ)
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--prefix", default="shadow_folded709")
+    ap.add_argument("--out", default=None)
+    args = ap.parse_args()
+    here = Path(__file__).parent
+    meta = json.loads((here / f"{args.prefix}.json").read_text())
+    planes = np.load(here / f"{args.prefix}.npz")
+    out_file = Path(args.out) if args.out else here / f"screen_{args.prefix}.json"
+    globals()["OUT"] = out_file
     done = json.loads(OUT.read_text()) if OUT.exists() else {"items": {}}
     model, _ = load_bonsai(PACK)
-    view = sublayer_view(model, drop_attn=meta["drop_attn"], drop_mlp=[],
-                         drop_blocks=meta["drop_blocks"])
+    if meta.get("folded_pack"):
+        folded, _ = load_bonsai(meta["folded_pack"])
+        view = folded
+        view_layers = folded.language_model.model.layers
+    else:
+        view = sublayer_view(model, drop_attn=meta["drop_attn"], drop_mlp=[],
+                             drop_blocks=meta["drop_blocks"])
+        view_layers = view.layers
 
     sites = {int(b): s for b, s in meta["sites"].items()}
     originals = {}
 
     def set_repair(on):
         for b, s in sites.items():
-            attn = view.layers[s["view_pos"]].linear_attn
+            attn = view_layers[s["view_pos"]].linear_attn
             if on:
                 originals[b] = attn.out_proj
                 attn.out_proj = PlaneSwap(
