@@ -5,7 +5,7 @@ final and verified; provenance chain: docs/LAB_NOTEBOOK.md (append-only) →
 experiments/*/results (raw JSONs) → experiments/paper_tables/tables.md
 (generated). If this file and a raw JSON disagree, the JSON wins.
 
-Last updated: 2026-08-27 (queue complete; Group R closed — repair negative + knee mapped; pending decisions: head-axis promotion bench, optional 6-bit bench, paper).
+Last updated: 2026-08-29 (Group R v2 REPAIR CONFIRMED +1.0 macro at same bytes; pending: repair combined/deeper tiers?, head-axis bench, paper).
 
 ## Headline artifacts
 
@@ -15,6 +15,7 @@ Last updated: 2026-08-27 (queue complete; Group R closed — repair negative + k
 | **Bonsai-27B-1bit-folded-709** | 4.2 GB | −709 MB / −15.4% | **.7963** (GSM8K .910 = ref) | SHIPPING, byte-identical |
 | Bonsai-27B-1bit-groupc-scaleq8 | 4.19 GB | −612 MB / −13% | **.8363** (−0.5, within noise) | FLAGGED (value-modifying) |
 | **Bonsai-27B-1bit-folded709-scaleq8** | **3.82 GB** | −888 MB / −18.9% | **.7900** (−0.6 vs folded-709) | FLAGGED combined headline |
+| **folded-709 + shadow repair** | 4.2 GB (same bytes) | −709 MB / −15.4% | **.8063** (+1.0 vs folded-709) | FLAGGED repair (Group R v2) |
 
 - folded-709 = bias-strip + drop blocks {16,12,13,9} + drop attn sublayers
   {37,38,58}. Full-vocab logits bit-identical to benched views; pack bench
@@ -58,7 +59,17 @@ drop_block {5,13,16,36} + drop_attn {38,57,58} + drop_mlp {4,12}.
 
 ## Flagged arm 2 — Group R + the scale knee (weight modification, 2026-08-26/27)
 
-1. **Repair negative**: closed-form per-channel scale-gain repair of
+0. **REPAIR CONFIRMED (v2, benched 2026-08-29)**: linear-shadow absorption
+   with in-format requantization — fit each dropped cluster's static linear
+   shadow (ridge, calibration-only, |dW|/|w| capped at 0.25), absorb into 3
+   surviving out_proj modules, requantize to 1-bit g128 (0.8-1.7% sign
+   flips, <4.5% scale drift, ZERO added bytes). Held-out screen −7.2% on /
+   −9.0% off; **bench .8063 vs folded-709 .7963 (+1.0 macro at identical
+   bytes; IFEval +3, MATH +1, MMLU +1, GSM8K −1; flips +35/−30)**. Damage
+   vs reference shrinks −4.5 → −3.5 pts. First demonstration of
+   training-free in-format repair of a 1-bit model. Planes:
+   experiments/groupr/shadow_folded709.npz (+ normal equations for refits).
+1. **Repair negative (v1)**: closed-form per-channel scale-gain repair of
    folded-709 (calibration-fitted, 3 sites) FAILS the paired held-out
    screen (+1.3% on-policy). Mechanism: RMSNorm renormalization already
    absorbs static scale effects — the loss from dropped modules is
