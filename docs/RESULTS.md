@@ -5,7 +5,7 @@ final and verified; provenance chain: docs/LAB_NOTEBOOK.md (append-only) →
 experiments/*/results (raw JSONs) → experiments/paper_tables/tables.md
 (generated). If this file and a raw JSON disagree, the JSON wins.
 
-Last updated: 2026-08-29 (Group R v2 REPAIR CONFIRMED +1.0 macro at same bytes; pending: repair combined/deeper tiers?, head-axis bench, paper).
+Last updated: 2026-09-01 (repair extensions BOTH FAILED the bench gate — scope mapped; Group R fully closed; pending: head-axis bench, paper).
 
 ## Headline artifacts
 
@@ -59,6 +59,16 @@ drop_block {5,13,16,36} + drop_attn {38,57,58} + drop_mlp {4,12}.
 
 ## Flagged arm 2 — Group R + the scale knee (weight modification, 2026-08-26/27)
 
+0a. **REPAIR SCOPE MAPPED (extensions benched 2026-09-01)**: the confirmed
+   repair does NOT extend. (i) Combined artifact (folded709-scaleq8) +
+   refit repair: paired screen −7.1/−9.0% (identical profile to the
+   confirmed repair) but **bench .7825 vs .7900 unrepaired (−0.75)** —
+   repair does not compose with scale quantization; FIFTH
+   screens-vs-benches instance and the first where a paired same-family
+   screen misled. (ii) k6 + 4-site repair: screen flat-on/−20%-off,
+   **bench .7750 vs .7762 (flat)** — the recipe does not scale to deeper
+   folds (sites saturate the |dW|/|w| cap). Repair's confirmed regime:
+   moderate structural damage, one perturbation type, sites below the cap.
 0. **REPAIR CONFIRMED (v2, benched 2026-08-29)**: linear-shadow absorption
    with in-format requantization — fit each dropped cluster's static linear
    shadow (ridge, calibration-only, |dW|/|w| capped at 0.25), absorb into 3

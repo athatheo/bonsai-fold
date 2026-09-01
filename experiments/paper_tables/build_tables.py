@@ -39,6 +39,13 @@ FLAGGED_ROWS = [
     ("folded709_shadowrepair", "Group R: folded-709 + shadow repair (VALUE-MOD)", 709,
      "in-format requant of 3 modules (1% flips): recovers +1.0 macro at "
      "IDENTICAL bytes; screen -7.2%/-9.0% held-out"),
+    # repair EXTENSION probes (both failed the bench gate; kept as evidence)
+    ("folded709_scaleq8_shadowrepair", "extension probe: combined + repair (WORSE)", 888,
+     "screen -7.1/-9.0 identical to the confirmed repair, bench -0.75: "
+     "repair does not compose with scale quantization (5th screens-vs-benches)"),
+    ("k6_shadowrepair", "extension probe: k6 + repair (FLAT)", 360,
+     "4 sites at dW cap; screen flat-on/-20%-off, bench -0.1: v2 recipe "
+     "does not scale to deeper folds"),
     # knee probe, NOT a shipping candidate: bench found the knee at 4 bits
     ("scaleq4_nobias", "knee probe: nobias + 4-bit scales (DEGRADED)", 717,
      "screen 1e-04 looked free; bench -2.9 pts = k2-class damage. "
