@@ -86,6 +86,12 @@ def main():
         help="Group C knee: apply in-memory scale roundtrip at N bits after load",
     )
     ap.add_argument(
+        "--head-drop",
+        default=None,
+        help="Q5 KV-group drops, e.g. b3.g2+b3.g1+b23.g0 (full-attn blocks, "
+             "original numbering; installs adapters on the shared layers)",
+    )
+    ap.add_argument(
         "--shadow-repair",
         default=None,
         help="Group R v2: dir with shadow_folded709.{npz,json}; swaps the "
@@ -117,6 +123,7 @@ def main():
         prev_config["no_think"] = bool(prev.get("no_think"))
         prev_config["scale_bits"] = prev.get("scale_bits")
         prev_config["shadow_repair"] = prev.get("shadow_repair")
+        prev_config["head_drop"] = prev.get("head_drop")
         now_config = {
             "pack": args.pack,
             "drop": args.drop,
@@ -128,6 +135,7 @@ def main():
             "no_think": args.no_think,
             "scale_bits": args.scale_bits,
             "shadow_repair": args.shadow_repair,
+            "head_drop": args.head_drop,
         }
         if prev_config != now_config:
             raise SystemExit(
@@ -177,6 +185,24 @@ def main():
             target = sublayer_view(
                 model, drop_attn=parts["a"], drop_mlp=parts["m"], drop_blocks=parts["b"]
             )
+
+    if args.head_drop:
+        from bonsaifold.heads import install_head_drop
+
+        by_block = {}
+        for part in args.head_drop.split("+"):
+            b, g = part.split(".")
+            by_block.setdefault(int(b[1:]), []).append(int(g[1:]))
+        clash = set(by_block) & set(parts["b"] + parts["a"])
+        if clash:
+            raise SystemExit(f"--head-drop blocks {sorted(clash)} collide "
+                             "with dropped blocks/attns")
+        for blk, gs in by_block.items():
+            # one adapter per block with its full group list; installs on the
+            # model's shared layers, so views see it too
+            install_head_drop(model, blk, gs)
+        print(f"head-drop: {len(by_block)} blocks, "
+              f"{sum(len(g) for g in by_block.values())} KV groups removed")
 
     if args.shadow_repair:
         import numpy as np
@@ -240,6 +266,7 @@ def main():
                     "no_think": args.no_think,
                     "scale_bits": args.scale_bits,
                     "shadow_repair": args.shadow_repair,
+                    "head_drop": args.head_drop,
                     "max_tokens": args.max_tokens,
                     "seed": args.seed,
                     "task_accuracy": scores,
