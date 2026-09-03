@@ -11,6 +11,7 @@ All surviving weights byte-identical to the original pack. Sizes vs the 4.71 GB 
 | k6: drop 6 blocks | 360 | 0.880 | 0.640 | 0.860 | 0.725 | 0.7762 | 500 |
 | k8: drop 8 blocks | 478 | 0.870 | 0.720 | 0.790 | 0.620 | 0.7500 | 500 |
 | folded-709 (k4 + attn{37,38,58}); SHIPPING | 709 | 0.910 | 0.670 | 0.880 | 0.725 | 0.7963 | 500 |
+| promotion probe: folded-709 + H8 KV-groups (REJECTED) | 739 | 0.850 | 0.630 | 0.830 | 0.735 | 0.7612 | 500 |
 | A6 T350 search champion (KL-tier winner) | 365 | 0.880 | 0.610 | 0.830 | 0.730 | 0.7625 | 500 |
 
 ## Table 2 — FLAGGED arm: Group C scale quantization (value-modifying)

@@ -5,7 +5,7 @@ final and verified; provenance chain: docs/LAB_NOTEBOOK.md (append-only) →
 experiments/*/results (raw JSONs) → experiments/paper_tables/tables.md
 (generated). If this file and a raw JSON disagree, the JSON wins.
 
-Last updated: 2026-09-01 (repair extensions BOTH FAILED the bench gate — scope mapped; Group R fully closed; pending: head-axis bench, paper).
+Last updated: 2026-09-03 (head promotion REJECTED at bench, -3.5; 6th screen-vs-bench instance; frontier final: folded-709 / repaired-709 / combined-3.82GB. ALL experimental lines closed — paper remains).
 
 ## Headline artifacts
 
@@ -157,10 +157,14 @@ Q5. Attention-head map (27B): CLOSED 2026-08-24. The head axis is RICH —
     regimes mandatory again). Sets (max 2 groups/block): H8 30.4 MB @
     .00436 on / .0318 off (tax 1.08/1.06x); H12 45.6 MB @ .00885 / .0450
     (1.18/1.05x) — the additive law extends to head granularity. H8 does
-    not overlap folded-709's operators; KL-additivity projects the combined
-    config near ~740 MB at k6-class KL. Screen-level result only —
-    promotion to the shipped frontier needs a head-drop pack-writer +
-    bench (DECISION FOR THANASIS).
+    not overlap folded-709's operators. PROMOTION BENCHED 2026-09-03 and
+    REJECTED: 709+H8 screened sub-additive (.0310/.1546, below k6 both
+    regimes) but benched .7612 — −3.5 pts vs folded-709 for 30 MB, below
+    k6. SIXTH screens-vs-benches instance: KV-group removal is a
+    steep-slope operator family (dense attention-pattern perturbation),
+    like scale metadata, unlike structural deletion. The head map stays a
+    screen-level structural finding; folded-709 remains the byte-identical
+    frontier.
 Q6. AFTER queue completes: value-modifying weight exploration (scope with
     Thanasis first; extends the Group C flagged precedent — CLAUDE.md
     amendment required before any weight-value edit).

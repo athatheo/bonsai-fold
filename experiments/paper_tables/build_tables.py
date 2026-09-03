@@ -24,6 +24,9 @@ BENCH_ROWS = [
     ("k8", "k8: drop 8 blocks", 478, "damage knee"),
     ("folded709_pack", "folded-709 (k4 + attn{37,38,58}); SHIPPING", 709,
      "incl. bias strip; pack == benched view, 500/500"),
+    ("folded709_h8", "promotion probe: folded-709 + H8 KV-groups (REJECTED)", 739,
+     "screened sub-additive & below k6 both regimes; bench -3.5 vs 709: "
+     "head family has a steep KL->bench slope (6th screens-vs-benches)"),
     ("a6_t350_champion", "A6 T350 search champion (KL-tier winner)", 365,
      "KL ties k6 / beats it 14% off-policy, but benches BELOW k6: "
      "screen-fitness Goodharting"),
