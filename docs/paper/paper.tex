@@ -3,11 +3,10 @@
 \usepackage{booktabs}
 \usepackage{microtype}
 \usepackage{amsmath}
-\usepackage[hidelinks,pdftitle={Is There Depth Left to Fold?},pdfauthor={Anonymous}]{hyperref}
+\usepackage[hidelinks,pdftitle={Training-Free Depth Pruning of Extremely Quantized LLMs},pdfauthor={Anonymous}]{hyperref}
+\usepackage[numbers]{natbib}
 
-\title{Is There Depth Left to Fold?\\
-\large Training-Free Structural Compression of a 1-Bit 27B Model,\\
-Measured End-to-End on a Laptop}
+\title{Training-Free Depth Pruning and Post-Hoc Error Compensation\\for 1-Bit Large Language Models}
 \author{Anonymous}
 \date{September 2026}
 
@@ -15,186 +14,209 @@ Measured End-to-End on a Laptop}
 \maketitle
 
 \begin{abstract}
-Extreme weight quantization has produced open models that carry 27B-class capability at 1.125 bits per weight. We ask whether such models still contain structural slack, and whether it can be harvested with no training, no calibration-based weight updates, and byte-identical surviving weights, entirely on one 64\,GB consumer laptop. Working on a public 1-bit 27B hybrid-attention model, we (1) map depth redundancy at four granularities and measure an additive damage-composition law; (2) ship a byte-identical artifact that removes 15.4\% of the language model's bytes while keeping GSM8K at reference parity, at a cost of 4.5 macro points on a 500-item four-task benchmark; (3) show the format stores a fully derivable bias plane, worth a measured $-420$\,MB of disk and resident memory via kernels that re-derive it in-register with unchanged logits; (4) demonstrate the first training-free, in-format repair of a folded 1-bit model: a single closed-form ridge solve whose requantization flips 1\% of sign bits and recovers $+1.0$ macro at identical bytes, together with the boundaries of the regime where it holds; and (5) document six independent cases in which proxy screens (full-vocabulary teacher-forced KL, two evaluation regimes) mispredicted benchmark outcomes, including an evolutionary search that wins the screen frontier and loses the benchmark. The pattern yields a per-operator-family law: deleting redundant structure has a shallow screen-to-benchmark damage slope, while densely perturbing every token's computation has a steep one. Replication on a dense 8B sibling shows the structural laws are architecture-general while the harvestable slack is a property of over-provisioned depth. In this regime, screens propose and only benchmarks dispose.
+Extreme weight quantization has produced openly available models that retain 27B-class capability at 1.125 bits per weight. We study whether such models remain structurally compressible after quantization, under three constraints: no training or fine-tuning, no calibration-based updates to surviving weights, and a total compute budget of a single 64\,GB consumer laptop. On a public 1-bit 27B hybrid-attention model, we make five observations. (1)~Depth redundancy persists after extreme quantization: removing four transformer blocks and three attention sublayers reduces the language model by 15.4\% (709\,MB) at a cost of 4.5 points of macro accuracy over a 500-item, four-task evaluation suite, with GSM8K unchanged at reference level; pruning-induced degradation composes near-additively across removed components. (2)~The quantization format itself is redundant: stored zero-points satisfy $z=\mathrm{f16}(-s/2)$ for every quantization group, so they can be recomputed inside the inference kernels, reducing resident memory by a measured 420\,MB with numerically identical logits. (3)~Second-order quantization of the scale parameters to 8 bits is loss-free within evaluation noise, yielding a combined 3.82\,GB model ($-18.9$\%); at 4 bits, accuracy degrades sharply. (4)~A closed-form error-compensation procedure, which absorbs a linear approximation of the removed layers' contribution into three surviving projections and requantizes them into the native 1-bit format, recovers $+1.0$ macro points at identical model size; we characterize the boundaries of the regime in which this holds. (5)~Across six controlled cases, calibration-based proxy metrics (full-vocabulary teacher-forced KL divergence, measured in two data regimes) fail to predict end-task outcomes, including a search procedure that dominates the proxy frontier yet underperforms a hand-designed baseline on the evaluation suite. We conclude that proxy quality metrics are reliable only within a single operator family, and that end-task evaluation must remain the acceptance criterion for post-training compression.
 \end{abstract}
 
 \section{Introduction}
-On-device inference economics are set by memory: at small batch sizes, generation speed is bounded by the bytes streamed per token. Weight formats have accordingly been pushed to one and two bits per weight, and recent open releases show a 27B model retaining roughly 90\% of its full-precision benchmark average at 1.125 bits per weight. Such models are usually treated as terminal artifacts: the quantizer has spent the redundancy budget, and further compression is assumed to require retraining.
+Inference on memory-constrained devices is dominated by weight movement: at the small batch sizes typical of interactive use, decoding throughput is bounded by the bytes streamed per generated token \citep{awq}. This constraint has motivated progressively more aggressive weight quantization, culminating in binary and ternary formats \citep{bitnet,bitnet158} and, recently, in openly released models that preserve most of their full-precision benchmark performance at 1.125 bits per weight. Such models are commonly regarded as terminal artifacts: the quantization procedure is assumed to have consumed the available redundancy, and further compression is expected to require retraining.
 
-This paper asks what remains after extreme quantization, under deliberately austere rules: no training, no calibration-based weight updates, and, for the main result line, surviving weights byte-identical to the original pack. These constraints make every measured damage delta attributable purely to the structural edit; they make claims verifiable by byte comparison, logit equality, and per-item benchmark reproduction; and they respect a practical reality of the 1-bit regime, namely that the weights were produced by a proprietary transformation that nobody downstream can re-run. All experiments ran on one 64\,GB Apple Silicon laptop.
+In this work we examine what redundancy remains \emph{after} extreme quantization. We adopt deliberately restrictive rules: no training or fine-tuning of any kind, no calibration-based updates to surviving weights, and, for the primary results, surviving weights that are byte-for-byte identical to the released checkpoint. These rules serve three purposes. First, they make every measured accuracy change attributable solely to the structural intervention. Second, they make claims directly verifiable through byte comparison, logit equality, and per-item reproduction of evaluation runs. Third, they reflect a practical property of the 1-bit setting: the released weights are the product of a proprietary conversion procedure that downstream users cannot reproduce, so modifications to weight values carry unrecoverable risk. All experiments were conducted on a single 64\,GB Apple Silicon laptop.
 
-Table~\ref{tab:contrib} summarizes the contributions; the sections that follow give one result each.
+Our contributions are summarized in Table~\ref{tab:contrib}.
 
 \begin{table}[h]
 \centering\small
-\begin{tabular}{p{0.30\textwidth}p{0.62\textwidth}}
+\begin{tabular}{p{0.32\textwidth}p{0.60\textwidth}}
 \toprule
-contribution & headline number \\
+Contribution & Result \\
 \midrule
-Redundancy map, 4 granularities & additive composition, cross-pool tax $1.09$--$1.13\times$; replicated on a second architecture \\
-Byte-identical artifact & $-709$\,MB ($-15.4\%$), macro $.7963$ vs.\ $.8413$, GSM8K unchanged at $.910$ \\
-Derivable bias plane & $b=\mathrm{f16}(-s/2)$ verified on every group; $-420{,}225{,}024$\,B resident memory, logits unchanged \\
-In-format repair & one ridge solve, 1\% sign flips, $+1.0$ macro at identical bytes; scope mapped \\
-Screens vs.\ benchmarks & six documented divergences; per-operator-family damage-slope law \\
+Depth-redundancy analysis at four granularities & near-additive composition of degradation; superadditivity factor $1.09$--$1.13\times$; replicated on a second architecture (\S\ref{sec:map}, \S\ref{sec:gen}) \\
+Pruned model, unmodified surviving weights & $-709$\,MB ($-15.4\%$); macro $.7963$ vs.\ $.8413$; GSM8K unchanged (\S\ref{sec:map}) \\
+Zero-point reparameterization & $z=\mathrm{f16}(-s/2)$ verified for all groups; $-420{,}225{,}024$\,B resident memory, logits unchanged (\S\ref{sec:format}) \\
+Post-pruning error compensation & closed-form update; 1\% of sign bits changed; $+1.0$ macro at identical size (\S\ref{sec:repair}) \\
+Proxy-metric reliability study & six controlled failures of KL-based selection; per-operator-family degradation slopes (\S\ref{sec:screens}) \\
 \bottomrule
 \end{tabular}
-\caption{Contributions.}
+\caption{Summary of contributions.}
 \label{tab:contrib}
 \end{table}
 
-\section{Setup}
-\textbf{Model.} A publicly released 1-bit (binary, group-128 affine) 27B hybrid-attention causal LM: 64 blocks, 75\% linear attention, 5120 hidden, 248K vocabulary, 4.71\,GB of language-model weights. Weights take values $\pm s_g/2$ with one f16 scale $s_g$ per 128 weights. A dense sibling (8B, 36 blocks, all full attention, same format) serves for generality tests.
+\section{Related Work}
+\textbf{Post-training quantization.} GPTQ \citep{gptq} and AWQ \citep{awq} quantize pretrained models to 3--4 bits using second-order information and activation-aware scaling, respectively; SparseGPT \citep{sparsegpt} extends closed-form error compensation to pruning. Our compensation procedure (\S\ref{sec:repair}) is closest in spirit to this line, but operates after \emph{layer removal} rather than per-weight rounding, and projects its update back into a binary format. Double quantization of scale parameters appears in QLoRA \citep{qlora}; we measure its accuracy knee on a 1-bit base model. Binary and ternary pretraining is developed in the BitNet line \citep{bitnet,bitnet158}; the model we study instead derives from a pretrained full-precision network.
 
-\textbf{Measurement ladder.} Table~\ref{tab:ladder}. The benchmark is the only decision gate. Calibration data is disjoint from all probe sets; nothing is fitted on probes.
+\textbf{Structural pruning of LLMs.} Depth pruning by layer-importance ranking is studied by ShortGPT \citep{shortgpt}, which introduced the Block Influence metric we use for shortlisting, and by \citet{gromov}, who report that deep layers of full-precision models are largely removable. LaCo \citep{laco} merges adjacent layers; Sheared-LLaMA \citep{sheared} and LLM-Pruner \citep{llmpruner} combine structured pruning with retraining. Attention-head redundancy in full-precision transformers was established by \citet{sixteenheads}. We evaluate the training-free portions of this toolbox on an extremely quantized model and find that several of its standard conclusions (deep-layer removability, merging, head pruning) do not transfer (\S\ref{sec:map}--\S\ref{sec:screens}).
+
+\textbf{Proxy metrics for compression.} \citet{jaiswal} observe that perplexity understates the capability loss of compressed LLMs on harder tasks. Our results extend this concern to full-vocabulary teacher-forced KL under two data regimes, and localize it: proxy reliability depends on the operator family rather than on the metric alone.
+
+\section{Experimental Setup}
+\label{sec:setup}
+\textbf{Model.} We study a publicly released 27B-parameter hybrid-attention causal language model quantized to a binary format with group-wise affine parameters: each weight takes the value $\pm s_g/2$, with one f16 scale $s_g$ per group of 128 weights, giving 1.125 bits per weight and 4.71\,GB of language-model parameters. The network has 64 blocks (75\% linear attention, 25\% softmax attention with GQA), hidden size 5120, and a 248K vocabulary. A dense sibling model (8B, 36 blocks, softmax attention only, same format) is used to test generalization across architectures.
+
+\textbf{Evaluation protocol.} We employ a three-level protocol (Table~\ref{tab:ladder}). Proxy screening computes full-vocabulary teacher-forced forward KL divergence against the unmodified model in two regimes: \emph{on-policy}, over the model's own sampled reasoning traces, and \emph{off-policy}, over held-out natural text. Candidates that survive screening are confirmed at 100 probes per regime. Final decisions rest exclusively on a 500-item evaluation suite spanning GSM8K, MATH-500, IFEval, and MMLU-Redux, generated with the model's recommended sampling configuration in reasoning mode and scored with rule-based extraction; items are individually seeded for reproducibility. Calibration data (64 sequences) is disjoint from all probe sets, and no procedure is ever fitted on probe data.
 
 \begin{table}[h]
 \centering\small
 \begin{tabular}{llll}
 \toprule
-level & metric & size & role \\
+Level & Metric & Size & Role \\
 \midrule
-screen & full-vocab teacher-forced KL, 2 regimes & 24 probes/regime & shortlist only \\
-confirmation & same, both regimes & 100 probes/regime & survivor check \\
-benchmark & GSM8K, MATH-500, IFEval, MMLU-Redux & 500 items, seeded & \textbf{decision gate} \\
+Screening & teacher-forced KL, 2 regimes & 24 probes/regime & candidate shortlisting \\
+Confirmation & teacher-forced KL, 2 regimes & 100 probes/regime & shortlist verification \\
+End-task & 4-task accuracy & 500 items & acceptance criterion \\
 \bottomrule
 \end{tabular}
-\caption{The measurement ladder. On-policy probes are the model's own reasoning traces; off-policy probes are held-out prose. Both regimes are mandatory (\S\ref{sec:screens}).}
+\caption{Evaluation protocol. Both KL regimes are required; \S\ref{sec:screens} documents failure cases of single-regime and cross-family comparisons.}
 \label{tab:ladder}
 \end{table}
 
-\textbf{Operators.} Structural operators delete whole blocks, individual attention or MLP sublayers, or whole GQA KV-groups; every surviving tensor is byte-identical. Two authorized value-modifying arms (\S\ref{sec:flagged}, \S\ref{sec:repair}) are reported separately throughout.
+\textbf{Compression operators.} Structural operators remove whole transformer blocks, individual attention or MLP sublayers, or whole GQA key--value groups (six query heads, one KV head, and the associated group-aligned output-projection columns); all surviving tensors are unmodified. Two weight-modifying procedures (\S\ref{sec:flagged}, \S\ref{sec:repair}) are reported separately from the unmodified-weight results throughout.
 
-\section{The Redundancy Map and the Damage Law}
+\section{Depth Redundancy and Layer Pruning}
 \label{sec:map}
-Screening all 64 blocks singly gives a consistent shape: first and last blocks are catastrophically load-bearing; slack concentrates at mid-depth; and the two regimes disagree about which mid-depth blocks are cheapest (block~1 looks droppable on-policy and is ruinous off-policy, divergence \#1 of \S\ref{sec:screens}). The shape recurs at sublayer granularity (deep linear-attention sublayers are individually cheap; the attention and MLP halves of a block can be removed independently) and at head granularity (early full-attention blocks surrender KV-groups almost freely at the logit level, a GQA over-provisioning invisible to coarser operators).
+We first score every block by individual removal. The resulting profile is consistent across granularities: the first and final blocks are essential (removing either causes severe degradation); redundancy concentrates at intermediate depth; and the two KL regimes disagree on the ranking of intermediate blocks (one block appears removable on-policy and highly damaging off-policy; case~1 of \S\ref{sec:screens}). The same profile recurs at sublayer granularity, where deep linear-attention sublayers are individually inexpensive to remove and the attention and MLP components of a block can be removed independently, and at head granularity, where early softmax-attention blocks contain KV groups whose removal is nearly free under the proxy metric.
 
-Composition is near-additive: across operator types and both models, the KL of a deletion set is $0.97$--$1.20\times$ the sum of its singles, with the tax growing for same-type stacking. Table~\ref{tab:main} gives the benched byte-identical ladder. The composed artifact dominates the naive six-block point, and task damage is non-uniform: GSM8K is unchanged while MMLU absorbs $-8$; folding removes diffuse breadth, not the reasoning spine.
+Degradation composes near-additively: over operator types and both models, the KL of a removal set is $0.97$--$1.20\times$ the sum of its constituents, with the superadditivity factor increasing for same-type combinations. Table~\ref{tab:main} reports the end-task results. The composed configuration (four blocks and three deep attention sublayers) achieves twice the reduction of the six-block baseline at two points less degradation. Degradation is strongly task-dependent: GSM8K accuracy is unaffected by the final configuration, while MMLU-Redux accounts for the largest share of the loss, indicating that depth pruning primarily removes diffuse knowledge capacity rather than multi-step reasoning ability.
 
 \begin{table}[h]
 \centering\small
 \begin{tabular}{lrccccc}
 \toprule
-config & $-$MB & GSM8K & MATH500 & IFEval & MMLU-R & macro \\
+Configuration & $-$MB & GSM8K & MATH500 & IFEval & MMLU-R & Macro \\
 \midrule
-reference (unfolded) & 0 & .910 & .720 & .930 & .805 & .8413 \\
-$k2$: 2 blocks & 118 & .920 & .660 & .880 & .790 & .8125 \\
-$k4$: 4 blocks & 236 & .910 & .680 & .920 & .760 & .8175 \\
-$k6$: 6 blocks & 360 & .880 & .640 & .860 & .725 & .7762 \\
-$k8$: 8 blocks & 478 & .870 & .720 & .790 & .620 & .7500 \\
-\textbf{folded-709} ($k4$ + 3 attn subs) & \textbf{709} & \textbf{.910} & .670 & .880 & .725 & \textbf{.7963} \\
+unmodified baseline & 0 & .910 & .720 & .930 & .805 & .8413 \\
+2 blocks removed & 118 & .920 & .660 & .880 & .790 & .8125 \\
+4 blocks removed & 236 & .910 & .680 & .920 & .760 & .8175 \\
+6 blocks removed & 360 & .880 & .640 & .860 & .725 & .7762 \\
+8 blocks removed & 478 & .870 & .720 & .790 & .620 & .7500 \\
+\textbf{4 blocks + 3 attn.\ sublayers} & \textbf{709} & \textbf{.910} & .670 & .880 & .725 & \textbf{.7963} \\
 \midrule
-search champion (\S\ref{sec:screens}) & 365 & .880 & .610 & .830 & .730 & .7625 \\
-head promotion (\S\ref{sec:screens}) & 739 & .850 & .630 & .830 & .735 & .7612 \\
+evolutionary-search selection (\S\ref{sec:screens}) & 365 & .880 & .610 & .830 & .730 & .7625 \\
++ 8 KV groups (\S\ref{sec:screens}) & 739 & .850 & .630 & .830 & .735 & .7612 \\
 \bottomrule
 \end{tabular}
-\caption{Byte-identical arm, 500-item bench; sizes vs.\ the 4.71\,GB pack. Below the rule: two probes that screened well and failed the bench. The folded-709 pack reproduces its benched configuration per-item (500/500).}
+\caption{End-task results for the unmodified-weight configurations (500 items; sizes relative to the 4.71\,GB checkpoint). Rows below the rule were selected by proxy metrics and rejected by end-task evaluation. The final pruned checkpoint reproduces its evaluated configuration on all 500 items.}
 \label{tab:main}
 \end{table}
 
-\section{Measured Negatives}
-\label{sec:negatives}
-Byte-identity permits several further axes; all were tested and rejected (Table~\ref{tab:neg}).
+Several further axes permitted under our constraints were evaluated and rejected (Table~\ref{tab:neg}).
 
 \begin{table}[h]
 \centering\small
-\begin{tabular}{p{0.16\textwidth}p{0.44\textwidth}p{0.32\textwidth}}
+\begin{tabular}{p{0.17\textwidth}p{0.42\textwidth}p{0.33\textwidth}}
 \toprule
-axis & test & outcome \\
+Axis & Evaluation & Outcome \\
 \midrule
-width & channel-magnitude profiles, all layers & flat; no low-salience tail at 1 bit \\
-vocabulary (input) & held-out OOV mass & fat tail; rows load-bearing \\
-vocabulary (output) & emission-mass keep-sets & teacher-forced logits unchanged, generation broken: $+26\%$ length, $2.3\times$ truncations (divergence \#2); mixed-domain sets need 87--98\% of rows \\
-merging & sign-election (averaging analog) and format-native 2-bit promotion & both lose to plain dropping at matched bytes \\
-sign plane & compression entropy & 8.000 bits/byte; incompressible \\
+width pruning & per-channel magnitude statistics & no prunable low-magnitude population at 1 bit \\
+vocabulary (input) & held-out OOV mass & heavy tail; rows are required \\
+vocabulary (output) & emission-mass row selection & teacher-forced logits unchanged, generation degraded: $+26\%$ length, $2.3\times$ truncation rate (case 2, \S\ref{sec:screens}) \\
+layer merging & element-wise sign vote; 2-bit union merge & both inferior to plain removal at matched size \\
+sign bits & entropy estimate & 8.000 bits/byte; incompressible \\
 \bottomrule
 \end{tabular}
-\caption{Rejected axes, byte-identical arm.}
+\caption{Negative results under the unmodified-weight constraint.}
 \label{tab:neg}
 \end{table}
 
-\section{A Free Format Win: the Derivable Bias Plane}
+\section{Zero-Point Reparameterization}
 \label{sec:format}
-The pack stores, per group, both a scale and a bias, but the 1-bit mapping fixes $b=\mathrm{f16}(-s/2)$; we verified the identity on every group in the model (the vendor's report notes the redundancy and defers the fix). Deleting the plane costs nothing on disk ($-420$\,MB, logits unchanged). We then implemented the deferred fix: a new kernel mode derives the bias in-register. All matmul routes and dequantization produce logits equal to the stored-bias path, on synthetic parity batteries and on the full 27B, and resident memory drops by the plane's full $420{,}225{,}024$ bytes. The derivation trades one multiply for a removed memory stream in bandwidth-bound kernels, so it is never slower.
+The released checkpoint stores, per quantization group, both a scale and a zero-point. The binary mapping constrains the zero-point to $z=\mathrm{f16}(-s/2)$, an identity we verified over every group in the model; the model card acknowledges the redundancy and defers its removal to future runtime support. Deleting the stored zero-points reduces the checkpoint by 420\,MB with unchanged logits. We further implement the deferred runtime support: a modified kernel path recomputes the zero-point in-register during the fused dequantize--multiply. Outputs match the stored-zero-point path on all matmul and dequantization routes, on synthetic inputs and on the full model, and resident memory decreases by the full $420{,}225{,}024$ bytes. Because the recomputation replaces a memory stream with a single multiply in bandwidth-bound kernels, throughput is not reduced.
 
-\section{Flagged Arm I: Quantizing the Metadata}
+\section{Second-Order Quantization of Scale Parameters}
 \label{sec:flagged}
-With the bias plane derived, the model is a 3.77\,GB sign plane plus 420\,MB of f16 scales holding all continuous information. Quantizing scales is value-modifying, hence flagged and reported apart (Table~\ref{tab:flagged}). At 8 bits it is free within noise and composes cleanly with folding; the combined artifact reaches 3.82\,GB ($-18.9\%$) at $.7900$. The precision knee at 4 bits is benchmark-visible only: the screen sits $76\times$ below the gentlest block drop while the bench shows $k2$-class damage (divergence \#4).
+After reparameterization, the model consists of 3.77\,GB of sign bits and 420\,MB of f16 scales. Following the double-quantization approach of \citet{qlora}, we quantize the scales with per-row affine parameters (row groups of 32--40 entries). This modifies effective weight values and is therefore reported separately from the unmodified-weight results (Table~\ref{tab:flagged}). At 8 bits, degradation is within evaluation noise and composes cleanly with depth pruning, yielding a 3.82\,GB model ($-18.9\%$) at $.7900$ macro. At 4 bits, accuracy drops by 2.9 points even though the proxy metric remains $76\times$ below that of the mildest block removal (case~4 of \S\ref{sec:screens}).
 
 \begin{table}[h]
 \centering\small
 \begin{tabular}{lrcl}
 \toprule
-config & $-$MB & macro & verdict \\
+Configuration & $-$MB & Macro & Assessment \\
 \midrule
-8-bit scales (unfolded) & 612 & .8363 & free within noise ($-0.5$) \\
-\textbf{combined: folded-709 + 8-bit scales} & \textbf{888} & \textbf{.7900} & \textbf{3.82\,GB; composes cleanly} \\
-4-bit scales (unfolded) & 717 & .8125 & knee: $-2.9$, $k2$-class damage \\
+8-bit scales & 612 & .8363 & within noise ($-0.5$) \\
+\textbf{pruned + 8-bit scales} & \textbf{888} & \textbf{.7900} & \textbf{3.82\,GB; additive with pruning} \\
+4-bit scales & 717 & .8125 & accuracy knee ($-2.9$) \\
 \midrule
-folded-709 + repair (\S\ref{sec:repair}) & 709 & .8063 & $+1.0$ at identical bytes \\
-combined + repair & 888 & .7825 & worse: no composition (div.\ \#5) \\
-$k6$ + repair & 360 & .7750 & flat: no deep-fold reach \\
+pruned + compensation (\S\ref{sec:repair}) & 709 & .8063 & $+1.0$ at identical size \\
+pruned + 8-bit scales + compensation & 888 & .7825 & negative interaction (case 5) \\
+6-block pruning + compensation & 360 & .7750 & no effect; update norm saturates \\
 \bottomrule
 \end{tabular}
-\caption{Value-modifying arms, 500-item bench. All rows keep the sign planes of non-designated tensors untouched; sizes vs.\ the 4.71\,GB pack.}
+\caption{End-task results for weight-modifying procedures (500 items). Sizes relative to the 4.71\,GB checkpoint.}
 \label{tab:flagged}
 \end{table}
 
-\section{Flagged Arm II: Training-Free In-Format Repair}
+\section{Post-Pruning Error Compensation}
 \label{sec:repair}
-Folding damage is the loss of dropped modules' contributions to the residual stream. The 1-bit format offers an unusual repair channel: a module's effective weights are fully determined by its sign bits and group scales, so a weight-space correction can be requantized into the format at zero byte cost. We fit each dropped cluster's \emph{linear shadow}, the best static linear map $\Delta W$ from a surviving downstream projection's input to the stream deficit, with a single ridge solve over 64 calibration sequences; we cap $\lVert\Delta W\rVert$ at $0.25\lVert W\rVert$ so requantization noise stays second-order; and we requantize $W+\Delta W$ per group (new scale $2\,\overline{|w^*|}$, new signs $\mathrm{sign}(w^*)$).
+Layer removal deletes the removed modules' contributions to the residual stream. We compensate for this loss without training and without leaving the native format. For each removed group of layers, we estimate a linear approximation of its contribution: a ridge regression from the input of a designated surviving downstream projection to the residual-stream deficit, with normal equations accumulated over the 64-sequence calibration set. The resulting update $\Delta W$ is constrained to $\lVert\Delta W\rVert \le 0.25\,\lVert W\rVert$ so that requantization error remains second-order, added to the dequantized weights of the designated projection, and requantized into the binary format (per group: scale $2\,\overline{|w^*|}$, signs $\mathrm{sign}(w^*)$). The procedure changes no tensor other than the designated projections and adds no parameters.
 
-On folded-709 this flips 0.8--1.7\% of sign bits in three projections, drifts scales under 4.5\%, and recovers $+1.0$ macro at identical bytes (Table~\ref{tab:flagged}), with a broad task pattern and no generation pathologies. To our knowledge this is the first training-free, in-format repair of a 1-bit model: the sign/scale lattice around a folded model contains strictly better points, reachable by one closed-form solve. Its scope is narrow and mapped in the same table: a diagonal-gains variant fails (downstream RMSNorms already absorb static scale effects, which is why folding is cheap in the first place); stacking repair on the scale-quantized artifact reverses its sign despite a screen profile indistinguishable from the confirmed run; and on a deeper fold the correction cap saturates and the effect vanishes.
+Applied to the pruned model, the update changes 0.8--1.7\% of sign bits across three projections, perturbs scales by under 4.5\%, and improves macro accuracy by $+1.0$ points at identical model size (Table~\ref{tab:flagged}), with gains distributed across tasks and no degenerate generation behavior. To the best of our knowledge, this is the first demonstration that a pruned 1-bit model can be improved by a closed-form update expressed entirely within its own quantization format. The applicable regime is narrow, and we report its boundaries. A diagonal (per-channel gain) variant fails, which we attribute to downstream RMSNorm layers already absorbing static scale effects. Applying the procedure on top of scale quantization reverses its sign despite a confirmation-level proxy profile indistinguishable from the successful run (case~5). On a deeper six-block pruning, the norm constraint saturates at all fitting sites and the measured effect is null.
 
-\section{Screens Propose, Benchmarks Dispose}
+\section{Proxy Metrics versus End-Task Evaluation}
 \label{sec:screens}
-Six times under one fixed protocol, proxy metrics mispredicted the benchmark (Table~\ref{tab:div}).
+Table~\ref{tab:div} lists six controlled cases, under one fixed protocol, in which proxy metrics mispredicted end-task outcomes.
 
 \begin{table}[h]
 \centering\small
 \begin{tabular}{clll}
 \toprule
-\# & configuration & screen verdict & bench verdict \\
+\# & Configuration & Proxy assessment & End-task outcome \\
 \midrule
-1 & single mid-depth block & cheap (on-policy only) & ruinous off-policy \\
-2 & vocabulary keep-set & logits unchanged & $+26\%$ length, $2.3\times$ truncations \\
-3 & evolutionary search champion & dominates frontier, both regimes & $-1.4$ below byte-matched $k6$ \\
-4 & 4-bit scales & $76\times$ below $k2$ & $k2$-class damage ($-2.9$) \\
-5 & combined + repair & matches a confirmed repair profile & sign reversed ($-0.75$) \\
-6 & 8 KV-groups on folded-709 & sub-additive, below $k6$ twice & $-3.5$ for 30\,MB, below $k6$ \\
+1 & single intermediate block & inexpensive (on-policy only) & severe off-policy degradation \\
+2 & vocabulary row selection & logits unchanged & $+26\%$ length, $2.3\times$ truncations \\
+3 & evolutionary-search selection & dominates frontier, both regimes & $-1.4$ vs.\ size-matched baseline \\
+4 & 4-bit scales & $76\times$ below mildest removal & $-2.9$; matches 2-block removal \\
+5 & compensation after scale quant. & matches successful run's profile & sign of effect reversed \\
+6 & 8 KV groups on pruned model & subadditive; below 6-block config & $-3.5$ for 30\,MB \\
 \bottomrule
 \end{tabular}
-\caption{Six screen-vs-benchmark divergences. \#3: a $(1{+}\lambda)$ search over 311 per-block operator genomes whose KL dominance grows to 40\% off-policy at the aggressive tier, and whose champion still loses the bench.}
+\caption{Failures of proxy-based selection. Case 3: a $(1{+}\lambda)$ evolutionary search over 311 per-block configurations whose KL advantage over hand-designed baselines grows to 40\% off-policy at the largest size tier, and whose selected configuration nonetheless underperforms on the evaluation suite; the search overfit its proxy objective.}
 \label{tab:div}
 \end{table}
 
-Instances 3--6 support a compact law: operator families have characteristic screen-to-benchmark damage slopes. Deleting redundant structure is shallow-sloped; the removed computation was substitutable, and KL rank-orders such configurations correctly. Densely perturbing every token's computation (metadata noise, KV-group removal, requantization residue) is steep-sloped: teacher-forced KL scores one forced step at a time and systematically underweights how dense small perturbations compound across a long generation. Screen numbers are therefore comparable only within an operator family, and no screen, however well validated, substitutes for the benchmark.
+Cases 3--6 support a consistent interpretation: operator families exhibit characteristic ratios between proxy divergence and end-task degradation. Removal of redundant structure has a small ratio; the removed computation is substitutable, and KL ranks such configurations in agreement with end-task results. Operators that perturb every token's computation by a small amount (scale quantization noise, KV-group removal, requantization residue) have a large ratio: teacher-forced divergence evaluates isolated next-token predictions and does not capture the compounding of dense perturbations over long autoregressive generations. In line with the concerns of \citet{jaiswal}, we conclude that proxy comparisons are meaningful only within an operator family, and that no proxy, regardless of prior validation, should replace end-task evaluation as the acceptance criterion.
 
-\section{Generality}
-Table~\ref{tab:gen} tests every law on the dense 8B sibling. The map's shape replicates; the harvestable magnitude does not. A cross-model KL$\to$damage curve was tested by interpolation and rejected. Foldability is a property of over-provisioned depth, not of 1-bit models per se: the 27B folds because it is deep for its capability, while the format redundancy ($b=-s/2$, verified on all 254 tensors) is family-wide.
+\section{Cross-Architecture Generalization}
+\label{sec:gen}
+Table~\ref{tab:gen} repeats the core analyses on the dense 8B sibling. The qualitative structure transfers: boundary layers are essential, redundancy concentrates at intermediate depth, the two proxy regimes disagree, and composition is near-additive in the same range. The magnitude of removable redundancy does not transfer: the least damaging single removal costs $6\times$ more, and the four-block recipe that costs 2.4 points on the 27B costs 14.8 points on the 8B. An interpolation test rejects a shared mapping from proxy divergence to degradation across models. We conclude that depth-prunability reflects over-provisioned depth relative to capability, while the format-level redundancy of \S\ref{sec:format} (verified on all 254 quantized tensors of the sibling) is a property of the model family.
 
 \begin{table}[h]
 \centering\small
-\begin{tabular}{p{0.34\textwidth}cc}
+\begin{tabular}{p{0.36\textwidth}cc}
 \toprule
-law & 27B (hybrid) & 8B (dense) \\
+Property & 27B (hybrid) & 8B (dense) \\
 \midrule
-boundary blocks catastrophic & yes & yes (block 0: 7.7 nats) \\
-mid-depth slack & yes & yes \\
-two-regime disagreement & yes & yes \\
-additive composition tax & $1.09$--$1.13\times$ & $0.97$--$1.20\times$ \\
-cheapest single (on-policy KL) & .0033 & .0198 ($6\times$) \\
-4-cheapest-blocks bench cost & $-2.4$ & $-14.8$ \\
-cross-model damage curve & \multicolumn{2}{c}{rejected (predicted $-7$ to $-9$, measured $-4.3$)} \\
+boundary layers essential & yes & yes \\
+intermediate-depth redundancy & yes & yes \\
+regime disagreement & yes & yes \\
+composition factor & $1.09$--$1.13\times$ & $0.97$--$1.20\times$ \\
+min.\ single-removal KL (on-policy) & .0033 & .0198 \\
+4-block removal, end-task cost & $-2.4$ & $-14.8$ \\
+shared proxy-to-degradation mapping & \multicolumn{2}{c}{rejected (predicted $-7$ to $-9$; measured $-4.3$)} \\
 \bottomrule
 \end{tabular}
-\caption{Generality: structural laws replicate, harvestable slack does not.}
+\caption{Generalization to a second architecture.}
 \label{tab:gen}
 \end{table}
 
 \section{Limitations}
-One model family and format carries the headline results. $N{=}500$ per bench bounds resolution to roughly $\pm1.8$ macro points at $1\sigma$, so sub-point deltas are directional on single-bench evidence. The 16K thinking budget confounds the damage floor. The six divergences are demonstrations under one protocol, not a survey. The repair result is an existence proof with mapped boundaries, not a general method. Everything was produced and verified on one 64\,GB laptop, which is both the point and the ceiling: search breadth, sampling repeats, and bench sizes were budgeted accordingly.
+Our headline results concern one model family and one quantization format. With $N{=}500$ per evaluation run, resolution is approximately $\pm1.8$ macro points at one standard deviation, so effects near one point are directional rather than definitive on single-run evidence. The reasoning-mode token budget interacts with the degradation floor. The six proxy failures are controlled demonstrations under one protocol rather than a survey. The compensation result is an existence proof with characterized boundaries, not a general method. Finally, the single-machine budget bounded search breadth, sampling repeats, and evaluation sizes throughout.
 
 \section{Conclusion}
-A model that survived $14\times$ weight compression still contained a fifth of its bytes in removable or derivable form at $\le 4.5$ points of macro cost with reasoning intact, a free 420\,MB format plane, nearly-free metadata precision down to 8 bits and not one bit further, and a repairable neighborhood in its own sign/scale lattice. Extracting all of it required no training: only deletion, derivation, one linear solve, and the discipline of never believing a screen. Code and artifacts will be released upon publication.
+A model that had already undergone $14\times$ weight compression retained: a fifth of its bytes removable or reparameterizable at a cost of at most 4.5 macro points with mathematical reasoning intact; a 420\,MB plane of derivable quantization parameters; loss-free second-order quantization of its scales at 8 bits and a sharp knee below; and a neighborhood in its own sign/scale space containing strictly better models, reachable by one closed-form solve. None of this required training. It did require treating every proxy metric as a hypothesis generator and end-task evaluation as the sole arbiter. Code and artifacts will be released upon publication.
+
+\begin{thebibliography}{9}\small
+\bibitem[Frantar et~al.(2023)]{gptq} E.~Frantar, S.~Ashkboos, T.~Hoefler, D.~Alistarh. GPTQ: Accurate post-training quantization for generative pre-trained transformers. \emph{ICLR}, 2023.
+\bibitem[Lin et~al.(2024)]{awq} J.~Lin, J.~Tang, H.~Tang, S.~Yang, et al. AWQ: Activation-aware weight quantization for LLM compression and acceleration. \emph{MLSys}, 2024.
+\bibitem[Frantar and Alistarh(2023)]{sparsegpt} E.~Frantar, D.~Alistarh. SparseGPT: Massive language models can be accurately pruned in one-shot. \emph{ICML}, 2023.
+\bibitem[Dettmers et~al.(2023)]{qlora} T.~Dettmers, A.~Pagnoni, A.~Holtzman, L.~Zettlemoyer. QLoRA: Efficient finetuning of quantized LLMs. \emph{NeurIPS}, 2023.
+\bibitem[Wang et~al.(2023)]{bitnet} H.~Wang, S.~Ma, L.~Dong, et al. BitNet: Scaling 1-bit transformers for large language models. \emph{arXiv:2310.11453}, 2023.
+\bibitem[Ma et~al.(2024)]{bitnet158} S.~Ma, H.~Wang, L.~Ma, et al. The era of 1-bit LLMs: All large language models are in 1.58 bits. \emph{arXiv:2402.17764}, 2024.
+\bibitem[Men et~al.(2024)]{shortgpt} X.~Men, M.~Xu, Q.~Zhang, et al. ShortGPT: Layers in large language models are more redundant than you expect. \emph{arXiv:2403.03853}, 2024.
+\bibitem[Gromov et~al.(2025)]{gromov} A.~Gromov, K.~Tirumala, H.~Shapourian, P.~Glorioso, D.~Roberts. The unreasonable ineffectiveness of the deeper layers. \emph{ICLR}, 2025.
+\bibitem[Yang et~al.(2024)]{laco} Y.~Yang, Z.~Cao, H.~Zhao. LaCo: Large language model pruning via layer collapse. \emph{EMNLP Findings}, 2024.
+\bibitem[Xia et~al.(2024)]{sheared} M.~Xia, T.~Gao, Z.~Zeng, D.~Chen. Sheared LLaMA: Accelerating language model pre-training via structured pruning. \emph{ICLR}, 2024.
+\bibitem[Ma et~al.(2023)]{llmpruner} X.~Ma, G.~Fang, X.~Wang. LLM-Pruner: On the structural pruning of large language models. \emph{NeurIPS}, 2023.
+\bibitem[Michel et~al.(2019)]{sixteenheads} P.~Michel, O.~Levy, G.~Neubig. Are sixteen heads really better than one? \emph{NeurIPS}, 2019.
+\bibitem[Jaiswal et~al.(2024)]{jaiswal} A.~Jaiswal, Z.~Gan, X.~Du, et al. Compressing LLMs: The truth is rarely pure and never simple. \emph{ICLR}, 2024.
+\end{thebibliography}
 
 \end{document}
