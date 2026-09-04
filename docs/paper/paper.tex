@@ -1,0 +1,117 @@
+\documentclass[10pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage[hidelinks,pdftitle={Is There Depth Left to Fold?},pdfauthor={Anonymous}]{hyperref}
+
+\title{Is There Depth Left to Fold?\\
+\large Training-Free Structural Compression of a 1-Bit 27B Model,\\
+Measured End-to-End on a Laptop}
+\author{Anonymous}
+\date{September 2026}
+
+\newcommand{\macroref}{.8413}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Extreme weight quantization has produced open models that carry 27B-class capability at 1.125 bits per weight. We ask whether such models, having survived the most aggressive value compression available, still contain \emph{structural} slack --- and whether it can be harvested with no training, no calibration-based weight updates, and byte-identical surviving weights, entirely on one 64\,GB consumer laptop. Working on a public 1-bit 27B hybrid-attention model, we (1) map depth redundancy at four granularities (blocks, attention/MLP sublayers, GQA key--value groups, and quantization metadata) and measure an additive composition law with a small interaction tax; (2) ship a byte-identical artifact that removes 15.4\% of the language model's bytes while keeping GSM8K at exact reference parity and losing 4.5 macro points across a 500-item four-task benchmark; (3) show the format itself stores a fully derivable bias plane, worth an exact $-420$\,MB of disk \emph{and} resident memory via a kernel that re-derives it in-register, bit-identically; (4) demonstrate the first training-free, in-format \emph{repair} of a folded 1-bit model --- a single closed-form ridge solve whose requantization flips 1\% of sign bits and recovers $+1.0$ macro at identical bytes --- and map the narrow regime where it holds; and (5) document six independent cases in which cheap proxy screens (full-vocabulary teacher-forced KL, in two evaluation regimes) mispredicted end-to-end benchmark outcomes, including an evolutionary search that provably wins the screen game and loses the benchmark. The pattern crystallizes into a per-operator-family law: deleting redundant structure has a shallow screen-to-benchmark damage slope; densely perturbing every token's computation (metadata noise, head removal) has a steep one. Replication on a dense 8B sibling shows the structural laws are architecture-general while the exploitable slack is a property of over-provisioned depth. We argue that in this regime, screens propose and only benchmarks dispose.
+\end{abstract}
+
+\section{Introduction}
+The economics of on-device inference are set by memory: at small batch sizes, generation speed is bounded by how many bytes must stream per token. This has driven weight formats down to one and two bits per weight, and recent open releases show a 27B model retaining roughly 90\% of its full-precision benchmark average at 1.125 bits per weight --- small enough for a phone. Such models are usually treated as terminal artifacts: the quantizer has already spent the redundancy budget, and the received wisdom is that anything further requires retraining.
+
+This paper asks what is left \emph{after} extreme quantization, under deliberately austere rules: no training of any kind, no calibration-based weight updates, and --- for the main result line --- surviving weights byte-identical to the original pack. These constraints are not merely ascetic. They make every measured damage delta attributable purely to the structural edit; they make claims exactly verifiable (byte comparisons, bit-identical logits, per-item benchmark reproduction); and they respect a practical reality of the 1-bit regime: these weights were produced by a proprietary transformation nobody downstream can re-run, so value edits risk destroying what cannot be restored. Everything runs on one 64\,GB Apple Silicon laptop; there is no cloud budget and no second machine.
+
+Our contributions:
+\begin{enumerate}\setlength\itemsep{1pt}
+\item \textbf{A four-granularity redundancy map} of a 1-bit 27B hybrid-attention model (whole blocks, attention/MLP sublayers, GQA KV-groups, quantization metadata), with an additive damage-composition law (cross-pool tax $1.09$--$1.13\times$) that holds from blocks down to individual head groups, and on a second, architecturally different model.
+\item \textbf{A byte-identical shipping artifact}: $-709$\,MB ($-15.4\%$), macro $.7963$ vs.\ reference \macroref{} on a 500-item bench, GSM8K unharmed at $.910$; its pack reproduces the benched configuration bit-for-bit and per-item.
+\item \textbf{An exact format win}: the affine 1-bit format's bias plane satisfies $b=\mathrm{f16}(-s/2)$ for every group in the model; deriving it in-register in the inference kernels is bit-identical and saves a measured $420{,}225{,}024$ bytes of resident memory.
+\item \textbf{Training-free in-format repair}: fitting the \emph{linear shadow} of dropped modules by one ridge solve on 64 calibration sequences and requantizing three surviving projections back into the 1-bit format (1\% sign flips, zero added bytes) recovers $+1.0$ macro on the folded model --- with a mapped scope: it does not compose with metadata quantization and does not reach deeper folds.
+\item \textbf{Six screen-vs-benchmark divergences} on one model under one protocol, including a search optimizer that Goodharts its screen fitness and a config that screens $6\times$ cheaper than the gentlest block drop yet benches $6\times$ worse. These yield a per-operator-family damage-slope law with a simple mechanistic reading.
+\end{enumerate}
+
+\section{Setup}
+\textbf{Model.} A publicly released 1-bit (binary, group-128 affine) 27B hybrid-attention causal LM: 64 blocks, 75\% linear-attention and 25\% full-attention interleaved, 5120 hidden, 248K vocabulary, 4.71\,GB of language-model weights as shipped for Apple-Silicon inference. Weights take values $\pm s_g/2$ where $s_g$ is one f16 scale per 128 weights. A dense sibling (8B, 36 blocks, all full attention, same format) is used for generality tests.
+
+\textbf{Measurement ladder.} Three levels, strictly ordered. \emph{Screens}: full-vocabulary teacher-forced forward KL against the unfolded model, in two regimes --- \emph{on-policy} (the model's own reasoning traces on MATH-500 prompts) and \emph{off-policy} (held-out encyclopedic prose); both are mandatory, as single-regime screening misleads (\S\ref{sec:screens}). \emph{Confirmation}: 100 probes per regime for any surviving candidate. \emph{Benchmark}: 500 items across GSM8K, MATH-500, IFEval, and MMLU-Redux, generated in thinking mode with the model's mandated sampling, scored rule-first, seeded per item. \textbf{The benchmark is the only decision gate.} Calibration data (64 sequences) is disjoint from all probe sets; nothing is ever fitted on probes.
+
+\textbf{Operators.} All structural operators delete: whole blocks, individual attention or MLP sublayers, or whole GQA KV-groups (six query heads plus one KV head, with the matching group-aligned output-projection columns). Deletion keeps every surviving tensor byte-identical. Two authorized \emph{value-modifying} arms (metadata quantization, \S\ref{sec:flagged}; in-format repair, \S\ref{sec:repair}) are reported separately throughout.
+
+\section{The Redundancy Map and the Damage Law}
+\label{sec:map}
+Screening all 64 blocks singly reveals a consistent shape: the first and last blocks are catastrophically load-bearing; slack concentrates at mid-depth; and the two regimes \emph{disagree} about which mid-depth blocks are cheapest (on one model, block~1 looks droppable on-policy and is ruinous off-policy --- the first of our six divergences). The same shape reappears at sublayer granularity (deep linear-attention sublayers are individually cheap; attention and MLP halves of a block can die independently) and at head granularity (early full-attention blocks surrender KV-groups almost freely at the logit level --- GQA over-provisioning invisible to any coarser operator).
+
+Composition is near-additive. Across operator types and both models, the KL of a set of deletions is $0.97$--$1.20\times$ the sum of its singles, with the tax growing for same-type stacking and larger sets. This additive law with anchors let us assemble candidates arithmetically and confirm only shortlists.
+
+Table~\ref{tab:main} shows the benched byte-identical ladder. The damage curve has two components --- a shallow floor and an accelerating knowledge term --- and the composed artifact (four blocks plus three deep attention sublayers) dominates the naive six-block point: double the bytes of $k6$ at two fewer points of damage.
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{lrccccc}
+\toprule
+config & $-$MB & GSM8K & MATH500 & IFEval & MMLU-R & macro \\
+\midrule
+reference (unfolded) & 0 & .910 & .720 & .930 & .805 & .8413 \\
+$k2$: 2 blocks & 118 & .920 & .660 & .880 & .790 & .8125 \\
+$k4$: 4 blocks & 236 & .910 & .680 & .920 & .760 & .8175 \\
+$k6$: 6 blocks & 360 & .880 & .640 & .860 & .725 & .7762 \\
+$k8$: 8 blocks & 478 & .870 & .720 & .790 & .620 & .7500 \\
+\textbf{folded-709} ($k4$+3 attn subs) & \textbf{709} & \textbf{.910} & .670 & .880 & .725 & \textbf{.7963} \\
+\midrule
+search champion (A6; \S\ref{sec:screens}) & 365 & .880 & .610 & .830 & .730 & .7625 \\
+head promotion (H8; \S\ref{sec:screens}) & 739 & .850 & .630 & .830 & .735 & .7612 \\
+\bottomrule
+\end{tabular}
+\caption{Byte-identical arm, 500-item bench. Sizes vs.\ the 4.71\,GB pack (including the derivable bias plane, \S\ref{sec:format}). The two probes below the rule screened well and failed the bench.}
+\label{tab:main}
+\end{table}
+
+Task-level damage is sharply non-uniform: procedural math reasoning survives folding untouched (GSM8K $.910\!\to\!.910$), while broad knowledge absorbs most of the loss (MMLU $-8$ points at folded-709). The capacity being removed is diffuse breadth, not the reasoning spine.
+
+\section{What Does Not Work}
+\label{sec:negatives}
+Byte-identity permits several other axes; all were measured and rejected. \emph{Width}: channel-magnitude profiles are flat at 1 bit --- no low-salience tail exists. \emph{Vocabulary}: rejected on both sides (held-out out-of-vocabulary mass on input; on output, a single-domain keep-set passed teacher-forced screening bit-exactly yet failed generation end-to-end with $+26\%$ generation length and $2.3\times$ truncations --- divergence \#2 --- and mixed-domain accumulation needs 87--98\% of rows kept). \emph{Merging}: both a sign-election merge (the 1-bit analog of weight averaging) and a format-native promotion merge (two binary blocks into one 2-bit block) lose to plain dropping at matched bytes. \emph{The sign plane itself}: measured 8.000 bits/byte entropy --- incompressible.
+
+\section{An Exact Format Win: the Derivable Bias Plane}
+\label{sec:format}
+The shipped pack stores, per group of 128 weights, both a scale and a bias --- but the 1-bit mapping fixes $b=\mathrm{f16}(-s/2)$, which we verified exhaustively across every group in the model (the vendor's own report notes the redundancy and defers the fix to a future runtime). Deleting the plane is free on disk ($-420$\,MB, logits bit-identical). We then implemented the deferred fix: a new quantization mode in the inference kernels derives the bias in-register. All matmul routes and dequantization are bit-identical to the stored-bias path on synthetic parity batteries and on the full 27B, and resident memory drops by exactly the plane's $420{,}225{,}024$ bytes. Because the derivation costs one multiply in exchange for removing a memory stream in bandwidth-bound kernels, it is also never slower. This turns a container inefficiency acknowledged by the vendor into a zero-cost RAM win for every deployment of the format.
+
+\section{Flagged Arm I: Quantizing the Metadata}
+\label{sec:flagged}
+With the bias plane derived, the model is two planes: an incompressible 3.77\,GB sign plane and 420\,MB of f16 scales holding all continuous information. Quantizing the scales to 8 bits per entry (per-row affine, groups of 32--40 --- finer than QLoRA's 256) is value-modifying and thus flagged and reported separately. It is measurably free: screen KL $2.7\!\times\!10^{-6}$ on-policy, bench $-0.5$ macro (within noise, symmetric flips), $-192.5$\,MB. It composes cleanly with folding: the combined artifact (folded-709 + 8-bit scales on survivors) reaches \textbf{3.82\,GB ($-18.9\%$) at macro .7900}, the increment costing the same statistical noise on the folded pack as on the unfolded one. The precision knee is sharp and benchmark-visible only: 4-bit scales screen at $10^{-4}$ --- $76\times$ below the gentlest block drop --- yet bench at $-2.9$, exactly $k2$-class damage (divergence \#4).
+
+\section{Flagged Arm II: Training-Free In-Format Repair}
+\label{sec:repair}
+Folding damage is the loss of the dropped modules' contributions to the residual stream. The 1-bit format offers an unusual repair channel: a module's effective weights are fully determined by its sign bits and group scales, so any weight-space correction can be \emph{requantized into the format} at zero byte cost. We fit each dropped cluster's \emph{linear shadow} --- the best static linear map $\Delta W$ from a surviving downstream projection's input to the stream deficit --- by a single ridge solve over 64 calibration sequences (normal equations accumulated online; probes never touched), cap $\lVert\Delta W\rVert$ at $0.25\lVert W\rVert$ so requantization noise stays second-order, and requantize $W+\Delta W$: per group, new scale $=2\,\overline{|w^*|}$, new signs $=\mathrm{sign}(w^*)$.
+
+On folded-709 this flips 0.8--1.7\% of sign bits in three projections, drifts scales under 4.5\%, and \textbf{recovers $+1.0$ macro at identical bytes} (.8063; held-out screen $-7.2\%$/$-9.0\%$; broad task pattern, no generation pathologies). To our knowledge this is the first training-free, in-format repair of a 1-bit model: the sign/scale lattice around a folded model contains strictly better points, reachable by one closed-form solve.
+
+The scope is narrow, and we mapped it. A diagonal-gains-only variant fails (downstream RMSNorms already absorb static scale effects --- which is \emph{why} folding is cheap). Applied atop the scale-quantized combined artifact, a refit repair produces a screen \emph{indistinguishable} from the confirmed one and benches $-0.75$: two individually benign value perturbations interact destructively (divergence \#5, the first from a paired, same-family, previously validated screen). Applied to a deeper six-block fold, four repair sites saturate the correction cap and the bench is flat. Repair holds for moderate structural damage, one perturbation type at a time.
+
+\section{Screens Propose, Benchmarks Dispose}
+\label{sec:screens}
+Six times, cheap proxies mispredicted end-to-end outcomes under one fixed protocol:
+\begin{enumerate}\setlength\itemsep{1pt}
+\item \textbf{Single-regime ambush}: a block cheap on-policy, ruinous off-policy.
+\item \textbf{Vocabulary keep-set}: bit-exact teacher-forced logits, broken generation.
+\item \textbf{Optimizer Goodharting}: a $(1{+}\lambda)$ evolutionary search over 311 per-block operator genomes dominates the hand-built KL frontier at every byte tier (margins growing to 40\% off-policy) --- and its champion benches 1.4 points \emph{below} the byte-matched hand config. The search won the screen game; the bench exposed the game.
+\item \textbf{Cross-family knee}: 4-bit scales, screening $76\times$ below $k2$, bench at $k2$-class damage.
+\item \textbf{Repair composition}: identical screen profile, opposite bench sign.
+\item \textbf{Head promotion}: eight KV-groups screening sub-additively and below $k6$ in both regimes bench at $-3.5$ for 30\,MB --- below $k6$.
+\end{enumerate}
+Instances 3--6 support a compact law: \emph{operator families have characteristic screen-to-benchmark damage slopes}. Deleting redundant structure (blocks, sublayers) is shallow-sloped --- the computation removed was substitutable, and KL rank-orders such configs correctly. Densely perturbing every token's computation --- metadata noise, KV-group removal, requantization residue --- is steep-sloped: teacher-forced KL, which scores one forced step at a time, systematically underweights how dense small perturbations compound over long generations. Screen numbers are therefore comparable only \emph{within} an operator family, and no screen, however well validated, substitutes for the benchmark.
+
+\section{Generality}
+On the dense 8B sibling (36 blocks, full attention, same format, non-thinking), the map's \emph{shape} replicates: boundary blocks catastrophic (7.7 nats for block~0), mid-depth slack, two-regime disagreement, additive composition in the same tax band ($0.97$--$1.20\times$). The exploitable \emph{magnitude} does not: the cheapest single costs $6\times$ the 27B's, and the 4-cheapest-blocks recipe that costs 2.4 points on the 27B costs \textbf{14.8} on the 8B. A cross-model KL$\to$damage curve is explicitly rejected by interpolation test. Foldability is a property of over-provisioned depth, not of 1-bit models per se --- the 27B folds \emph{because} it is deep for its capability, and the same format redundancy ($b=-s/2$, exact on all 254 tensors) is family-wide while the structural slack is not.
+
+\section{Limitations}
+One model family and format carries the headline results; $N{=}500$ per bench bounds resolution to roughly $\pm 1.8$ macro points ($1\sigma$), so sub-point deltas (repair's $+1.0$ among them) are directional at single-bench evidence; the 16K thinking budget confounds the damage floor; the six divergences are demonstrations on one protocol, not a survey; and the repair theorem is existence plus mapped boundaries, not a general method. Everything reported was produced and verified on one 64\,GB laptop, which is the point, but also the ceiling: search breadth, sampling repeats, and bench sizes were budgeted accordingly.
+
+\section{Conclusion}
+A model that survived $14\times$ weight compression still contained: a fifth of its bytes in removable or derivable form at $\le\!4.5$ points of macro cost (with reasoning intact), an exactly-free 420\,MB format plane, nearly-free metadata precision down to 8 bits and not one bit further, and a repairable neighborhood in its own sign/scale lattice. Extracting all of it required no training --- only deletion, derivation, one linear solve, and the discipline of never believing a screen. Code and artifacts will be released upon publication.
+
+\end{document}
