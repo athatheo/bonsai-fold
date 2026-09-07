@@ -6,3 +6,4 @@ models/
 *.safetensors
 *.gguf
 vendor/
+experiments/groupr/*normal_eqs.npz
